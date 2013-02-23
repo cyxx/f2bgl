@@ -1,0 +1,43 @@
+
+# PATH=/opt/mingw32msvc/bin:$PATH make -f Makefile.mingw
+# PATH=/opt/mingw-w64/bin:$PATH make -f Makefile.mingw
+
+MINGW_DIR = /opt/mingw32msvc
+#MINGW_DIR = /opt/mingw-w64
+
+SDL_CFLAGS = `$(MINGW_DIR)/bin/sdl-config --cflags` -I$(MINGW_DIR)/include
+SDL_LIBS = `$(MINGW_DIR)/bin/sdl-config --libs` -L$(MINGW_DIR)/lib
+
+CXX = i586-mingw32msvc-g++
+STRIP = i586-mingw32msvc-strip
+#CXX = x86_64-w64-mingw32-g++
+#STRIP = x86_64-w64-mingw32-strip
+CXXFLAGS := -g -O -Wall -Wuninitialized -Wno-sign-compare
+
+DEFINES = 
+
+LIBS = $(SDL_LIBS) -lopengl32
+
+SRCS = box.cpp camera.cpp collision.cpp cutscene.cpp decoder.cpp file.cpp \
+	font.cpp game.cpp input.cpp inventory.cpp main.cpp mathfuncs.cpp menu.cpp mixer.cpp \
+	opcodes.cpp raycast.cpp render.cpp resource.cpp scaler.cpp sound.cpp spritecache.cpp \
+	stub.cpp texturecache.cpp util.cpp
+
+OBJS = $(SRCS:.cpp=.o)
+DEPS = $(SRCS:.cpp=.d)
+
+CXXFLAGS += -MMD $(DEFINES) $(SDL_CFLAGS)
+
+all: f2bgl.exe
+
+f2bgl.exe: f2bgl
+	$(STRIP) -o $@ $^
+
+f2bgl: $(OBJS)
+	$(CXX) -o $@ $^ $(LIBS)
+
+clean:
+	rm -f *.o *.d
+
+-include $(DEPS)
+
