@@ -7,12 +7,13 @@
 
 bool g_isDemo = false;
 static int _fileLanguage;
+static int _fileVoice;
 static const char *_fileDataPath;
 static bool _exitOnError = true;
 
 static void fileMakeFilePath(const char *fileName, int fileType, int fileLang, char *filePath) {
 	static const char *dataDirsTable[] = { "DATA", "DATA/SOUND", "TEXT", "VOICE" };
-	static const char *langDirsTable[] = { "US", "FR", "GR" };
+	static const char *langDirsTable[] = { "US", "FR", "GR", "SP", "IT" };
 
 	if (fileType == kFileType_RUNTIME) {
 		sprintf(filePath, "%s/", _fileDataPath);
@@ -20,9 +21,20 @@ static void fileMakeFilePath(const char *fileName, int fileType, int fileLang, c
 		assert(fileType >= 0 && fileType < ARRAYSIZE(dataDirsTable));
 		sprintf(filePath, "%s/%s/", _fileDataPath, dataDirsTable[fileType]);
 	}
+	switch (fileLang) {
+	case kFileLanguage_SP:
+	case kFileLanguage_IT:
+		if (fileType == kFileType_TEXT) {
+			assert(fileLang >= 0 && fileLang < ARRAYSIZE(langDirsTable));
+			strcat(filePath, langDirsTable[fileLang]);
+			strcat(filePath, "/");
+		}
+		fileLang = _fileVoice;
+		break;
+	}
 	if (fileType == kFileType_TEXT || fileType == kFileType_VOICE) {
 		assert(fileLang >= 0 && fileLang < ARRAYSIZE(langDirsTable));
-		strcat(filePath, langDirsTable[_fileLanguage]);
+		strcat(filePath, langDirsTable[fileLang]);
 		strcat(filePath, "/");
 	}
 	strcat(filePath, fileName);
@@ -58,8 +70,9 @@ bool fileExists(const char *fileName, int fileType) {
 	return fp != 0;
 }
 
-bool fileInit(int language, const char *dataPath) {
+bool fileInit(int language, int voice, const char *dataPath) {
 	_fileLanguage = language;
+	_fileVoice = voice;
 	_fileDataPath = dataPath;
 	bool ret = fileExists("player.ini", kFileType_DATA);
 	if (ret) {

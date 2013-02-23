@@ -32,6 +32,14 @@ directory. The expected directory structure is :
 	TEXT/       - not present with demo version
 	VOICE/      - not present with demo version
 
+Defaults can be changed using command line switches :
+
+    Usage: f2b [OPTIONS]...
+    --datapath=PATH             Path to data files (default 'DATA')
+    --language=EN|FR|GR|SP|IT   Language files to use (default 'EN')
+    --playdemo                  Use inputs from .DEM files
+    --level=NUM                 Start at level NUM
+
 
 Credits:
 --------

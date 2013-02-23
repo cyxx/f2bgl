@@ -19,7 +19,9 @@ enum FileType {
 enum FileLanguage {
 	kFileLanguage_EN = 0,
 	kFileLanguage_FR,
-	kFileLanguage_GR
+	kFileLanguage_GR,
+	kFileLanguage_SP,
+	kFileLanguage_IT,
 };
 
 enum FilePosition {
@@ -29,7 +31,7 @@ enum FilePosition {
 
 extern bool g_isDemo;
 
-bool fileInit(int language, const char *dataPath);
+bool fileInit(int language, int voice, const char *dataPath);
 bool fileExists(const char *fileName, int fileType);
 FILE *fileOpen(const char *fileName, int *fileSize, int fileType, bool errorIfNotFound = true);
 void fileClose(FILE *fp);

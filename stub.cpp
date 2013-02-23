@@ -13,10 +13,10 @@
 static const char *USAGE =
 	"Fade2Black/OpenGL\n"
 	"Usage: f2b [OPTIONS]...\n"
-	"  --datapath=PATH      Path to data files (default 'DATA')\n"
-	"  --language=EN|FR|GR  Language files to use (default 'EN')\n"
-	"  --playdemo           Use inputs from .DEM files\n"
-	"  --level=NUM          Start at level NUM\n";
+	"  --datapath=PATH             Path to data files (default 'DATA')\n"
+	"  --language=EN|FR|GR|SP|IT   Language files to use (default 'EN')\n"
+	"  --playdemo                  Use inputs from .DEM files\n"
+	"  --level=NUM                 Start at level NUM\n";
 
 static bool parseOptionStr(const char *arg, const char *name, const char **opt) {
 	bool handled = false;
@@ -49,19 +49,42 @@ static bool parseOptionInt(const char *arg, const char *name, int *i) {
 static const struct {
 	FileLanguage lang;
 	const char *str;
+	bool voice;
 } _languages[] = {
-	{ kFileLanguage_EN, "EN" },
-	{ kFileLanguage_FR, "FR" },
-	{ kFileLanguage_GR, "GR" }
+	{ kFileLanguage_EN, "EN", true  },
+	{ kFileLanguage_FR, "FR", true  },
+	{ kFileLanguage_GR, "GR", true  },
+	{ kFileLanguage_SP, "SP", false },
+	{ kFileLanguage_IT, "IT", false }
 };
 
 static FileLanguage parseLanguage(const char *language) {
 	for (int i = 0; i < ARRAYSIZE(_languages); ++i) {
-		if (strcmp(_languages[i].str, language) == 0) {
+		if (strcasecmp(_languages[i].str, language) == 0) {
 			return _languages[i].lang;
 		}
 	}
 	return _languages[0].lang;
+}
+
+static FileLanguage parseVoice(const char *voice, FileLanguage lang) {
+	switch (lang) {
+	case kFileLanguage_SP:
+	case kFileLanguage_IT:
+		for (int i = 0; i < ARRAYSIZE(_languages); ++i) {
+			if (strcasecmp(_languages[i].str, voice) == 0) {
+				if (_languages[i].voice) {
+					return _languages[i].lang;
+				}
+				break;
+			}
+		}
+		// default to English
+		return kFileLanguage_EN;
+	default:
+		// voice must match text for other languages
+		return lang;
+	}
 }
 
 static int getNextIntroCutsceneNum(int num) {
@@ -129,6 +152,7 @@ struct GameStub_F2B : GameStub {
 	virtual int init(int argc, char *argv[]) {
 		GameParams params;
 		const char *language = "";
+		const char *voice = "";
 		for (int i = 0; i < argc; ++i) {
 			bool opt = false;
 			if (strlen(argv[i]) >= 2) {
@@ -136,6 +160,7 @@ struct GameStub_F2B : GameStub {
 				opt |= parseOptionStr(argv[i], "language=", &language);
 				opt |= parseOptionBool(argv[i], "playdemo", &params.playDemo);
 				opt |= parseOptionInt(argv[i], "level=", &params.levelNum);
+				opt |= parseOptionStr(argv[i], "voice=", &voice);
 #ifdef F2B_DEBUG
 				opt |= parseOptionInt(argv[i], "xpos_conrad=", &params.xPosConrad);
 				opt |= parseOptionInt(argv[i], "zpos_conrad=", &params.zPosConrad);
@@ -153,7 +178,8 @@ struct GameStub_F2B : GameStub {
 		_skipCutscenes = 1;
 #endif
 		FileLanguage fileLanguage = parseLanguage(language);
-		if (!fileInit(fileLanguage, _dataPath)) {
+		FileLanguage fileVoice = parseVoice(voice, fileLanguage);
+		if (!fileInit(fileLanguage, fileVoice, _dataPath)) {
 			warning("Unable to find datafiles in '%s'", _dataPath);
 			return -1;
 		}
