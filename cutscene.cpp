@@ -201,13 +201,17 @@ void Cutscene::updateMessages() {
 				_msgsCount = 1;
 				while (*p && (p = strchr(p, '@')) != 0) {
 					++p;
+					assert(_msgsCount < kSubtitleMessagesCount);
 					_msgs[_msgsCount].data = p;
 					++_msgsCount;
 				}
 				for (int i = 0; i < _msgsCount; ++i) {
 					_msgs[i].duration = msg->desc.duration / _msgsCount;
 				}
-				assert((msg->desc.font & 31) == kFontNameCineTypo);
+				const int font = (msg->desc.font & 31);
+				if (font != kFontNameCineTypo) {
+					warning("Unhandled font %d for cutscene subtitles", font);
+				}
 			}
 		}
 	}

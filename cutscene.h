@@ -31,6 +31,7 @@ struct CinFrameHeader {
 enum {
 	kCutsceneScenesCount = 54,
 	kFrameBuffersCount = 3,
+	kSubtitleMessagesCount = 16,
 	kCutsceneFrameDelay = 1000 / 12
 };
 
@@ -60,7 +61,7 @@ struct Cutscene {
 	struct {
 		const char *data;
 		int duration;
-	} _msgs[8];
+	} _msgs[kSubtitleMessagesCount];
 	int _msgsCount;
 
 	Cutscene(Render *render, Game *g, Sound *snd);
