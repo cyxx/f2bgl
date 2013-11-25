@@ -12,16 +12,29 @@ static const char *_fileDataPath;
 static bool _exitOnError = true;
 
 static void fileMakeFilePath(const char *fileName, int fileType, int fileLang, char *filePath) {
+	#ifdef __AROS__
+	static const char *dataDirsTable[] = { "DATA", "DATA/SOUND", "DATA/TEXT", "DATA/VOICE" ,"DATA/DRIVERS"};
+	#else
 	static const char *dataDirsTable[] = { "DATA", "DATA/SOUND", "TEXT", "VOICE" };
+	#endif
 	static const char *langDirsTable[] = { "US", "FR", "GR", "SP", "IT" };
 
-	if (fileType == kFileType_RUNTIME) {
+	if (fileType == kFileType_RUNTIME) 
+	{
 		sprintf(filePath, "%s/", _fileDataPath);
-	} else {
+	} 
+	else 
+	{
 		assert(fileType >= 0 && fileType < ARRAYSIZE(dataDirsTable));
+	#ifdef __AROS__
+		sprintf(filePath, "%s/",dataDirsTable[fileType]);
+	#else
 		sprintf(filePath, "%s/%s/", _fileDataPath, dataDirsTable[fileType]);
+	#endif
 	}
-	switch (fileLang) {
+	
+	switch (fileLang) 
+	{
 	case kFileLanguage_SP:
 	case kFileLanguage_IT:
 		if (fileType == kFileType_TEXT) {
