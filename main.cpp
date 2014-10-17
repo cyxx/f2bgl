@@ -17,30 +17,27 @@ static int gScale = 2;
 static const int kTickDuration = 30;
 static const char *kCaption = "Fade2Black/OpenGL";
 
-static int gKeySymMap[512];
-static int gKeyScanMap[256];
+static int gKeyScancodeMap[512];
 
 static void setupKeyMap() {
-	memset(gKeySymMap, 0, sizeof(gKeySymMap));
-	gKeySymMap[SDLK_LEFT]   = kKeyCodeLeft;
-	gKeySymMap[SDLK_RIGHT]  = kKeyCodeRight;
-	gKeySymMap[SDLK_UP]     = kKeyCodeUp;
-	gKeySymMap[SDLK_DOWN]   = kKeyCodeDown;
-	gKeySymMap[SDLK_LALT]   = kKeyCodeAlt;
-	gKeySymMap[SDLK_LSHIFT] = kKeyCodeShift;
-	gKeySymMap[SDLK_LCTRL]  = kKeyCodeCtrl;
-	gKeySymMap[SDLK_SPACE]  = kKeyCodeSpace;
-	gKeySymMap[SDLK_RETURN] = kKeyCodeReturn;
-	gKeySymMap[SDLK_TAB]    = kKeyCodeTab;
-	gKeySymMap[SDLK_ESCAPE] = kKeyCodeEscape;
-	gKeySymMap[SDLK_h]      = kKeyCodeH;
-	gKeySymMap[SDLK_i]      = kKeyCodeI;
-	gKeySymMap[SDLK_j]      = kKeyCodeJ;
-	gKeySymMap[SDLK_k]      = kKeyCodeK;
-	gKeySymMap[SDLK_u]      = kKeyCodeU;
-	memset(gKeyScanMap, 0, sizeof(gKeyScanMap));
+	memset(gKeyScancodeMap, 0, sizeof(gKeyScancodeMap));
+	gKeyScancodeMap[SDL_SCANCODE_LEFT]   = kKeyCodeLeft;
+	gKeyScancodeMap[SDL_SCANCODE_RIGHT]  = kKeyCodeRight;
+	gKeyScancodeMap[SDL_SCANCODE_UP]     = kKeyCodeUp;
+	gKeyScancodeMap[SDL_SCANCODE_DOWN]   = kKeyCodeDown;
+	gKeyScancodeMap[SDL_SCANCODE_LALT]   = kKeyCodeAlt;
+	gKeyScancodeMap[SDL_SCANCODE_LSHIFT] = kKeyCodeShift;
+	gKeyScancodeMap[SDL_SCANCODE_LCTRL]  = kKeyCodeCtrl;
+	gKeyScancodeMap[SDL_SCANCODE_SPACE]  = kKeyCodeSpace;
+	gKeyScancodeMap[SDL_SCANCODE_RETURN] = kKeyCodeReturn;
+	gKeyScancodeMap[SDL_SCANCODE_TAB]    = kKeyCodeTab;
+	gKeyScancodeMap[SDL_SCANCODE_ESCAPE] = kKeyCodeEscape;
+	gKeyScancodeMap[SDL_SCANCODE_H]      = kKeyCodeH;
+	gKeyScancodeMap[SDL_SCANCODE_I]      = kKeyCodeI;
+	gKeyScancodeMap[SDL_SCANCODE_J]      = kKeyCodeJ;
+	gKeyScancodeMap[SDL_SCANCODE_K]      = kKeyCodeK;
 	for (int i = 0; i < 5; ++i) {
-		gKeyScanMap[10 + i] = kKeyCode1 + i;
+		gKeyScancodeMap[10 + i] = kKeyCode1 + i;
 	}
 }
 
@@ -83,8 +80,9 @@ int main(int argc, char *argv[]) {
 	}
 	SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO);
 	SDL_ShowCursor(SDL_DISABLE);
-	SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
-	SDL_SetVideoMode(gWindowW, gWindowH, 0, SDL_OPENGL | SDL_RESIZABLE);
+	SDL_Window *window = SDL_CreateWindow(kCaption, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, gWindowW, gWindowH, SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE);
+	SDL_Renderer *renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
+	SDL_GetWindowSize(window, &gWindowW, &gWindowH);
 	const int ret = stub->init(argc - 1, argv + 1);
 	if (ret != 0) {
 		return ret;
@@ -92,7 +90,6 @@ int main(int argc, char *argv[]) {
 	setupKeyMap();
 	setupAudio(stub);
 	stub->initGL(gWindowW, gWindowH);
-	SDL_WM_SetCaption(kCaption, 0);
 	bool quitGame = false;
 	bool paused = false;
 	while (1) {
@@ -104,21 +101,22 @@ int main(int argc, char *argv[]) {
 			case SDL_QUIT:
 				quitGame = true;
 				break;
-			case SDL_ACTIVEEVENT:
-				if (ev.active.state & SDL_APPINPUTFOCUS) {
-					paused = !ev.active.gain;
+			case SDL_WINDOWEVENT:
+				switch (ev.window.event) {
+				case SDL_WINDOWEVENT_RESIZED:
+					w = ev.window.data1;
+					h = ev.window.data2;
+					break;
+				case SDL_WINDOWEVENT_FOCUS_GAINED:
+				case SDL_WINDOWEVENT_FOCUS_LOST:
+					paused = (ev.window.event == SDL_WINDOWEVENT_FOCUS_LOST);
 					SDL_PauseAudio(paused);
+					break;
 				}
 				break;
-			case SDL_VIDEORESIZE:
-				w = ev.resize.w;
-				h = ev.resize.h;
-				break;
 			case SDL_KEYUP:
-				if (gKeySymMap[ev.key.keysym.sym] != 0) {
-					stub->queueKeyInput(gKeySymMap[ev.key.keysym.sym], 0);
-				} else if (gKeyScanMap[ev.key.keysym.scancode] != 0) {
-					stub->queueKeyInput(gKeyScanMap[ev.key.keysym.scancode], 0);
+				if (gKeyScancodeMap[ev.key.keysym.scancode] != 0) {
+					stub->queueKeyInput(gKeyScancodeMap[ev.key.keysym.scancode], 0);
 				}
 				break;
 			case SDL_KEYDOWN:
@@ -141,10 +139,8 @@ int main(int argc, char *argv[]) {
 					h = (int)(kDefaultH * gScale * .5);
 					break;
 				}
-				if (gKeySymMap[ev.key.keysym.sym] != 0) {
-					stub->queueKeyInput(gKeySymMap[ev.key.keysym.sym], 1);
-				} else if (gKeyScanMap[ev.key.keysym.scancode] != 0) {
-					stub->queueKeyInput(gKeyScanMap[ev.key.keysym.scancode], 1);
+				if (gKeyScancodeMap[ev.key.keysym.scancode] != 0) {
+					stub->queueKeyInput(gKeyScancodeMap[ev.key.keysym.scancode], 1);
 				}
 				break;
 			default:
@@ -157,17 +153,19 @@ int main(int argc, char *argv[]) {
 		if (w != gWindowW || h != gWindowH) {
 			gWindowW = w;
 			gWindowH = h;
-			SDL_SetVideoMode(gWindowW, gWindowH, 0, SDL_OPENGL | SDL_RESIZABLE);
 			stub->initGL(gWindowW, gWindowH);
 		}
 		if (!paused) {
 			const unsigned int ticks = SDL_GetTicks();
 			stub->doTick(ticks);
 			stub->drawGL();
-			SDL_GL_SwapBuffers();
+			SDL_RenderPresent(renderer);
 		}
 		SDL_Delay(kTickDuration);
 	}
 	stub->quit();
+	SDL_DestroyRenderer(renderer);
+	SDL_DestroyWindow(window);
+	SDL_Quit();
 	return 0;
 }
