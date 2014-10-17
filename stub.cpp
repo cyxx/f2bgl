@@ -3,6 +3,7 @@
  * Copyright (C) 2006-2012 Gregory Montoir (cyx@users.sourceforge.net)
  */
 
+#include <getopt.h>
 #include "file.h"
 #include "game.h"
 #include "mixer.h"
@@ -17,34 +18,6 @@ static const char *USAGE =
 	"  --language=EN|FR|GR|SP|IT   Language files to use (default 'EN')\n"
 	"  --playdemo                  Use inputs from .DEM files\n"
 	"  --level=NUM                 Start at level NUM\n";
-
-static bool parseOptionStr(const char *arg, const char *name, const char **opt) {
-	bool handled = false;
-	if (arg[0] == '-' && arg[1] == '-') {
-		arg += 2;
-		if (strncmp(arg, name, strlen(name)) == 0) {
-			if (opt) {
-				*opt = arg + strlen(name);
-			}
-			handled = true;
-		}
-	}
-	return handled;
-}
-
-static bool parseOptionBool(const char *arg, const char *name, bool *ret) {
-	*ret = parseOptionStr(arg, name, 0);
-	return *ret;
-}
-
-static bool parseOptionInt(const char *arg, const char *name, int *i) {
-	const char *opt;
-	if (parseOptionStr(arg, name, &opt)) {
-		*i = strtol(opt, 0, 0);
-		return true;
-	}
-	return false;
-}
 
 static const struct {
 	FileLanguage lang;
@@ -103,8 +76,8 @@ static int getNextIntroCutsceneNum(int num) {
 	return -1;
 }
 
-static const char *_dataPath = ".";
-static int _skipCutscenes;
+static char *_dataPath;
+static bool _skipCutscenes;
 
 struct GameStub_F2B : GameStub {
 
@@ -153,24 +126,59 @@ struct GameStub_F2B : GameStub {
 		GameParams params;
 		const char *language = "";
 		const char *voice = "";
-		for (int i = 0; i < argc; ++i) {
-			bool opt = false;
-			if (strlen(argv[i]) >= 2) {
-				opt |= parseOptionStr(argv[i], "datapath=", &_dataPath);
-				opt |= parseOptionStr(argv[i], "language=", &language);
-				opt |= parseOptionBool(argv[i], "playdemo", &params.playDemo);
-				opt |= parseOptionInt(argv[i], "level=", &params.levelNum);
-				opt |= parseOptionStr(argv[i], "voice=", &voice);
+		while (1) {
+			static struct option options[] = {
+				{ "datapath", required_argument, 0, 1 },
+				{ "language", required_argument, 0, 2 },
+				{ "playdemo", no_argument,       0, 3 },
+				{ "level",    required_argument, 0, 4 },
+				{ "voice",    required_argument, 0, 5 },
 #ifdef F2B_DEBUG
-				opt |= parseOptionInt(argv[i], "xpos_conrad=", &params.xPosConrad);
-				opt |= parseOptionInt(argv[i], "zpos_conrad=", &params.zPosConrad);
-				opt |= parseOptionInt(argv[i], "skip_cutscenes=", &_skipCutscenes);
+				{ "xpos_conrad",    required_argument, 0, 100 },
+				{ "zpos_conrad",    required_argument, 0, 101 },
+				{ "skip_cutscenes", no_argument,       0, 102 },
 #endif
+				{ 0, 0, 0, 0 }
+			};
+			int index;
+			const int c = getopt_long(argc, argv, "", options, &index);
+			if (c == -1) {
+				break;
 			}
-			if (!opt) {
+			switch (c) {
+			case 1:
+				_dataPath = strdup(optarg);
+				break;
+			case 2:
+				language = optarg;
+				break;
+			case 3:
+				params.playDemo = true;
+				break;
+			case 4:
+				params.levelNum = atoi(optarg);
+				break;
+			case 5:
+				voice = optarg;
+				break;
+#ifdef F2B_DEBUG
+			case 100:
+				params.xPosConrad = atoi(optarg);
+				break;
+			case 101:
+				params.zPosConrad = atoi(optarg);
+				break;
+			case 102:
+				_skipCutscenes = true;
+				break;
+#endif
+			default:
 				printf("%s\n", USAGE);
 				return -1;
 			}
+		}
+		if (!_dataPath) {
+			_dataPath = strdup(".");
 		}
 		g_utilDebugMask = kDebug_INFO;
 #ifdef F2B_DEBUG
@@ -198,6 +206,8 @@ struct GameStub_F2B : GameStub {
 	virtual void quit() {
 		delete _g;
 		delete _render;
+		free(_dataPath);
+		_dataPath = 0;
 	}
 	virtual StubMixProc getMixProc(int rate, int fmt, void (*lock)(int)) {
 		StubMixProc mix;

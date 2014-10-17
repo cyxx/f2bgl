@@ -83,7 +83,7 @@ int main(int argc, char *argv[]) {
 	SDL_Window *window = SDL_CreateWindow(kCaption, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, gWindowW, gWindowH, SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE);
 	SDL_Renderer *renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
 	SDL_GetWindowSize(window, &gWindowW, &gWindowH);
-	const int ret = stub->init(argc - 1, argv + 1);
+	const int ret = stub->init(argc, argv);
 	if (ret != 0) {
 		return ret;
 	}
