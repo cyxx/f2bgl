@@ -18,7 +18,7 @@ void SpriteCache::flush() {
 	for (int i = 0; i < ARRAYSIZE(_entries); ++i) {
 		free(_entries[i].data);
 	}
-	memset(&_entries, 0, sizeof(_entries));
+	memset(_entries, 0, sizeof(_entries));
 }
 
 uint8_t *SpriteCache::getData(int16_t key, const uint8_t *src) {
