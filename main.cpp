@@ -14,7 +14,7 @@ static int gWindowH = kDefaultH;
 
 static int gScale = 2;
 
-static const int kTickDuration = 30;
+static const int kTickDuration = 40;
 static const char *kCaption = "Fade2Black/OpenGL";
 
 static int gKeyScancodeMap[512];
@@ -26,8 +26,11 @@ static void setupKeyMap() {
 	gKeyScancodeMap[SDL_SCANCODE_UP]     = kKeyCodeUp;
 	gKeyScancodeMap[SDL_SCANCODE_DOWN]   = kKeyCodeDown;
 	gKeyScancodeMap[SDL_SCANCODE_LALT]   = kKeyCodeAlt;
+	gKeyScancodeMap[SDL_SCANCODE_RALT]   = kKeyCodeAlt;
 	gKeyScancodeMap[SDL_SCANCODE_LSHIFT] = kKeyCodeShift;
+	gKeyScancodeMap[SDL_SCANCODE_RSHIFT] = kKeyCodeShift;
 	gKeyScancodeMap[SDL_SCANCODE_LCTRL]  = kKeyCodeCtrl;
+	gKeyScancodeMap[SDL_SCANCODE_RCTRL]  = kKeyCodeCtrl;
 	gKeyScancodeMap[SDL_SCANCODE_SPACE]  = kKeyCodeSpace;
 	gKeyScancodeMap[SDL_SCANCODE_RETURN] = kKeyCodeReturn;
 	gKeyScancodeMap[SDL_SCANCODE_TAB]    = kKeyCodeTab;
@@ -37,7 +40,7 @@ static void setupKeyMap() {
 	gKeyScancodeMap[SDL_SCANCODE_J]      = kKeyCodeJ;
 	gKeyScancodeMap[SDL_SCANCODE_K]      = kKeyCodeK;
 	for (int i = 0; i < 5; ++i) {
-		gKeyScancodeMap[10 + i] = kKeyCode1 + i;
+		gKeyScancodeMap[SDL_SCANCODE_1 + i] = kKeyCode1 + i;
 	}
 }
 

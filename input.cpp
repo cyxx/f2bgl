@@ -4,7 +4,6 @@
  */
 
 #include "game.h"
-#include "render.h"
 
 void Game::updateInput() {
 	int currentInput = getCurrentInput();
