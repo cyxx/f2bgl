@@ -1,17 +1,9 @@
 
-# PATH=/opt/mingw32msvc/bin:$PATH make -f Makefile.mingw
-# PATH=/opt/mingw-w64/bin:$PATH make -f Makefile.mingw
+SDL_CFLAGS = `sdl2-config --cflags`
+SDL_LIBS = `sdl2-config --static-libs`
 
-MINGW_DIR = /opt/mingw32msvc
-#MINGW_DIR = /opt/mingw-w64
-
-SDL_CFLAGS = `$(MINGW_DIR)/bin/sdl-config --cflags` -I$(MINGW_DIR)/include
-SDL_LIBS = `$(MINGW_DIR)/bin/sdl-config --libs` -L$(MINGW_DIR)/lib
-
-CXX = i586-mingw32msvc-g++
-STRIP = i586-mingw32msvc-strip
-#CXX = x86_64-w64-mingw32-g++
-#STRIP = x86_64-w64-mingw32-strip
+CXX = i686-w64-mingw32-g++
+STRIP = i686-w64-mingw32-strip
 CXXFLAGS := -g -O -Wall -Wuninitialized -Wno-sign-compare
 
 DEFINES = 
@@ -32,9 +24,10 @@ all: f2bgl.exe
 
 f2bgl.exe: f2bgl
 	$(STRIP) -o $@ $^
+	upx -9 $@
 
 f2bgl: $(OBJS)
-	$(CXX) -o $@ $^ $(LIBS)
+	$(CXX) -o $@ $^ -static $(LIBS)
 
 clean:
 	rm -f *.o *.d
