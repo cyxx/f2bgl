@@ -15,7 +15,7 @@ enum {
 
 enum {
 	kDefaultVolume = 127,
-	kDefaultPan = 64
+	kDefaultPan = 64 // 0,128 range
 };
 
 struct MixerSound;

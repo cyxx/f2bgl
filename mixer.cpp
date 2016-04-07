@@ -253,8 +253,8 @@ bool Mixer::isWavPlaying(uint32_t id) const {
 }
 
 void Mixer::playQueue(int preloadSize) {
-	MixerLock ml(_lock);
 	stopQueue();
+	MixerLock ml(_lock);
 	_queue = new MixerQueue;
 	_queue->preloadSize = preloadSize;
 	_queue->size = 0;
