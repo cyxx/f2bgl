@@ -124,8 +124,8 @@ struct GameStub_F2B : GameStub {
 
 	virtual int init(int argc, char *argv[]) {
 		GameParams params;
-		const char *language = "";
-		const char *voice = "";
+		char *language = 0;
+		char *voice = 0;
 		while (1) {
 			static struct option options[] = {
 				{ "datapath", required_argument, 0, 1 },
@@ -150,7 +150,7 @@ struct GameStub_F2B : GameStub {
 				_dataPath = strdup(optarg);
 				break;
 			case 2:
-				language = optarg;
+				language = strdup(optarg);
 				break;
 			case 3:
 				params.playDemo = true;
@@ -159,7 +159,7 @@ struct GameStub_F2B : GameStub {
 				params.levelNum = atoi(optarg);
 				break;
 			case 5:
-				voice = optarg;
+				voice = strdup(optarg);
 				break;
 #ifdef F2B_DEBUG
 			case 100:
@@ -185,8 +185,12 @@ struct GameStub_F2B : GameStub {
 //		g_utilDebugMask |= kDebug_GAME | kDebug_OPCODES | kDebug_SOUND | kDebug_RESOURCE | kDebug_FILE;
 		_skipCutscenes = 1;
 #endif
-		FileLanguage fileLanguage = parseLanguage(language);
-		FileLanguage fileVoice = parseVoice(voice, fileLanguage);
+		FileLanguage fileLanguage = language ? parseLanguage(language) : kFileLanguage_EN;
+		FileLanguage fileVoice = voice ? parseVoice(voice, fileLanguage) : fileLanguage;
+		free(language);
+		language = 0;
+		free(voice);
+		voice = 0;
 		if (!fileInit(fileLanguage, fileVoice, _dataPath)) {
 			warning("Unable to find datafiles in '%s'", _dataPath);
 			return -1;
