@@ -182,7 +182,7 @@ struct GameStub_F2B : GameStub {
 		}
 		g_utilDebugMask = kDebug_INFO;
 #ifdef F2B_DEBUG
-//		g_utilDebugMask |= kDebug_GAME | kDebug_OPCODES | kDebug_SOUND | kDebug_RESOURCE | kDebug_FILE;
+		g_utilDebugMask |= kDebug_GAME /* | kDebug_RESOURCE */ | kDebug_FILE | kDebug_CUTSCENE | kDebug_OPCODES | kDebug_SOUND;
 		_skipCutscenes = 1;
 #endif
 		FileLanguage fileLanguage = language ? parseLanguage(language) : kFileLanguage_EN;
