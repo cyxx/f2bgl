@@ -53,7 +53,7 @@ static void lockAudio(int lock) {
 }
 
 static void setupAudio(GameStub *stub) {
-	SDL_AudioSpec desired;
+	SDL_AudioSpec desired, obtained;
 	memset(&desired, 0, sizeof(desired));
 	desired.freq = 22050;
 	desired.format = AUDIO_S16SYS;
@@ -63,7 +63,7 @@ static void setupAudio(GameStub *stub) {
 	if (mix.proc) {
 		desired.callback = mix.proc;
 		desired.userdata = mix.data;
-		if (SDL_OpenAudio(&desired, 0) == 0) {
+		if (SDL_OpenAudio(&desired, &obtained) == 0) {
 			SDL_PauseAudio(0);
 		}
 	}
@@ -166,6 +166,7 @@ int main(int argc, char *argv[]) {
 		}
 		SDL_Delay(kTickDuration);
 	}
+	SDL_PauseAudio(1);
 	stub->quit();
 	SDL_DestroyRenderer(renderer);
 	SDL_DestroyWindow(window);
