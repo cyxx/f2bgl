@@ -84,8 +84,11 @@ int main(int argc, char *argv[]) {
 	SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO);
 	SDL_ShowCursor(SDL_DISABLE);
 	SDL_Window *window = SDL_CreateWindow(kCaption, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, gWindowW, gWindowH, SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE);
-	SDL_Renderer *renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
+	if (!window) {
+		return -1;
+	}
 	SDL_GetWindowSize(window, &gWindowW, &gWindowH);
+	SDL_GLContext glcontext = SDL_GL_CreateContext(window);
 	const int ret = stub->init(argc, argv);
 	if (ret != 0) {
 		return ret;
@@ -162,13 +165,13 @@ int main(int argc, char *argv[]) {
 			const unsigned int ticks = SDL_GetTicks();
 			stub->doTick(ticks);
 			stub->drawGL();
-			SDL_RenderPresent(renderer);
+			SDL_GL_SwapWindow(window);
 		}
 		SDL_Delay(kTickDuration);
 	}
 	SDL_PauseAudio(1);
 	stub->quit();
-	SDL_DestroyRenderer(renderer);
+	SDL_GL_DeleteContext(glcontext);
 	SDL_DestroyWindow(window);
 	SDL_Quit();
 	return 0;

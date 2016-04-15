@@ -79,7 +79,7 @@ static bool hasExt(const char *exts, const char *name) {
 
 void TextureCache::init() {
 	const char *exts = (const char *)glGetString(GL_EXTENSIONS);
-	if (hasExt(exts, "GL_ARB_texture_non_power_of_two")) {
+	if (exts && hasExt(exts, "GL_ARB_texture_non_power_of_two")) {
 		_npotTex = true;
 	}
 }
