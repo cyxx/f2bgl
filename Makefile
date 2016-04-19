@@ -6,7 +6,8 @@ SDL_LIBS = `sdl2-config --libs`
 
 LIBS = $(SDL_LIBS) -lGL
 
-CXXFLAGS += -g -O -Wall -Wuninitialized -Wno-sign-compare
+CXX := clang++
+CXXFLAGS := -g -O -Wall -Wuninitialized -Wno-sign-compare
 
 SRCS = box.cpp camera.cpp collision.cpp cutscene.cpp decoder.cpp file.cpp \
 	font.cpp game.cpp input.cpp inventory.cpp main.cpp mathfuncs.cpp menu.cpp mixer.cpp \
