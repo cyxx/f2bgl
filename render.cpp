@@ -397,7 +397,6 @@ void Render::copyToOverlay(int x, int y, const uint8_t *data, int pitch, int w, 
 			data += pitch;
 		}
 	}
-	_textureCache.updateTexture(_overlay.tex, _overlay.buf, _overlay.tex->bitmapW, _overlay.tex->bitmapH);
 }
 
 void Render::beginObjectDraw(int x, int y, int z, int ry, int shift) {
@@ -568,6 +567,7 @@ void Render::setupProjection2d() {
 
 void Render::drawOverlay() {
 	if (!kOverlayDisabled && _overlay.tex) {
+		_textureCache.updateTexture(_overlay.tex, _overlay.buf, _overlay.tex->bitmapW, _overlay.tex->bitmapH);
 		glMatrixMode(GL_PROJECTION);
 		glLoadIdentity();
 		if (_overlay.hflip) {
