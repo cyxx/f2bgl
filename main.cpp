@@ -6,6 +6,8 @@
 #include <SDL.h>
 #include "stub.h"
 
+const char *g_caption = "Fade2Black/OpenGL";
+
 static const int kDefaultW = 640;
 static const int kDefaultH = kDefaultW * 3 / 4;
 
@@ -15,7 +17,6 @@ static int gWindowH = kDefaultH;
 static int gScale = 2;
 
 static const int kTickDuration = 40;
-static const char *kCaption = "Fade2Black/OpenGL";
 
 static int gKeyScancodeMap[512];
 
@@ -83,7 +84,7 @@ int main(int argc, char *argv[]) {
 	}
 	SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO);
 	SDL_ShowCursor(SDL_DISABLE);
-	SDL_Window *window = SDL_CreateWindow(kCaption, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, gWindowW, gWindowH, SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE);
+	SDL_Window *window = SDL_CreateWindow(g_caption, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, gWindowW, gWindowH, SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE);
 	if (!window) {
 		return -1;
 	}

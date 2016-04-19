@@ -3,6 +3,10 @@
  * Copyright (C) 2006-2012 Gregory Montoir (cyx@users.sourceforge.net)
  */
 
+#ifdef _WIN32
+#define WIN32_LEAN_AND_MEAN
+#include <windows.h>
+#endif
 #include "util.h"
 
 int g_utilDebugMask = 0;
@@ -82,6 +86,9 @@ void error(const char *msg, ...) {
 	va_end(va);
 	fprintf(stdout, "ERROR: %s!\n", buf);
 	fflush(stdout);
+#ifdef _WIN32
+	MessageBox(0, buf, g_caption, MB_ICONERROR);
+#endif
 	exit(-1);
 }
 

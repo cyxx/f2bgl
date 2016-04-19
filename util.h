@@ -24,6 +24,7 @@ enum {
 	kDebug_SOUND    = 1 << 6
 };
 
+extern const char *g_caption;
 extern int g_utilDebugMask;
 
 void stringToLowerCase(char *p);
