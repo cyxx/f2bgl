@@ -98,10 +98,20 @@ void TextureCache::flush() {
 }
 
 Texture *TextureCache::getCachedTexture(const uint8_t *data, int w, int h, int16_t key) {
+	Texture *prev = 0;
 	for (Texture *t = _texturesListHead; t; t = t->next) {
 		if (t->key == key) {
+			if (prev) { // move to head
+				prev->next = t->next;
+				t->next = _texturesListHead;
+				_texturesListHead = t;
+				if (t == _texturesListTail) {
+					_texturesListTail = prev;
+				}
+			}
 			return t;
 		}
+		prev = t;
 	}
 	Texture *t = createTexture(data, w, h);
 	if (t) {
