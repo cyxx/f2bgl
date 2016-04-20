@@ -88,7 +88,7 @@ struct GameStub_F2B : GameStub {
 	bool _skip;
 
 	void setState(int state) {
-		printf("stub.state %d\n", state);
+		debug(kDebug_INFO, "stub.state %d", state);
 		// release
 		if (_state == 0) {
 			_render->setPalette(_g->_screenPalette, 256);

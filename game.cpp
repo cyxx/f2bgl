@@ -1083,7 +1083,7 @@ void Game::init() {
 }
 
 void Game::initLevel() {
-	printf("game.initLevelData %d\n", _level);
+	debug(kDebug_GAME, "Game::initLevel() %d\n", _level);
 
 	int32_t flag = -1;
 	op_clearTarget(1, &flag);

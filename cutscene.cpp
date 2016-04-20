@@ -342,7 +342,6 @@ bool Cutscene::load(int num) {
 	if (num == 44) {
 		setPaletteColor(1, 255, 255, 255);
 	}
-	printf("cutscene.load %d\n", num);
 	_game->getCutsceneMessages(num);
 	const char *name = _scenesTable[num];
 	_duration = 0;
