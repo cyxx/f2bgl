@@ -70,7 +70,7 @@ void Game::doMenu() {
 	loadMenuObjectMesh(o, o->anim.currentAnimKey);
 
 	_render->clearScreen();
-	_render->setupProjection(1);
+	_render->setupProjection(kProjMenu);
 
 	SceneObject *so = &_sceneObjectsTable[0];
 	_render->beginObjectDraw(so->x, so->y, so->z, so->pitch, kPosShift);

@@ -414,7 +414,7 @@ bool Cutscene::play() {
 		decodeImage(_frameReadBuffer + palSize);
 		updateMessages();
 	}
-	_render->setupProjection(2);
+	_render->setupProjection(kProjDefault);
 	_render->copyToOverlay(0, 0, _frameBuffers[0], _fileHdr.videoFrameWidth, _fileHdr.videoFrameWidth, _fileHdr.videoFrameHeight);
 	const PlayerInput &inp = _game->inp;
 	_interrupted = inp.spaceKey || inp.enterKey;

@@ -18,6 +18,12 @@ enum {
 	kFlatColorLight9
 };
 
+enum {
+	kProjGame = 0,
+	kProjMenu,
+	kProjDefault
+};
+
 struct Texture;
 
 struct Render {
@@ -63,7 +69,7 @@ struct Render {
 
 	void setPalette(const uint8_t *pal, int count);
 	void clearScreen();
-	void setupProjection(int mode = 0);
+	void setupProjection(int mode = kProjGame);
 	void setupProjection2d();
 	void drawOverlay();
 	void resizeScreen(int w, int h);

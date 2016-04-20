@@ -521,7 +521,7 @@ void Render::setupProjection(int mode) {
 	glEnableClientState(GL_VERTEX_ARRAY);
 	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
 #endif
-	if (mode == 1) {
+	if (mode == kProjMenu) {
 		glMatrixMode(GL_PROJECTION);
 		glLoadIdentity();
 		setPerspective(45., 1.6, 1., 128.);
@@ -540,7 +540,7 @@ void Render::setupProjection(int mode) {
 		const int h = _h * _viewport.ph >> 8;
 		glViewport((_w - w) / 2, (_h - h) / 2, w, h);
 	}
-	if (mode == 2) {
+	if (mode == kProjDefault) {
 		return;
 	}
 	glMatrixMode(GL_PROJECTION);

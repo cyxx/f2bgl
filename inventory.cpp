@@ -271,7 +271,7 @@ void Game::doInventory() {
 	} else {
 
 		_render->drawOverlay();
-		_render->setupProjection(1);
+		_render->setupProjection(kProjMenu);
 
 		const int type = _inventoryCurrentObj->specialData[1][22];
 		if (type != 32) {
