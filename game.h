@@ -164,6 +164,7 @@ struct GameObject {
 	int room;
 	int inSceneList;
 	int16_t scriptStateKey;
+	int16_t scriptCondKey;
 	int16_t startScriptKey;
 	int pitchPrev, pitch;
 	int xPosPrev, yPosPrev, zPosPrev;
@@ -199,8 +200,8 @@ struct GameObject {
 		}
 	}
 
-	uint8_t *scriptStateData;
-	uint8_t *scriptCondData;
+	const uint8_t *scriptStateData;
+	const uint8_t *scriptCondData;
 	int state;
 	bool setColliding;
 	bool updateColliding;
@@ -769,6 +770,10 @@ struct Game {
 	int rayCastHelper(GameObject *o, int x, CellMap *cellMap, RayCastCallbackType callback, bool);
 	int rayCastMono(GameObject *o, int x, CellMap *cellMap, RayCastCallbackType callback, int delta);
 	int rayCastCamera(GameObject *o, int x, CellMap *cellMap, RayCastCallbackType callback);
+
+	// saveload.cpp
+	void saveGameState(int num);
+	void loadGameState(int num);
 };
 
 #endif // GAME_H__

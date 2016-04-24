@@ -21,7 +21,8 @@ enum {
 	kDebug_FILE     = 1 << 3,
 	kDebug_CUTSCENE = 1 << 4,
 	kDebug_OPCODES  = 1 << 5,
-	kDebug_SOUND    = 1 << 6
+	kDebug_SOUND    = 1 << 6,
+	kDebug_SAVELOAD = 1 << 7
 };
 
 extern const char *g_caption;
@@ -36,16 +37,19 @@ void warning(const char *msg, ...);
 void error(const char *msg, ...);
 uint32_t getStringHash(const char *s);
 
+#undef MIN
 template<typename T>
 inline T MIN(T v1, T v2) {
 	return (v1 < v2) ? v1 : v2;
 }
 
+#undef MAX
 template<typename T>
 inline T MAX(T v1, T v2) {
 	return (v1 > v2) ? v1 : v2;
 }
 
+#undef ABS
 template<typename T>
 inline T ABS(T t) {
 	return (t < 0) ? -t : t;

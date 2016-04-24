@@ -14,6 +14,8 @@ enum FileType {
 	kFileType_TEXT,
 	kFileType_VOICE,
 	kFileType_RUNTIME,
+	kFileType_LOAD,
+	kFileType_SAVE,
 };
 
 enum FileLanguage {
@@ -42,5 +44,9 @@ uint32_t fileReadUint32LE(FILE *fp);
 uint32_t fileGetPos(FILE *fp);
 void fileSetPos(FILE *fp, uint32_t pos, int origin);
 int fileEof(FILE *fp);
+void fileWrite(FILE *fp, const void *buf, int size);
+void fileWriteByte(FILE *fp, uint8_t value);
+void fileWriteUint16LE(FILE *fp, uint16_t value);
+void fileWriteUint32LE(FILE *fp, uint32_t value);
 
 #endif // __FILE_H__

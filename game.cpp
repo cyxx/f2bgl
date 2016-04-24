@@ -1656,6 +1656,7 @@ uint8_t *Game::getStartScriptAnim() {
 			assert(_currentScriptKey > 0);
 			p = _res.getData(kResType_STM, _currentScriptKey, "STMCOND");
 		}
+		_currentObject->scriptCondKey = _currentScriptKey;
 	}
 	return p;
 }
@@ -1668,6 +1669,7 @@ uint8_t *Game::getNextScriptAnim() {
 			assert(_currentScriptKey > 0);
 			p = _res.getData(kResType_STM, _currentScriptKey, "STMCOND");
 		}
+		_currentObject->scriptCondKey = _currentScriptKey;
 	}
 	return p;
 }
@@ -1800,7 +1802,7 @@ int Game::executeObjectScript(GameObject *o) {
 			} else {
 				int16_t scriptKey = o->scriptStateKey;
 				o->scriptStateKey = READ_LE_UINT16(o->scriptCondData + 4);
-				uint8_t *scriptData = o->scriptStateData;
+				const uint8_t *scriptData = o->scriptStateData;
 				o->scriptStateData = _res.getData(kResType_STM, o->scriptStateKey, "STMSTATE");
 				if (gotoStartScriptAnim() == 1 || isScriptAnimFrameEnd()) {
 					o->scriptStateKey = scriptKey;

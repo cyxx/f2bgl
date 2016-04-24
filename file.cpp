@@ -3,12 +3,14 @@
  * Copyright (C) 2006-2012 Gregory Montoir (cyx@users.sourceforge.net)
  */
 
+#include <sys/param.h>
 #include "file.h"
 
 bool g_isDemo = false;
 static int _fileLanguage;
 static int _fileVoice;
 static const char *_fileDataPath;
+static const char *_fileSavePath = ".";
 static bool _exitOnError = true;
 
 static void fileMakeFilePath(const char *fileName, int fileType, int fileLang, char *filePath) {
@@ -41,8 +43,11 @@ static void fileMakeFilePath(const char *fileName, int fileType, int fileLang, c
 }
 
 static FILE *fileOpenIntern(const char *fileName, int fileType) {
-	char filePath[512];
-
+	char filePath[MAXPATHLEN];
+	if (fileType == kFileType_SAVE || fileType == kFileType_LOAD) {
+		snprintf(filePath, sizeof(filePath), "%s/%s", _fileSavePath, fileName);
+		return fopen(filePath, (fileType == kFileType_SAVE) ? "wb" : "rb");
+	}
 	fileMakeFilePath(fileName, fileType, _fileLanguage, filePath);
 	char *p = strrchr(filePath, '/');
 	if (p) {
@@ -156,4 +161,35 @@ void fileSetPos(FILE *fp, uint32_t pos, int origin) {
 
 int fileEof(FILE *fp) {
 	return feof(fp);
+}
+
+void fileWrite(FILE *fp, const void *buf, int size) {
+	const int count = fwrite(buf, size, 1, fp);
+	if (count != 1) {
+		if (_exitOnError && ferror(fp)) {
+			error("I/O error writing %d bytes", size);
+		}
+	}
+}
+
+void fileWriteByte(FILE *fp, uint8_t value) {
+	fileWrite(fp, &value, 1);
+}
+
+void fileWriteUint16LE(FILE *fp, uint16_t value) {
+	uint8_t buf[2];
+	for (int i = 0; i < 2; ++i) {
+		buf[i] = value & 255;
+		value >>= 8;
+	}
+	fileWrite(fp, buf, sizeof(buf));
+}
+
+void fileWriteUint32LE(FILE *fp, uint32_t value) {
+	uint8_t buf[4];
+	for (int i = 0; i < 4; ++i) {
+		buf[i] = value & 255;
+		value >>= 8;
+	}
+	fileWrite(fp, buf, sizeof(buf));
 }
