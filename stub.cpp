@@ -374,6 +374,18 @@ struct GameStub_F2B : GameStub {
 	virtual void drawGL() {
 		_render->drawOverlay();
 	}
+	virtual void saveState(int slot) {
+		if (_state == 1) {
+			_g->saveGameState(slot);
+			debug(kDebug_INFO, "Saved game state to slot %d", slot);
+		}
+	}
+	virtual void loadState(int slot) {
+		if (_state == 1) {
+			_g->loadGameState(slot);
+			debug(kDebug_INFO, "Loaded game state from slot %d", slot);
+		}
+	}
 };
 
 extern "C" {

@@ -15,6 +15,7 @@ static int gWindowW = kDefaultW;
 static int gWindowH = kDefaultH;
 
 static int gScale = 2;
+static int gSaveSlot = 1;
 
 static const int kTickDuration = 40;
 
@@ -145,6 +146,27 @@ int main(int argc, char *argv[]) {
 					w = (int)(kDefaultW * gScale * .5);
 					h = (int)(kDefaultH * gScale * .5);
 					break;
+				} else if (ev.key.keysym.mod & KMOD_CTRL) {
+					switch (ev.key.keysym.sym) {
+					case SDLK_s:
+						stub->saveState(gSaveSlot);
+						break;
+					case SDLK_l:
+						stub->loadState(gSaveSlot);
+						break;
+					case SDLK_KP_PLUS:
+					case SDLK_PAGEUP:
+						if (gSaveSlot < 99) {
+							++gSaveSlot;
+						}
+						break;
+					case SDLK_KP_MINUS:
+					case SDLK_PAGEDOWN:
+						if (gSaveSlot > 1) {
+							--gSaveSlot;
+						}
+						break;
+					}
 				}
 				if (gKeyScancodeMap[ev.key.keysym.scancode] != 0) {
 					stub->queueKeyInput(gKeyScancodeMap[ev.key.keysym.scancode], 1);

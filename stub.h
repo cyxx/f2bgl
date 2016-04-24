@@ -43,6 +43,8 @@ struct GameStub {
 	virtual void doTick(unsigned int ticks) = 0;
 	virtual void initGL(int w, int h) = 0;
 	virtual void drawGL() = 0;
+	virtual void loadState(int slot) = 0;
+	virtual void saveState(int slot) = 0;
 };
 
 extern "C" {
