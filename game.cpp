@@ -17,7 +17,7 @@ Game::Game(Render *render, const GameParams *params)
 
 	_ticks = 0;
 	_level = 0;
-	_skillLevel = 0;
+	_skillLevel = kSkillNormal;
 	_changeLevel = false;
 	_room = _roomPrev = -1;
 
@@ -117,6 +117,19 @@ void Game::clearLevelData() {
 	_spriteCache.flush();
 	_infoPanelSpr.data = 0;
 	_render->flushCachedTextures();
+
+	for (int i = 0; i < ARRAYSIZE(_objectKeysTable); ++i) {
+		GameObject *o = _objectKeysTable[i];
+		if (o) {
+			GameMessage *msg = o->msg;
+			while (msg) {
+				GameMessage *next = msg->next;
+				free(msg);
+				msg = next;
+			}
+			o->msg = 0;
+		}
+	}
 }
 
 void Game::countObjects(int16_t parentKey) {
