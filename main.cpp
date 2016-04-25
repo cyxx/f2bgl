@@ -148,6 +148,9 @@ int main(int argc, char *argv[]) {
 					break;
 				} else if (ev.key.keysym.mod & KMOD_CTRL) {
 					switch (ev.key.keysym.sym) {
+					case SDLK_i:
+						stub->queueKeyInput(kKeyCodeCheatLifeCounter, 1);
+						break;
 					case SDLK_s:
 						stub->saveState(gSaveSlot);
 						break;
@@ -167,8 +170,7 @@ int main(int argc, char *argv[]) {
 						}
 						break;
 					}
-				}
-				if (gKeyScancodeMap[ev.key.keysym.scancode] != 0) {
+				} else if (gKeyScancodeMap[ev.key.keysym.scancode] != 0) {
 					stub->queueKeyInput(gKeyScancodeMap[ev.key.keysym.scancode], 1);
 				}
 				break;

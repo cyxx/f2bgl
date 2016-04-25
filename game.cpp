@@ -13,6 +13,8 @@
 Game::Game(Render *render, const GameParams *params)
 	: _cut(render, this, &_snd), _snd(&_res), _render(render), _params(*params) {
 
+	_cheats = 0;
+
 	memset(&_drawCharBuf, 0, sizeof(_drawCharBuf));
 
 	_ticks = 0;
@@ -1161,17 +1163,15 @@ void Game::initLevel() {
 	playMusic(-1);
 
 //	_focalDistance = 0;
-#if 0
 	_currentObject = _objectsPtrTable[kObjPtrConrad];
-	_xPosViewpoint = _x0PosViewpoint = _currentObject->xPosParent + _currentObject->xPos;
-	_yPosViewpoint = _y0PosViewpoint = _currentObject->yPosParent + _currentObject->yPos;
-	_zPosViewpoint = _z0PosViewpoint = _currentObject->zPosParent + _currentObject->zPos;
-	_cameraState = 0;
-	_cameraViewKey = _currentObject->objKey;
+//	_xPosViewpoint = _x0PosViewpoint = _currentObject->xPosParent + _currentObject->xPos;
+//	_yPosViewpoint = _y0PosViewpoint = _currentObject->yPosParent + _currentObject->yPos;
+//	_zPosViewpoint = _z0PosViewpoint = _currentObject->zPosParent + _currentObject->zPos;
+//	_cameraState = 0;
+//	_cameraViewKey = _currentObject->objKey;
 	_currentObject->specialData[1][18] = 2000;
-	setCameraObject(_currentObject, &_cameraViewObj);
-	_varsTable[31] = _cameraViewKey;
-#endif
+//	setCameraObject(_currentObject, &_cameraViewObj);
+//	_varsTable[31] = _cameraViewKey;
 }
 
 void Game::setupConradObject() {
@@ -2494,6 +2494,9 @@ void Game::doTick() {
 	addObjectsToScene();
 	updateObjects();
 	++_ticks;
+	if ((_cheats & kCheatLifeCounter) != 0) {
+		_objectsPtrTable[kObjPtrConrad]->specialData[1][18] = _varsTable[kVarConradLife];
+	}
 	runObject(_objectsPtrTable[kObjPtrWorld]->o_child);
 if (_mainLoopCurrentMode == 1) {
 	GameObject *o_ply = getObjectByKey(_varsTable[kVarPlayerObject]);

@@ -85,8 +85,6 @@ void Game::updateInput() {
 	readInputEvents();
 }
 
-static const bool _inf = false;
-
 void Game::updateGameInput() {
 	for (int i = 0; i < _inputsCount; ++i) {
 		_inputDirKeyReleased[_inputsTable[i].inputKey0] = 0;
@@ -161,9 +159,6 @@ void Game::updateGameInput() {
 		}
 	}
 	updateInput();
-	if (_inf) {
-		_objectsPtrTable[kObjPtrConrad]->specialData[1][18] = _varsTable[kVarConradLife];
-	}
 }
 
 bool Game::testInputKeyMask(int num, int dir, int button, int index) const {

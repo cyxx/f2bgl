@@ -99,6 +99,10 @@ enum {
 	kFontNameCineTypo,
 };
 
+enum {
+	kCheatLifeCounter = 1 << 0,
+};
+
 struct CollisionSlot;
 
 struct CellMap {
@@ -366,6 +370,7 @@ struct Game {
 	GameParams _params;
 	SpriteCache _spriteCache;
 	Random _rnd;
+	int _cheats;
 
 	DrawBuffer _drawCharBuf;
 	int _ticks;

@@ -32,7 +32,8 @@ enum {
 	kKeyCode2,
 	kKeyCode3,
 	kKeyCode4,
-	kKeyCode5
+	kKeyCode5,
+	kKeyCodeCheatLifeCounter,
 };
 
 struct GameStub {
