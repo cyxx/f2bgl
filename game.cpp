@@ -604,8 +604,10 @@ void Game::getSceneAnimationTexture(SceneAnimation *sa, uint16_t *len, uint16_t 
 	assert(key != 0);
 	for (int i = 0; i < sa->frameNum; ++i) {
 		key = _res.getNext(kResType_ANI, key);
-if (key == 0) warning("getSceneAnimationTexture() %d/%d frmKey %d", i, sa->frameNum, sa->frmKey);
-		assert(key != 0);
+		if (key == 0) {
+			warning("getSceneAnimationTexture() key is 0 for frame %d/%d frmKey %d", i, sa->frameNum, sa->frmKey);
+			return;
+		}
 	}
 	const uint8_t *p_frm = _res.getData(kResType_ANI, key, "ANIFRAM");
 	const uint8_t *p_btm = _res.getData(kResType_SPR, READ_LE_UINT16(p_frm), "BTMDESC");
