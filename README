@@ -1,6 +1,6 @@
 
 f2bgl README
-Release version: 0.1.8 (Feb 5 2012)
+Release version: 0.1.9 ($date)
 -------------------------------------------------------------------------------
 
 
@@ -39,6 +39,29 @@ Defaults can be changed using command line switches :
     --language=EN|FR|GR|SP|IT   Language files to use (default 'EN')
     --playdemo                  Use inputs from .DEM files
     --level=NUM                 Start at level NUM
+
+In-game hotkeys :
+
+    Arrow Keys     move Conrad
+    Alt            use gun
+    Shift          walk
+    Ctrl           shoot
+    Enter          recharge
+    Space          use / open
+    Tab            skip cutscene
+    Escape         options menu (disabled)
+    I              inventory menu
+    H / K          change camera position
+    J              jump
+    U              use
+    1 .. 5         use item #
+    Ctrl S         save game state
+    Ctrl L         load game state
+    Ctrl + and -   change game state slot
+
+Debug hotkeys :
+
+    Ctrl I          Conrad 'infinite' life
 
 
 Credits:
