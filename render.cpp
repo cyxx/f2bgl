@@ -173,6 +173,7 @@ static Vertex4f _frustum[6];
 
 Render::Render() {
 	memset(_clut, 0, sizeof(_clut));
+	_screenshotBuf = 0;
 	_overlay.buf = (uint8_t *)calloc(kOverlayBufSize, sizeof(uint8_t));
 	_overlay.tex = 0;
 	_overlay.hflip = false;
@@ -184,6 +185,7 @@ Render::Render() {
 }
 
 Render::~Render() {
+	free(_screenshotBuf);
 	free(_overlay.buf);
 }
 
@@ -201,6 +203,8 @@ void Render::resizeScreen(int w, int h) {
 	glAlphaFunc(GL_NOTEQUAL, 0.);
 	_w = w;
 	_h = h;
+	free(_screenshotBuf);
+	_screenshotBuf = 0;
 	_viewport.changed = true;
 }
 
@@ -595,4 +599,17 @@ void Render::drawOverlay() {
 		glColor4f(1., 1., 1., 1.);
 		_overlay.r = _overlay.g = _overlay.b = 255;
 	}
+}
+
+uint8_t *Render::captureScreen(int *w, int *h) {
+	if (!_screenshotBuf) {
+		_screenshotBuf = (uint8_t *)calloc(_w * _h, 1);
+	}
+	if (_screenshotBuf) {
+                glPixelStorei(GL_PACK_ALIGNMENT, 1);
+                glReadPixels(0, 0, _w, _h, GL_RGB, GL_UNSIGNED_BYTE, _screenshotBuf);
+		*w = _w;
+		*h = _h;
+	}
+	return _screenshotBuf;
 }

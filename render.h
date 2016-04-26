@@ -30,6 +30,7 @@ struct Render {
 	uint8_t _clut[256 * 3];
 	float _pixelColorMap[4][256];
 	int _w, _h;
+	uint8_t *_screenshotBuf;
 	struct {
 		uint8_t *buf;
 		Texture *tex;
@@ -73,6 +74,8 @@ struct Render {
 	void setupProjection2d();
 	void drawOverlay();
 	void resizeScreen(int w, int h);
+
+	uint8_t *captureScreen(int *w, int *h);
 };
 
 #endif // RENDER_H__
