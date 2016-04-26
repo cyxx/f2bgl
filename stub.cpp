@@ -81,6 +81,14 @@ static bool _skipCutscenes;
 
 struct GameStub_F2B : GameStub {
 
+	enum {
+		kStateCutscene,
+		kStateGame,
+		kStateInventory,
+		kStateBox,
+		kStateMenu,
+	};
+
 	Render *_render;
 	Game *_g;
 	int _state, _nextState;
@@ -90,11 +98,11 @@ struct GameStub_F2B : GameStub {
 	void setState(int state) {
 		debug(kDebug_INFO, "stub.state %d", state);
 		// release
-		if (_state == 0) {
+		if (_state == kStateCutscene) {
 			_render->setPalette(_g->_screenPalette, 256);
 		}
 		// init
-		if (state == 0) {
+		if (state == kStateCutscene) {
 			if (_skipCutscenes) {
 				warning("Skipping cutscene %d playback", _g->_cut._numToPlay);
 				_g->_cut._numToPlay = -1;
@@ -102,21 +110,21 @@ struct GameStub_F2B : GameStub {
 			}
 			_g->_cut.load(_g->_cut._numToPlay);
 		}
-		if (state == 1) {
+		if (state == kStateGame) {
 			_render->setOverlayDim(0, 0);
 			_g->updatePalette();
 		}
-		if (state == 2) {
+		if (state == kStateInventory) {
 			_render->setOverlayDim(320, 200);
 			if (!_g->initInventory()) {
 				return;
 			}
 		}
-		if (state == 3) {
+		if (state == kStateBox) {
 			_render->setOverlayDim(320, 200);
 			_g->initBox();
 		}
-		if (state == 4) {
+		if (state == kStateMenu) {
 			_g->initMenu();
 		}
 		_state = state;
@@ -200,7 +208,7 @@ struct GameStub_F2B : GameStub {
 		_g->init();
 		_g->_cut._numToPlay = 47;
 		_state = -1;
-		_nextState = _skipCutscenes ? 1 : 0;
+		_nextState = _skipCutscenes ? kStateGame : kStateCutscene;
 		setState(_nextState);
 		_nextState = _state;
 		_dt = 0;
@@ -303,7 +311,7 @@ struct GameStub_F2B : GameStub {
 		}
 		_nextState = _state;
 		switch (_state) {
-		case 0: // cutscene
+		case kStateCutscene:
 			_render->clearScreen();
 			_skip = syncTicks(ticks, kCutsceneFrameDelay);
 			if (_skip) {
@@ -319,11 +327,11 @@ struct GameStub_F2B : GameStub {
 					_g->_cut._numToPlay = -1;
 				}
 				if (_g->_cut._numToPlay < 0) {
-					_nextState = 1;
+					_nextState = kStateGame;
 				}
 			}
 			break;
-		case 1: // game
+		case kStateGame:
 			if (_g->_changeLevel) {
 				_g->_changeLevel = false;
 				warning("_changeLevel flag set, starting level %d", _g->_level);
@@ -337,36 +345,36 @@ struct GameStub_F2B : GameStub {
 			_g->doTick();
 			if (_g->inp.inventoryKey) {
 				_g->inp.inventoryKey = false;
-				_nextState = 2;
+				_nextState = kStateInventory;
 			} else if (_g->inp.escapeKey) {
 				_g->inp.escapeKey = false;
-				_nextState = 4;
+				_nextState = kStateMenu;
 			} else if (_g->_cut._numToPlay >= 0) {
-				_nextState = 0;
+				_nextState = kStateCutscene;
 			} else if (_g->_boxItemCount != 0) {
-				_nextState = 3;
+				_nextState = kStateBox;
 			}
 			break;
-		case 2: // inventory
+		case kStateInventory:
 			_g->updateInventoryInput();
 			_g->doInventory();
 			if (_g->inp.inventoryKey) {
 				_g->inp.inventoryKey = false;
 				_g->closeInventory();
-				_nextState = 1;
+				_nextState = kStateGame;
 			}
 			break;
-		case 3: // box
+		case kStateBox:
 			_g->doBox();
 			if (_g->_boxItemCount == 0) {
-				_nextState = 1;
+				_nextState = kStateGame;
 			}
 			break;
-		case 4: // menu
+		case kStateMenu:
 			_g->doMenu();
 			if (_g->inp.escapeKey) {
 				_g->inp.escapeKey = false;
-				_nextState = 1;
+				_nextState = kStateGame;
 			}
 			break;
 		}
@@ -378,13 +386,13 @@ struct GameStub_F2B : GameStub {
 		_render->drawOverlay();
 	}
 	virtual void saveState(int slot) {
-		if (_state == 1) {
+		if (_state == kStateGame) {
 			_g->saveGameState(slot);
 			debug(kDebug_INFO, "Saved game state to slot %d", slot);
 		}
 	}
 	virtual void loadState(int slot) {
-		if (_state == 1) {
+		if (_state == kStateGame) {
 			_g->loadGameState(slot);
 			debug(kDebug_INFO, "Loaded game state from slot %d", slot);
 		}
