@@ -94,6 +94,8 @@ struct GameStub_F2B : GameStub {
 	int _state, _nextState;
 	int _dt;
 	bool _skip;
+	int _slotState;
+	bool _loadState, _saveState;
 
 	void setState(int state) {
 		debug(kDebug_INFO, "stub.state %d", state);
@@ -213,6 +215,8 @@ struct GameStub_F2B : GameStub {
 		_nextState = _state;
 		_dt = 0;
 		_skip = false;
+		_slotState = 0;
+		_loadState = _saveState = false;
 		return 0;
 	}
 	virtual void quit() {
@@ -384,18 +388,28 @@ struct GameStub_F2B : GameStub {
 	}
 	virtual void drawGL() {
 		_render->drawOverlay();
+		if (_loadState) {
+			if (_state == kStateGame) {
+				_g->loadGameState(_slotState);
+				debug(kDebug_INFO, "Loaded game state from slot %d", _slotState);
+			}
+			_loadState = false;
+		}
+		if (_saveState) {
+			if (_state == kStateGame) {
+				_g->saveGameState(_slotState);
+				debug(kDebug_INFO, "Saved game state to slot %d", _slotState);
+			}
+			_saveState = false;
+		}
 	}
 	virtual void saveState(int slot) {
-		if (_state == kStateGame) {
-			_g->saveGameState(slot);
-			debug(kDebug_INFO, "Saved game state to slot %d", slot);
-		}
+		_slotState = slot;
+		_saveState = true;
 	}
 	virtual void loadState(int slot) {
-		if (_state == kStateGame) {
-			_g->loadGameState(slot);
-			debug(kDebug_INFO, "Loaded game state from slot %d", slot);
-		}
+		_slotState = slot;
+		_loadState = true;
 	}
 };
 
