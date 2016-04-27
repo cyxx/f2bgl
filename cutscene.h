@@ -6,6 +6,7 @@
 #ifndef CUTSCENE_H__
 #define CUTSCENE_H__
 
+#include "file.h"
 #include "util.h"
 
 struct CinFileHeader {
@@ -48,7 +49,7 @@ struct Cutscene {
 	int _playedTable[kCutsceneScenesCount];
 	int _numToPlayCounter;
 	int _numToPlay;
-	FILE *_fp;
+	File *_fp;
 	uint8_t _palette[256 * 3];
 	CinFileHeader _fileHdr;
 	CinFrameHeader _frameHdr;

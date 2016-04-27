@@ -1088,7 +1088,7 @@ void Game::init() {
 	_res.loadTrigo();
 
 	int dataSize;
-	FILE *fp = fileOpen("PLAYER.INI", &dataSize, kFileType_DATA);
+	File *fp = fileOpen("PLAYER.INI", &dataSize, kFileType_DATA);
 	_res.loadINI(fp, dataSize);
 	fileClose(fp);
 
@@ -1113,7 +1113,7 @@ void Game::initLevel() {
 		int dataSize;
 		char name[16];
 		snprintf(name, sizeof(name), "LEVEL%d.DEM", _level);
-		FILE *fp = fileOpen(name, &dataSize, kFileType_DATA, false);
+		File *fp = fileOpen(name, &dataSize, kFileType_DATA, false);
 		if (fp) {
 			_res.loadDEM(fp, dataSize);
 			fileClose(fp);

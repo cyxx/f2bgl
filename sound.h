@@ -6,6 +6,7 @@
 #ifndef SOUND_H__
 #define SOUND_H__
 
+#include "file.h"
 #include "util.h"
 #include "mixer.h"
 
@@ -24,7 +25,7 @@ struct Sound {
 
 	void init();
 
-	void loadDigiSnd(FILE *fp);
+	void loadDigiSnd(File *fp);
 	const DigiSnd *findDigiSndByName(const char *name) const;
 
 	void setVolume(int volume);
@@ -47,7 +48,7 @@ struct Sound {
 	bool _digiCompressed;
 	int _digiCount;
 	DigiSnd *_digiTable;
-	FILE *_fpSnd;
+	File *_fpSnd;
 	int _musicMode;
 	int16_t _musicKey;
 };

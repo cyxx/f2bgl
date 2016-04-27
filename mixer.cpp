@@ -70,7 +70,7 @@ struct SoundDataWav {
 		: _bufSize(0), _buf(0) {
 	}
 
-	bool load(FILE *fp, int dataSize, int mixerSampleRate) {
+	bool load(File *fp, int dataSize, int mixerSampleRate) {
 		const int pos = fileGetPos(fp);
 		char buf[8];
 		fileRead(fp, buf, 8);
@@ -208,7 +208,7 @@ int Mixer::findIndexById(uint32_t id) const {
 	return -1;
 }
 
-void Mixer::playWav(FILE *fp, int dataSize, int volume, int pan, uint32_t id, bool compressed) {
+void Mixer::playWav(File *fp, int dataSize, int volume, int pan, uint32_t id, bool compressed) {
 	MixerSound *snd = new MixerSound();
 	snd->data.load(fp, dataSize, _rate);
 	snd->readOffset = 0;

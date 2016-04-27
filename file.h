@@ -31,22 +31,24 @@ enum FilePosition {
 	kFilePosition_SET
 };
 
+struct File;
+
 extern bool g_isDemo;
 
 bool fileInit(int language, int voice, const char *dataPath);
 bool fileExists(const char *fileName, int fileType);
-FILE *fileOpen(const char *fileName, int *fileSize, int fileType, bool errorIfNotFound = true);
-void fileClose(FILE *fp);
-void fileRead(FILE *fp, void *buf, int size);
-uint8_t fileReadByte(FILE *fp);
-uint16_t fileReadUint16LE(FILE *fp);
-uint32_t fileReadUint32LE(FILE *fp);
-uint32_t fileGetPos(FILE *fp);
-void fileSetPos(FILE *fp, uint32_t pos, int origin);
-int fileEof(FILE *fp);
-void fileWrite(FILE *fp, const void *buf, int size);
-void fileWriteByte(FILE *fp, uint8_t value);
-void fileWriteUint16LE(FILE *fp, uint16_t value);
-void fileWriteUint32LE(FILE *fp, uint32_t value);
+File *fileOpen(const char *fileName, int *fileSize, int fileType, bool errorIfNotFound = true);
+void fileClose(File *fp);
+void fileRead(File *fp, void *buf, int size);
+uint8_t fileReadByte(File *fp);
+uint16_t fileReadUint16LE(File *fp);
+uint32_t fileReadUint32LE(File *fp);
+uint32_t fileGetPos(File *fp);
+void fileSetPos(File *fp, uint32_t pos, int origin);
+int fileEof(File *fp);
+void fileWrite(File *fp, const void *buf, int size);
+void fileWriteByte(File *fp, uint8_t value);
+void fileWriteUint16LE(File *fp, uint16_t value);
+void fileWriteUint32LE(File *fp, uint32_t value);
 
-#endif // __FILE_H__
+#endif // __File_H__

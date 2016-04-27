@@ -4,7 +4,87 @@
  */
 
 #include <sys/param.h>
+#include <sys/stat.h>
 #include "file.h"
+
+struct File {
+	virtual ~File() {
+	}
+	virtual bool open(const char *path, const char *mode) = 0;
+	virtual void close() = 0;
+	virtual int eof() = 0;
+	virtual int err() = 0;
+	virtual int tell() = 0;
+	virtual int seek(int pos, int whence) = 0;
+	virtual int read(void *, int) = 0;
+	virtual int write(const void *, int) = 0;
+};
+
+struct StdioFile: File {
+	FILE *_fp;
+
+	StdioFile()
+		: _fp(0) {
+	}
+	virtual bool open(const char *path, const char *mode) {
+		_fp = fopen(path, mode);
+		return _fp != 0;
+	}
+	virtual void close() {
+		if (_fp) {
+			fclose(_fp);
+			_fp = 0;
+		}
+	}
+	virtual int eof() {
+		if (_fp) {
+			return feof(_fp);
+		}
+		return 0;
+	}
+	virtual int err() {
+		if (_fp) {
+			return ferror(_fp);
+		}
+		return 0;
+	}
+	virtual int tell() {
+		if (_fp) {
+			return ftell(_fp);
+		}
+		return 0;
+	}
+	virtual int seek(int pos, int whence) {
+		if (_fp) {
+			return fseek(_fp, pos, whence);
+		}
+		return 0;
+	}
+	virtual int read(void *p, int size) {
+		if (_fp) {
+			return fread(p, 1, size, _fp);
+		}
+		return 0;
+	}
+	virtual int write(const void *p, int size) {
+		if (_fp) {
+			return fwrite(p, 1, size, _fp);
+		}
+		return 0;
+	}
+	static File *openIfExists(const char *path) {
+		File *f = 0;
+		struct stat st;
+		if (stat(path, &st) == 0 && S_ISREG(st.st_mode)) {
+			f = new StdioFile;
+			if (!f->open(path, "rb")) {
+				delete f;
+				f = 0;
+			}
+		}
+		return f;
+	}
+};
 
 bool g_isDemo = false;
 static int _fileLanguage;
@@ -42,11 +122,13 @@ static void fileMakeFilePath(const char *fileName, int fileType, int fileLang, c
 	strcat(filePath, fileName);
 }
 
-static FILE *fileOpenIntern(const char *fileName, int fileType) {
+static File *fileOpenIntern(const char *fileName, int fileType) {
 	char filePath[MAXPATHLEN];
 	if (fileType == kFileType_SAVE || fileType == kFileType_LOAD) {
 		snprintf(filePath, sizeof(filePath), "%s/%s", _fileSavePath, fileName);
-		return fopen(filePath, (fileType == kFileType_SAVE) ? "wb" : "rb");
+		File *fp = new StdioFile;
+		fp->open(filePath, (fileType == kFileType_SAVE) ? "wb" : "rb");
+		return fp;
 	}
 	fileMakeFilePath(fileName, fileType, _fileLanguage, filePath);
 	char *p = strrchr(filePath, '/');
@@ -56,10 +138,10 @@ static FILE *fileOpenIntern(const char *fileName, int fileType) {
 		p = filePath;
 	}
 	stringToUpperCase(p);
-	FILE *fp = fopen(filePath, "rb");
+	File *fp = StdioFile::openIfExists(filePath);
 	if (!fp) {
 		stringToLowerCase(p);
-		fp = fopen(filePath, "rb");
+		fp = StdioFile::openIfExists(filePath);
 	}
 	if (!fp && fileType == kFileType_TEXT) {
 		fp = fileOpenIntern(fileName, kFileType_DATA);
@@ -68,11 +150,14 @@ static FILE *fileOpenIntern(const char *fileName, int fileType) {
 }
 
 bool fileExists(const char *fileName, int fileType) {
-	FILE *fp = fileOpenIntern(fileName, fileType);
+	bool exists = false;
+	File *fp = fileOpenIntern(fileName, fileType);
 	if (fp) {
-		fclose(fp);
+		fp->close();
+		delete fp;
+		exists = true;
 	}
-	return fp != 0;
+	return exists;
 }
 
 bool fileInit(int language, int voice, const char *dataPath) {
@@ -87,7 +172,7 @@ bool fileInit(int language, int voice, const char *dataPath) {
 	return ret;
 }
 
-FILE *fileOpen(const char *fileName, int *fileSize, int fileType, bool errorIfNotFound) {
+File *fileOpen(const char *fileName, int *fileSize, int fileType, bool errorIfNotFound) {
 	if (g_isDemo) {
 		if (fileType == kFileType_VOICE) {
 			return 0;
@@ -95,7 +180,7 @@ FILE *fileOpen(const char *fileName, int *fileSize, int fileType, bool errorIfNo
 			fileType = kFileType_DATA;
 		}
 	}
-	FILE *fp = fileOpenIntern(fileName, fileType);
+	File *fp = fileOpenIntern(fileName, fileType);
 	if (!fp) {
 		if (errorIfNotFound) {
 			error("Unable to open '%s'", fileName);
@@ -104,79 +189,82 @@ FILE *fileOpen(const char *fileName, int *fileSize, int fileType, bool errorIfNo
 		}
 		return 0;
 	}
-	fseek(fp, 0, SEEK_END);
+	fp->seek(0, SEEK_END);
 	if (fileSize) {
-		*fileSize = ftell(fp);
+		*fileSize = fp->tell();
 	}
-	fseek(fp, 0, SEEK_SET);
+	fp->seek(0, SEEK_SET);
 	return fp;
 }
 
-void fileClose(FILE *fp) {
-	fclose(fp);
+void fileClose(File *fp) {
+	if (fp) {
+		fp->close();
+		delete fp;
+	}
 }
 
-void fileRead(FILE *fp, void *buf, int size) {
-	int count = fread(buf, size, 1, fp);
-	if (count != 1) {
-		if (_exitOnError && ferror(fp)) {
+void fileRead(File *fp, void *buf, int size) {
+	int count = fp->read(buf, size);
+	if (count != size) {
+		if (_exitOnError && fp->err()) {
 			error("I/O error on reading %d bytes", size);
 		}
 	}
 }
 
-uint8_t fileReadByte(FILE *fp) {
+uint8_t fileReadByte(File *fp) {
 	uint8_t b;
 	fileRead(fp, &b, 1);
 	return b;
 }
 
-uint16_t fileReadUint16LE(FILE *fp) {
+uint16_t fileReadUint16LE(File *fp) {
 	uint8_t buf[2];
 	fileRead(fp, buf, 2);
 	return READ_LE_UINT16(buf);
 }
 
-uint32_t fileReadUint32LE(FILE *fp) {
+uint32_t fileReadUint32LE(File *fp) {
 	uint8_t buf[4];
 	fileRead(fp, buf, 4);
 	return READ_LE_UINT32(buf);
 }
 
-uint32_t fileGetPos(FILE *fp) {
-	return ftell(fp);
+uint32_t fileGetPos(File *fp) {
+	return fp->tell();
 }
 
-void fileSetPos(FILE *fp, uint32_t pos, int origin) {
+void fileSetPos(File *fp, uint32_t pos, int origin) {
 	static const int originTable[] = { SEEK_CUR, SEEK_SET };
 	if (origin >= ARRAYSIZE(originTable)) {
 		error("Invalid file seek origin", origin);
 	} else {
-		int r = fseek(fp, pos, originTable[origin]);
+		int r = fp->seek(pos, originTable[origin]);
 		if (r != 0 && _exitOnError) {
 			error("I/O error on seeking to offset %d", pos);
 		}
 	}
 }
 
-int fileEof(FILE *fp) {
-	return feof(fp);
+int fileEof(File *fp) {
+	return fp->eof();
 }
 
-void fileWrite(FILE *fp, const void *buf, int size) {
-	const int count = fwrite(buf, size, 1, fp);
-	if (count != 1) {
-		if (_exitOnError && ferror(fp)) {
+void fileWrite(File *fp, const void *buf, int size) {
+	const int count = fp->write(buf, size);
+	if (count != size) {
+		if (_exitOnError && fp->err()) {
 			error("I/O error writing %d bytes", size);
 		}
 	}
 }
 
-void fileWriteByte(FILE *fp, uint8_t value) {
+void fileWriteByte(File *fp, uint8_t value) {
 	fileWrite(fp, &value, 1);
 }
 
-void fileWriteUint16LE(FILE *fp, uint16_t value) {
+void fileWriteUint16LE(File *fp, uint16_t value) {
 	uint8_t buf[2];
 	for (int i = 0; i < 2; ++i) {
 		buf[i] = value & 255;
@@ -185,7 +273,7 @@ void fileWriteUint16LE(FILE *fp, uint16_t value) {
 	fileWrite(fp, buf, sizeof(buf));
 }
 
-void fileWriteUint32LE(FILE *fp, uint32_t value) {
+void fileWriteUint32LE(File *fp, uint32_t value) {
 	uint8_t buf[4];
 	for (int i = 0; i < 4; ++i) {
 		buf[i] = value & 255;

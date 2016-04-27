@@ -37,7 +37,7 @@ Resource::~Resource() {
 	// TODO
 }
 
-void Resource::loadCMD(FILE *fp, int dataSize) {
+void Resource::loadCMD(File *fp, int dataSize) {
 	_cmdOffsetsTableCount = fileReadUint32LE(fp);
 	debug(kDebug_RESOURCE, "Resource::loadCMD(%d) count = %d", dataSize, _cmdOffsetsTableCount);
 
@@ -54,7 +54,7 @@ void Resource::loadCMD(FILE *fp, int dataSize) {
 	fileRead(fp, _cmdData, dataSize);
 }
 
-void Resource::loadMSG(FILE *fp, int dataSize) {
+void Resource::loadMSG(File *fp, int dataSize) {
 	_msgOffsetsTableCount = fileReadUint16LE(fp);
 	debug(kDebug_RESOURCE, "Resource::loadMSG(%d) count = %d", dataSize, _msgOffsetsTableCount);
 
@@ -71,7 +71,7 @@ void Resource::loadMSG(FILE *fp, int dataSize) {
 	fileRead(fp, _msgData, dataSize);
 }
 
-void Resource::loadENV(FILE *fp, int dataSize) {
+void Resource::loadENV(File *fp, int dataSize) {
 	_envAniDataCount = fileReadUint32LE(fp);
 	debug(kDebug_RESOURCE, "Resource::loadENV(%d) count = %d", dataSize, _envAniDataCount);
 	dataSize -= 4;
@@ -88,7 +88,7 @@ static int rescompareIndexByObjectName(const void *p1, const void *p2) {
 	return strcmp(obj1->objectName, obj2->objectName);
 }
 
-void Resource::loadObjectIndexes(FILE *fp, int dataSize) {
+void Resource::loadObjectIndexes(File *fp, int dataSize) {
 	free(_objectIndexesTable);
 
 	assert((dataSize % (64 + 4)) == 0);
@@ -104,7 +104,7 @@ void Resource::loadObjectIndexes(FILE *fp, int dataSize) {
 	qsort(_objectIndexesTable, _objectIndexesTableCount, sizeof(ResObjectIndex), rescompareIndexByObjectName);
 }
 
-void Resource::loadObjectText(FILE *fp, int dataSize) {
+void Resource::loadObjectText(File *fp, int dataSize) {
 	free(_objectTextData);
 	_objectTextData = ALLOC<uint8_t>(dataSize);
 	_objectTextDataSize = dataSize;
@@ -123,7 +123,7 @@ static int resSearchKeyPath(const void *p1, const void *p2) {
 	return strcmp(pathName, keyPath->pathName);
 }
 
-void Resource::loadKeyPaths(FILE *fp, int dataSize) {
+void Resource::loadKeyPaths(File *fp, int dataSize) {
 	_keyPathsTableCount = 0;
 	memset(_keyPathsTable, 0, sizeof(_keyPathsTable));
 
@@ -148,7 +148,7 @@ void Resource::loadKeyPaths(FILE *fp, int dataSize) {
 	qsort(_keyPathsTable, _keyPathsTableCount, sizeof(ResKeyPath), rescompareKeyPaths);
 }
 
-void Resource::loadINI(FILE *fp, int dataSize) {
+void Resource::loadINI(File *fp, int dataSize) {
 	char *iniData = ALLOC<char>(dataSize + 1);
 	fileRead(fp, iniData, dataSize);
 	iniData[dataSize] = '\0';
@@ -242,7 +242,7 @@ void Resource::loadINI(FILE *fp, int dataSize) {
 void Resource::loadTrigo() {
 	if (fileExists("TRIGO.DAT", kFileType_RUNTIME)) {
 		int dataSize;
-		FILE *fp = fileOpen("TRIGO.DAT", &dataSize, kFileType_RUNTIME);
+		File *fp = fileOpen("TRIGO.DAT", &dataSize, kFileType_RUNTIME);
 		assert(dataSize == 1024 * 8 + 256 * 4);
 		for (int i = 0; i < 1024; ++i) {
 			g_sin[i] = fileReadUint32LE(fp);
@@ -344,14 +344,14 @@ static const struct {
 
 static const struct {
 	const char *ext;
-	void (Resource::*LoadData)(FILE *fp, int dataSize);
+	void (Resource::*LoadData)(File *fp, int dataSize);
 } _resLoadDataTable2[] = {
 	{ "cmd", &Resource::loadCMD },
 	{ "msg", &Resource::loadMSG }
 };
 
 void Resource::loadLevelData(const char *levelName, int levelNum) {
-	FILE *fp;
+	File *fp;
 	int dataSize;
 	char filename[32];
 
@@ -615,7 +615,7 @@ bool Resource::getMessageDescription(ResMessageDescription *m, uint32_t value, u
 	return false;
 }
 
-void Resource::loadDEM(FILE *fp, int dataSize) {
+void Resource::loadDEM(File *fp, int dataSize) {
 	_demoInputDataSize = dataSize / 8;
 	free(_demoInputData);
 	_demoInputData = ALLOC<ResDemoInput>(_demoInputDataSize);

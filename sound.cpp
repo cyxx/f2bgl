@@ -28,7 +28,7 @@ void Sound::init() {
 	loadDigiSnd(_fpSnd);
 }
 
-void Sound::loadDigiSnd(FILE *fp) {
+void Sound::loadDigiSnd(File *fp) {
 	struct {
 		uint32_t name;
 		uint32_t data;
@@ -109,7 +109,7 @@ void Sound::playVoice(int16_t objKey, uint32_t crc) {
 	char name[16];
 	snprintf(name, sizeof(name), "%08X.WAV", crc);
 	int dataSize;
-	FILE *fp = fileOpen(name, &dataSize, kFileType_VOICE, false);
+	File *fp = fileOpen(name, &dataSize, kFileType_VOICE, false);
 	debug(kDebug_SOUND, "Sound::playVoice() '%s' dataSize %d", name, dataSize);
 	if (fp) {
 		_mix.playWav(fp, dataSize, kDefaultVolume, kDefaultPan, makeId(objKey));

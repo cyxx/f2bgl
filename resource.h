@@ -6,6 +6,7 @@
 #ifndef RESOURCE_H__
 #define RESOURCE_H__
 
+#include "file.h"
 #include "util.h"
 
 enum {
@@ -116,15 +117,15 @@ struct Resource {
 	const uint8_t *getMsgData(int num);
 	bool getMessageDescription(ResMessageDescription *m, uint32_t value, uint32_t offset);
 
-	void loadINI(FILE *fp, int dataSize);
-	void loadCMD(FILE *fp, int dataSize);
-	void loadMSG(FILE *fp, int dataSize);
-	void loadENV(FILE *fp, int dataSize);
-	void loadKeyPaths(FILE *fp, int dataSize);
-	void loadObjectIndexes(FILE *fp, int dataSize);
-	void loadObjectText(FILE *fp, int dataSize);
+	void loadINI(File *fp, int dataSize);
+	void loadCMD(File *fp, int dataSize);
+	void loadMSG(File *fp, int dataSize);
+	void loadENV(File *fp, int dataSize);
+	void loadKeyPaths(File *fp, int dataSize);
+	void loadObjectIndexes(File *fp, int dataSize);
+	void loadObjectText(File *fp, int dataSize);
 	void loadTrigo();
-	void loadDEM(FILE *fp, int dataSize);
+	void loadDEM(File *fp, int dataSize);
 };
 
 #endif // RESOURCE_H__

@@ -15,7 +15,7 @@ enum {
 
 #define P(x, type) \
 	template <int M> \
-	static void persist(FILE *fp, type &value) { \
+	static void persist(File *fp, type &value) { \
 		if (M == kModeLoad) { \
 			value = fileRead ## x (fp); \
 		} else if (M == kModeSave) { \
@@ -34,7 +34,7 @@ P(Uint32LE, uint32_t)
 #undef P
 
 template <int M, typename T>
-static void persistPtr(FILE *fp, const T *&ptr, const T *base) {
+static void persistPtr(File *fp, const T *&ptr, const T *base) {
 	static const uint32_t kPtr = 0xFFFFFFFF;
 	if (M == kModeLoad) {
 		const uint32_t offset = fileReadUint32LE(fp);
@@ -47,7 +47,7 @@ static void persistPtr(FILE *fp, const T *&ptr, const T *base) {
 }
 
 template <int M>
-static void pad(FILE *fp, int len) {
+static void pad(File *fp, int len) {
 	if (M == kModeLoad) {
 		fileSetPos(fp, len, kFilePosition_CUR);
 	} else if (M == kModeSave) {
@@ -58,7 +58,7 @@ static void pad(FILE *fp, int len) {
 }
 
 template <int M>
-static void persistCellMap(FILE *fp, CellMap &m) {
+static void persistCellMap(File *fp, CellMap &m) {
 	persist<M>(fp, m.texture[0]);
 	persist<M>(fp, m.texture[1]);
 	persist<M>(fp, m.data[0]);
@@ -80,14 +80,14 @@ static void persistCellMap(FILE *fp, CellMap &m) {
 }
 
 template <int M>
-static void persistSceneTexture(FILE *fp, SceneTexture &t) {
+static void persistSceneTexture(File *fp, SceneTexture &t) {
 	persist<M>(fp, t.framesCount);
 	persist<M>(fp, t.key);
 	pad<M>(fp, sizeof(uint16_t));
 }
 
 template <int M>
-static void persistSceneAnimation(FILE *fp, SceneAnimation &s) {
+static void persistSceneAnimation(File *fp, SceneAnimation &s) {
 	persist<M>(fp, s.typeInit);
 	persist<M>(fp, s.frameNumInit);
 	persist<M>(fp, s.aniKey);
@@ -109,13 +109,13 @@ static void persistSceneAnimation(FILE *fp, SceneAnimation &s) {
 };
 
 template <int M>
-static void persistSceneAnimationState(FILE *fp, SceneAnimationState &s) {
+static void persistSceneAnimationState(File *fp, SceneAnimationState &s) {
 	persist<M>(fp, s.flags);
 	persist<M>(fp, s.len);
 }
 
 template <int M>
-static void persistMap(FILE *fp, Game &g) {
+static void persistMap(File *fp, Game &g) {
 	for (int x = 0; x < kMapSizeX; ++x) {
 		for (int z = 0; z < kMapSizeZ; ++z) {
 			persistCellMap<M>(fp, g._sceneCellMap[x][z]);
@@ -140,7 +140,7 @@ static void persistMap(FILE *fp, Game &g) {
 }
 
 template <int M>
-static void persistGameObjectPtrByKey(FILE *fp, Game &g, GameObject *&o) {
+static void persistGameObjectPtrByKey(File *fp, Game &g, GameObject *&o) {
 	if (M == kModeSave) {
 		int16_t objKey = o ? o->objKey : -1;
 		persist<kModeSave>(fp, objKey);
@@ -152,7 +152,7 @@ static void persistGameObjectPtrByKey(FILE *fp, Game &g, GameObject *&o) {
 }
 
 template <int M>
-static void persistGameObjectAnimation(FILE *fp, GameObjectAnimation &a) {
+static void persistGameObjectAnimation(File *fp, GameObjectAnimation &a) {
 	persist<M>(fp, a.animKey);
 	persist<M>(fp, a.currentAnimKey);
 	persist<M>(fp, a.ticksCount);
@@ -160,14 +160,14 @@ static void persistGameObjectAnimation(FILE *fp, GameObjectAnimation &a) {
 }
 
 template <int M>
-static void persistGameMessage(FILE *fp, GameMessage &m) {
+static void persistGameMessage(File *fp, GameMessage &m) {
 	persist<M>(fp, m.objKey);
 	persist<M>(fp, m.num);
 	persist<M>(fp, m.ticks);
 }
 
 template <int M>
-static void persistGameMessageList(FILE *fp, GameObject *o) {
+static void persistGameMessageList(File *fp, GameObject *o) {
 	int count = 0;
 	if (M == kModeSave) {
 		for (GameMessage *m = o->msg; m; m = m->next) {
@@ -200,7 +200,7 @@ static void persistGameMessageList(FILE *fp, GameObject *o) {
 }
 
 template <int M>
-static void persistGameObject(FILE *fp, Game &g, GameObject *o) {
+static void persistGameObject(File *fp, Game &g, GameObject *o) {
         persist<M>(fp, o->scriptKey);
 	persistGameObjectAnimation<M>(fp, o->anim);
 	if (M == kModeLoad) {
@@ -266,7 +266,7 @@ static void persistGameObject(FILE *fp, Game &g, GameObject *o) {
 }
 
 template <int M>
-static void persisGameFollowingObject(FILE *fp, GameFollowingObject &o) {
+static void persisGameFollowingObject(File *fp, GameFollowingObject &o) {
 	for (int i = 0; i < ARRAYSIZE(o.points); ++i) {
 		persist<M>(fp, o.points[i].x);
 		persist<M>(fp, o.points[i].z);
@@ -274,7 +274,7 @@ static void persisGameFollowingObject(FILE *fp, GameFollowingObject &o) {
 }
 
 template <int M>
-static void persistObjects(FILE *fp, Game &g) {
+static void persistObjects(File *fp, Game &g) {
 	for (int i = 0; i < ARRAYSIZE(g._objectKeysTable); ++i) {
 		GameObject *o = g._objectKeysTable[i];
 		if (M == kModeSave) {
@@ -328,7 +328,7 @@ static void persistObjects(FILE *fp, Game &g) {
 }
 
 template <int M>
-static void persistGameInput(FILE *fp, GameInput &i) {
+static void persistGameInput(File *fp, GameInput &i) {
 	persist<M>(fp, i.inputKey0);
 	persist<M>(fp, i.inputKey1);
 	persist<M>(fp, i.keymaskPrev);
@@ -339,7 +339,7 @@ static void persistGameInput(FILE *fp, GameInput &i) {
 }
 
 template <int M>
-static void persistCameraPosMap(FILE *fp, CameraPosMap &m) {
+static void persistCameraPosMap(File *fp, CameraPosMap &m) {
 	persist<M>(fp, m.x);
 	persist<M>(fp, m.z);
 	persist<M>(fp, m.ry);
@@ -348,7 +348,7 @@ static void persistCameraPosMap(FILE *fp, CameraPosMap &m) {
 }
 
 template <int M>
-static void persistCamera(FILE *fp, Game &g) {
+static void persistCamera(File *fp, Game &g) {
 	persist<M>(fp, g._cameraViewKey);
 	persist<M>(fp, g._cameraViewObj);
 	persist<M>(fp, g._xPosViewpoint);
@@ -407,7 +407,7 @@ static void persistCamera(FILE *fp, Game &g) {
 }
 
 template <int M>
-static void persistInput(FILE *fp, Game &g) {
+static void persistInput(File *fp, Game &g) {
 	persist<M>(fp, g._inputsCount);
 	for (int i = 0; i < g._inputsCount; ++i) {
 		persistGameInput<M>(fp, g._inputsTable[i]);
@@ -416,7 +416,7 @@ static void persistInput(FILE *fp, Game &g) {
 }
 
 template <int M>
-static void persistOption(FILE *fp, Game &g) {
+static void persistOption(File *fp, Game &g) {
 	persist<M>(fp, g._ticks);
 	pad<M>(fp, sizeof(uint32_t));
 	persist<M>(fp, g._rnd._randSeed);
@@ -426,7 +426,7 @@ static void persistOption(FILE *fp, Game &g) {
 }
 
 template <int M>
-static void persistResMessageDescription(FILE *fp, Game &g, ResMessageDescription &d) {
+static void persistResMessageDescription(File *fp, Game &g, ResMessageDescription &d) {
 	persistPtr<M>(fp, d.data, g._res._objectTextData);
 	persist<M>(fp, d.frameSync);
 	persist<M>(fp, d.duration);
@@ -436,7 +436,7 @@ static void persistResMessageDescription(FILE *fp, Game &g, ResMessageDescriptio
 }
 
 template <int M>
-static void persistGamePlayerMessage(FILE *fp, Game &g, GamePlayerMessage &m) {
+static void persistGamePlayerMessage(File *fp, Game &g, GamePlayerMessage &m) {
 	persistResMessageDescription<M>(fp, g, m.desc);
 	persist<M>(fp, m.objKey);
 	persist<M>(fp, m.value);
@@ -449,7 +449,7 @@ static void persistGamePlayerMessage(FILE *fp, Game &g, GamePlayerMessage &m) {
 }
 
 template <int M>
-static void persistMessage(FILE *fp, Game &g) {
+static void persistMessage(File *fp, Game &g) {
 	persist<M>(fp, g._playerMessagesCount);
 	for (int i = 0; i < g._playerMessagesCount; ++i) {
 		persistGamePlayerMessage<M>(fp, g, g._playerMessagesTable[i]);
@@ -457,14 +457,14 @@ static void persistMessage(FILE *fp, Game &g) {
 }
 
 template <int M>
-static void persistMusic(FILE *fp, Game &g) {
+static void persistMusic(File *fp, Game &g) {
 	pad<M>(fp, sizeof(uint32_t)); // _soundMode
 	persist<M>(fp, g._snd._musicMode);
 	persist<M>(fp, g._snd._musicKey);
 }
 
 template <int M>
-static void persistGameState(FILE *fp, Game &g) {
+static void persistGameState(File *fp, Game &g) {
 	pad<M>(fp, sizeof(uint32_t));
 	persist<M>(fp, g._room);
 	persistMap<M>(fp, g);
@@ -479,7 +479,7 @@ static void persistGameState(FILE *fp, Game &g) {
 void Game::saveGameState(int num) {
 	char filename[32];
 	snprintf(filename, sizeof(filename), kFn, _level + 1, num);
-	FILE *fp = fileOpen(filename, 0, kFileType_SAVE, false);
+	File *fp = fileOpen(filename, 0, kFileType_SAVE, false);
 	if (!fp) {
 		return;
 	}
@@ -495,7 +495,7 @@ void Game::saveGameState(int num) {
 void Game::loadGameState(int num) {
 	char filename[32];
 	snprintf(filename, sizeof(filename), kFn, _level + 1, num);
-	FILE *fp = fileOpen(filename, 0, kFileType_LOAD, false);
+	File *fp = fileOpen(filename, 0, kFileType_LOAD, false);
 	if (!fp) {
 		return;
 	}

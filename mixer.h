@@ -34,7 +34,7 @@ struct Mixer {
 	void setFormat(int rate, int fmt);
 	int findIndexById(uint32_t id) const;
 
-	void playWav(FILE *, int dataSize, int volume, int pan, uint32_t id, bool compressed = true);
+	void playWav(File *, int dataSize, int volume, int pan, uint32_t id, bool compressed = true);
 	void stopWav(uint32_t);
 	bool isWavPlaying(uint32_t) const;
 
