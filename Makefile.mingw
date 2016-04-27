@@ -8,7 +8,7 @@ CXXFLAGS := -g -O -Wall -Wuninitialized -Wno-sign-compare
 
 DEFINES = 
 
-LIBS = $(SDL_LIBS) -lopengl32
+LIBS = $(SDL_LIBS) -lopengl32 -lz
 
 SRCS = box.cpp camera.cpp collision.cpp cutscene.cpp decoder.cpp file.cpp \
 	font.cpp game.cpp input.cpp inventory.cpp main.cpp mathfuncs.cpp menu.cpp mixer.cpp \
@@ -27,7 +27,7 @@ f2bgl.exe: f2bgl
 	upx -9 $@
 
 f2bgl: $(OBJS)
-	$(CXX) -o $@ $^ -static-libgcc -static-libstdc++ $(LIBS)
+	$(CXX) $(LDFLAGS) -o $@ $^ -static-libgcc -static-libstdc++ $(LIBS)
 
 clean:
 	rm -f *.o *.d

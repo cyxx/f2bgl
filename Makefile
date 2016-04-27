@@ -4,7 +4,7 @@ SDL_LIBS = `sdl2-config --libs`
 
 #DEFINES = -DF2B_DEBUG
 
-LIBS = $(SDL_LIBS) -lGL
+LIBS = $(SDL_LIBS) -lGL -lz
 
 CXX := clang++
 CXXFLAGS := -g -O -Wall -Wuninitialized -Wno-sign-compare
