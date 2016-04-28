@@ -4,7 +4,7 @@
  */
 
 #include "game.h"
-#include "mathfuncs.h"
+#include "trigo.h"
 
 static int compareHelper(int op, int32_t value1, int32_t value2) {
 	switch (op) {

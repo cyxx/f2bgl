@@ -4,7 +4,7 @@
  */
 
 #include <math.h>
-#include "mathfuncs.h"
+#include "trigo.h"
 
 int32_t g_cos[1024], g_sin[1024];
 int32_t g_atan[256];

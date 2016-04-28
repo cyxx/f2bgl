@@ -4,7 +4,7 @@
  */
 
 #include "game.h"
-#include "mathfuncs.h"
+#include "trigo.h"
 
 static const int kDepth = 16;
 static const int kRayShift = 22;

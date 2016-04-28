@@ -5,7 +5,7 @@
 
 #include <math.h>
 #include "file.h"
-#include "mathfuncs.h"
+#include "trigo.h"
 #include "resource.h"
 
 Resource::Resource() {

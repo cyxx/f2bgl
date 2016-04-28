@@ -6,7 +6,7 @@
 #include "decoder.h"
 #include "file.h"
 #include "game.h"
-#include "mathfuncs.h"
+#include "trigo.h"
 #include "resource.h"
 #include "render.h"
 

@@ -3,8 +3,8 @@
  * Copyright (C) 2006-2012 Gregory Montoir (cyx@users.sourceforge.net)
  */
 
-#ifndef MATHFUNCS_H__
-#define MATHFUNCS_H__
+#ifndef TRIGO_H__
+#define TRIGO_H__
 
 #include "util.h"
 
@@ -36,4 +36,4 @@ static inline int fixedDiv(int a, int b, int c) {
 extern int32_t g_sin[1024], g_cos[1024];
 extern int32_t g_atan[256];
 
-#endif // MATH_H__
+#endif // TRIGO_H__

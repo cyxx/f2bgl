@@ -3,7 +3,7 @@
  * Copyright (C) 2006-2012 Gregory Montoir (cyx@users.sourceforge.net)
  */
 
-#include "mathfuncs.h"
+#include "trigo.h"
 #include "game.h"
 #include "render.h"
 
