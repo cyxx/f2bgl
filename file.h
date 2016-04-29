@@ -16,6 +16,7 @@ enum FileType {
 	kFileType_RUNTIME,
 	kFileType_LOAD,
 	kFileType_SAVE,
+	kFileType_SCREENSHOT,
 };
 
 enum FileLanguage {

@@ -75,7 +75,7 @@ struct Render {
 	void drawOverlay();
 	void resizeScreen(int w, int h);
 
-	uint8_t *captureScreen(int *w, int *h);
+	const uint8_t *captureScreen(int *w, int *h);
 };
 
 #endif // RENDER_H__

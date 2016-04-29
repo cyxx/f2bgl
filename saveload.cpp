@@ -1,8 +1,9 @@
 
 #include "file.h"
 #include "game.h"
+#include "render.h"
 
-static const char *kFn = "f2bgl-level%d-%02d.sav";
+static const char *kFn = "f2bgl-level%d-%02d.%s";
 
 static const char *kSaveText = "1.00 " __DATE__ "  " __TIME__ " (c) 1995 Delphine Software, France";
 static int kHeaderSize = 96;
@@ -478,7 +479,7 @@ static void persistGameState(File *fp, Game &g) {
 
 void Game::saveGameState(int num) {
 	char filename[32];
-	snprintf(filename, sizeof(filename), kFn, _level + 1, num);
+	snprintf(filename, sizeof(filename), kFn, _level + 1, num, "sav");
 	File *fp = fileOpen(filename, 0, kFileType_SAVE, false);
 	if (!fp) {
 		return;
@@ -494,7 +495,7 @@ void Game::saveGameState(int num) {
 
 void Game::loadGameState(int num) {
 	char filename[32];
-	snprintf(filename, sizeof(filename), kFn, _level + 1, num);
+	snprintf(filename, sizeof(filename), kFn, _level + 1, num, "sav");
 	File *fp = fileOpen(filename, 0, kFileType_LOAD, false);
 	if (!fp) {
 		return;
@@ -513,4 +514,16 @@ void Game::loadGameState(int num) {
 		persistGameState<kModeLoad>(fp, *this);
 	}
 	fileClose(fp);
+}
+
+void Game::saveScreenshot(int num) {
+	char filename[32];
+	snprintf(filename, sizeof(filename), kFn, _level + 1, num, "bmp");
+	int w, h;
+	const uint8_t *p = _render->captureScreen(&w, &h);
+	if (p) {
+		char filename[32];
+		snprintf(filename, sizeof(filename), kFn, _level + 1, num, "bmp");
+		saveBMP(filename, p, w, h);
+	}
 }

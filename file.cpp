@@ -181,10 +181,21 @@ static void fileMakeFilePath(const char *fileName, int fileType, int fileLang, c
 
 static File *fileOpenIntern(const char *fileName, int fileType) {
 	char filePath[MAXPATHLEN];
-	if (fileType == kFileType_SAVE || fileType == kFileType_LOAD) {
+	if (fileType == kFileType_SAVE || fileType == kFileType_LOAD || fileType == kFileType_SCREENSHOT) {
 		snprintf(filePath, sizeof(filePath), "%s/%s", _fileSavePath, fileName);
-		File *fp = new GzipFile;
-		if (!fp->open(filePath, (fileType == kFileType_SAVE) ? "wb" : "rb")) {
+		File *fp = 0;
+		switch (fileType) {
+		case kFileType_LOAD:
+		case kFileType_SAVE:
+			fp = new GzipFile;
+			break;
+		case kFileType_SCREENSHOT:
+			fp = new StdioFile;
+			break;
+		default:
+			break;
+		}
+		if (fp && !fp->open(filePath, (fileType == kFileType_LOAD) ? "rb" : "wb")) {
 			delete fp;
 			fp = 0;
 		}

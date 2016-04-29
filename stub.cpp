@@ -398,6 +398,7 @@ struct GameStub_F2B : GameStub {
 		if (_saveState) {
 			if (_state == kStateGame) {
 				_g->saveGameState(_slotState);
+				_g->saveScreenshot(_slotState);
 				debug(kDebug_INFO, "Saved game state to slot %d", _slotState);
 			}
 			_saveState = false;

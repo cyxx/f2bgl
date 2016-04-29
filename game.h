@@ -779,6 +779,7 @@ struct Game {
 	// saveload.cpp
 	void saveGameState(int num);
 	void loadGameState(int num);
+	void saveScreenshot(int num);
 };
 
 #endif // GAME_H__

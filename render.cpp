@@ -601,9 +601,9 @@ void Render::drawOverlay() {
 	}
 }
 
-uint8_t *Render::captureScreen(int *w, int *h) {
+const uint8_t *Render::captureScreen(int *w, int *h) {
 	if (!_screenshotBuf) {
-		_screenshotBuf = (uint8_t *)calloc(_w * _h, 1);
+		_screenshotBuf = (uint8_t *)calloc(_w * _h, 3);
 	}
 	if (_screenshotBuf) {
                 glPixelStorei(GL_PACK_ALIGNMENT, 1);
