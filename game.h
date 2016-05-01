@@ -65,7 +65,8 @@ enum {
 	kScreenHeight = 200,
 	kRayCastedObjectsTableSize = 32,
 	kFollowingObjectPointsTableSize = 30,
-	kViewportMax = 20
+	kViewportMax = 20,
+	kTickDurationMs = 40
 };
 
 enum {

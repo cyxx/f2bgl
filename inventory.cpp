@@ -324,7 +324,7 @@ void Game::doInventory() {
 				op_removeObjectMessage(2, argv);
 				drawString(1, 20, (const char *)_tmpMsg.data, _tmpMsg.font, 0);
 			} else if (type == 262144) {
-				const int t = _ticks / 15;
+				const int t = _ticks / (1000 / kTickDurationMs);
 				char buf[128];
 				snprintf(buf, sizeof(buf), "%s %02d:%02d:%02d", (const char *)_tmpMsg.data, t / 3600, (t % 3600) / 60, (t % 3600) % 60);
 				drawString(1, 20, buf, _tmpMsg.font, 0);
