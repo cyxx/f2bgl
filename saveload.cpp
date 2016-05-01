@@ -263,6 +263,11 @@ static void persistGameObject(File *fp, Game &g, GameObject *o) {
 	persist<M>(fp, o->zPosWorld);
 	if (M == kModeLoad) {
 		o->colSlot = 0;
+		const int decor = o->flags[1] & 0x100;
+		o->flags[1] &= ~0x100;
+		g._currentObject = o;
+		g.initCollisionSlot(o);
+		o->flags[1] |= decor;
 	}
 }
 
