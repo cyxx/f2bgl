@@ -350,9 +350,9 @@ struct GameStub_F2B : GameStub {
 			if (_g->inp.inventoryKey) {
 				_g->inp.inventoryKey = false;
 				_nextState = kStateInventory;
-			} else if (_g->inp.escapeKey) {
-				_g->inp.escapeKey = false;
-				_nextState = kStateMenu;
+//			} else if (_g->inp.escapeKey) {
+//				_g->inp.escapeKey = false;
+//				_nextState = kStateMenu;
 			} else if (_g->_cut._numToPlay >= 0) {
 				_nextState = kStateCutscene;
 			} else if (_g->_boxItemCount != 0) {
