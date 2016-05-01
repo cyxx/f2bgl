@@ -17,7 +17,8 @@ static const char *USAGE =
 	"  --datapath=PATH             Path to data files (default 'DATA')\n"
 	"  --language=EN|FR|GR|SP|IT   Language files to use (default 'EN')\n"
 	"  --playdemo                  Use inputs from .DEM files\n"
-	"  --level=NUM                 Start at level NUM\n";
+	"  --level=NUM                 Start at level NUM\n"
+	"  --voice=EN|FR|GR            Voice files (default 'EN')\n";
 
 static const struct {
 	FileLanguage lang;

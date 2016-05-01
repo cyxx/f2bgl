@@ -1,6 +1,6 @@
 
 f2bgl README
-Release version: 0.1.9 ($date)
+Release version: 0.1.9
 -------------------------------------------------------------------------------
 
 
@@ -39,6 +39,7 @@ Defaults can be changed using command line switches :
     --language=EN|FR|GR|SP|IT   Language files to use (default 'EN')
     --playdemo                  Use inputs from .DEM files
     --level=NUM                 Start at level NUM
+    --voice=EN|FR|GR            Voice files (default 'EN')
 
 In-game hotkeys :
 
