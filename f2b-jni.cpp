@@ -30,9 +30,14 @@ JNIEXPORT void JNICALL Java_org_cyxdown_f2b_F2bJni_initGame(JNIEnv *env, jclass 
 		const char *dataPath = env->GetStringUTFChars(jpath, 0);
 		char optPath[MAXPATHLEN];
 		snprintf(optPath, sizeof(optPath), "--datapath=%s", dataPath);
-		char *argv[] = { optPath, 0 };
-		g_stub->init(1, argv);
+		char *argv[] = { 0, optPath, 0 };
+		const int ret = g_stub->init(2, argv);
 		env->ReleaseStringUTFChars(jpath, dataPath);
+		if (ret != 0) {
+			__android_log_print(ANDROID_LOG_ERROR, LOG_TAG, "init() failed ret %d", ret);
+			g_stub = 0;
+			return;
+		}
 		g_stub->initGL(w, h);
 	}
 }

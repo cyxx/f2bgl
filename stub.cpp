@@ -203,7 +203,7 @@ struct GameStub_F2B : GameStub {
 		voice = 0;
 		if (!fileInit(fileLanguage, fileVoice, _dataPath)) {
 			warning("Unable to find datafiles in '%s'", _dataPath);
-			return -1;
+			return -2;
 		}
 		_render = new Render;
 		_g = new Game(_render, &params);
