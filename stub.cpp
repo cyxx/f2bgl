@@ -18,7 +18,8 @@ static const char *USAGE =
 	"  --language=EN|FR|GR|SP|IT   Language files to use (default 'EN')\n"
 	"  --playdemo                  Use inputs from .DEM files\n"
 	"  --level=NUM                 Start at level NUM\n"
-	"  --voice=EN|FR|GR            Voice files (default 'EN')\n";
+	"  --voice=EN|FR|GR            Voice files (default 'EN')\n"
+	"  --subtitles                 Display cutscene subtitles\n";
 
 static const struct {
 	FileLanguage lang;
@@ -144,6 +145,7 @@ struct GameStub_F2B : GameStub {
 				{ "playdemo", no_argument,       0, 3 },
 				{ "level",    required_argument, 0, 4 },
 				{ "voice",    required_argument, 0, 5 },
+				{ "subtitles", no_argument,      0, 6 },
 #ifdef F2B_DEBUG
 				{ "xpos_conrad",    required_argument, 0, 100 },
 				{ "zpos_conrad",    required_argument, 0, 101 },
@@ -171,6 +173,9 @@ struct GameStub_F2B : GameStub {
 				break;
 			case 5:
 				voice = strdup(optarg);
+				break;
+			case 6:
+				params.subtitles = true;
 				break;
 #ifdef F2B_DEBUG
 			case 100:

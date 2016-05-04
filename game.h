@@ -351,10 +351,11 @@ struct DrawBuffer {
 struct Render;
 
 struct GameParams {
-	GameParams() : playDemo(false), levelNum(0), xPosConrad(0), zPosConrad(0) {}
+	GameParams() : playDemo(false), levelNum(0), xPosConrad(0), zPosConrad(0), subtitles(false) {}
 	bool playDemo;
 	int levelNum;
 	int xPosConrad, zPosConrad;
+	bool subtitles;
 };
 
 struct Game {

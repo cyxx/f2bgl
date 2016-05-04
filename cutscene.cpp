@@ -184,8 +184,6 @@ static void drawSubChar(DrawBuffer *buf, int x, int y, int w, int h, const uint8
 	}
 }
 
-static const bool _subs = true;
-
 void Cutscene::updateMessages() {
 	const int count = _game->_cutsceneMessagesCount;
 	for (int i = 0; i < count; ++i) {
@@ -194,7 +192,7 @@ void Cutscene::updateMessages() {
 			if (msg->crc != 0) {
 				_snd->playVoice(msg->objKey, msg->crc);
 			}
-			if (_subs) {
+			if (_game->_params.subtitles) {
 				const char *p = (const char *)msg->desc.data;
 				assert(p);
 				_msgs[0].data = p;
