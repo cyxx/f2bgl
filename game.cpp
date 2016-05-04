@@ -25,6 +25,10 @@ Game::Game(Render *render, const GameParams *params)
 
 	_zTransform = 8;
 	_viewportSize = 0;
+
+	_currentObject = 0;
+	memset(_objectKeysTable, 0, sizeof(_objectKeysTable));
+
 	_changedObjectsCount = 0;
 	memset(&_infoPanelSpr, 0, sizeof(_infoPanelSpr));
 	memset(_fontsTable, 0, sizeof(_fontsTable));
@@ -115,6 +119,7 @@ void Game::clearLevelData() {
 	_pitchObserverCamera = _observerColMask = 0;
 	_prevCameraState = _cameraState = 0;
 	_currentCamera = 0;
+	_cameraDx = _cameraDy = _cameraDz = 0;
 
 	_spriteCache.flush();
 	_infoPanelSpr.data = 0;
