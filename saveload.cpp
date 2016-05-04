@@ -5,7 +5,7 @@
 
 static const char *kFn = "f2bgl-level%d-%02d.%s";
 
-static const char *kSaveText = "1.00 " __DATE__ "  " __TIME__ " (c) 1995 Delphine Software, France";
+static const char *kSaveText = "1.00 Aug 25 1995  09:11:45 (c) 1995 Delphine Software, France";
 static int kHeaderSize = 96;
 static int kSaveVersion = 21;
 
@@ -76,6 +76,12 @@ static void persistCellMap(File *fp, CellMap &m) {
 	persist<M>(fp, m.west);
 	persist<M>(fp, m.east);
 	if (M == kModeLoad) {
+		CollisionSlot *slot = m.colSlot;
+		while (slot) {
+			CollisionSlot *next = slot->next;
+			free(slot);
+			slot = next;
+		}
 		m.colSlot = 0;
 	}
 }
