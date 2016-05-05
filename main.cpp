@@ -19,9 +19,18 @@ static int gSaveSlot = 1;
 
 static const int kTickDuration = 40;
 
+static const int kJoystickIndex = 0;
+static const int kJoystickCommitValue = 16384;
+
+static const int kJoystickMapSize = 8;
+static int gJoystickMap[kJoystickMapSize];
+
+static int gGamepadMap[SDL_CONTROLLER_BUTTON_MAX];
+
 static int gKeyScancodeMap[512];
 
 static void setupKeyMap() {
+	// keyboard
 	memset(gKeyScancodeMap, 0, sizeof(gKeyScancodeMap));
 	gKeyScancodeMap[SDL_SCANCODE_LEFT]   = kKeyCodeLeft;
 	gKeyScancodeMap[SDL_SCANCODE_RIGHT]  = kKeyCodeRight;
@@ -44,6 +53,33 @@ static void setupKeyMap() {
 	for (int i = 0; i < 5; ++i) {
 		gKeyScancodeMap[SDL_SCANCODE_1 + i] = kKeyCode1 + i;
 	}
+	// joystick buttons
+	memset(gJoystickMap, 0, sizeof(gJoystickMap));
+	gJoystickMap[0] = kKeyCodeAlt;
+	gJoystickMap[1] = kKeyCodeShift;
+	gJoystickMap[2] = kKeyCodeCtrl;
+	gJoystickMap[3] = kKeyCodeReturn;
+	gJoystickMap[4] = kKeyCodeSpace;
+	gJoystickMap[5] = kKeyCodeI;
+	gJoystickMap[6] = kKeyCodeU;
+	gJoystickMap[7] = kKeyCodeJ;
+	// gamecontroller buttons
+	memset(gGamepadMap, 0, sizeof(gGamepadMap));
+	gGamepadMap[SDL_CONTROLLER_BUTTON_A] = kKeyCodeAlt;
+	gGamepadMap[SDL_CONTROLLER_BUTTON_B] = kKeyCodeSpace;
+	gGamepadMap[SDL_CONTROLLER_BUTTON_X] = kKeyCodeCtrl;
+	gGamepadMap[SDL_CONTROLLER_BUTTON_Y] = kKeyCodeReturn;
+	gGamepadMap[SDL_CONTROLLER_BUTTON_BACK]  = kKeyCodeEscape;
+	gGamepadMap[SDL_CONTROLLER_BUTTON_GUIDE] = kKeyCodeI;
+	gGamepadMap[SDL_CONTROLLER_BUTTON_START] = kKeyCodeEscape;
+	gGamepadMap[SDL_CONTROLLER_BUTTON_LEFTSTICK]     = kKeyCodeJ;
+	gGamepadMap[SDL_CONTROLLER_BUTTON_LEFTSHOULDER]  = kKeyCodeJ;
+	gGamepadMap[SDL_CONTROLLER_BUTTON_RIGHTSTICK]    = kKeyCodeShift;
+	gGamepadMap[SDL_CONTROLLER_BUTTON_RIGHTSHOULDER] = kKeyCodeShift;
+	gGamepadMap[SDL_CONTROLLER_BUTTON_DPAD_UP]    = kKeyCodeUp;
+	gGamepadMap[SDL_CONTROLLER_BUTTON_DPAD_DOWN]  = kKeyCodeDown;
+	gGamepadMap[SDL_CONTROLLER_BUTTON_DPAD_LEFT]  = kKeyCodeLeft;
+	gGamepadMap[SDL_CONTROLLER_BUTTON_DPAD_RIGHT] = kKeyCodeRight;
 }
 
 static void lockAudio(int lock) {
@@ -83,7 +119,7 @@ int main(int argc, char *argv[]) {
 	if (!stub) {
 		return -1;
 	}
-	SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO);
+	SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_JOYSTICK | SDL_INIT_GAMECONTROLLER);
 	SDL_ShowCursor(SDL_DISABLE);
 	SDL_Window *window = SDL_CreateWindow(g_caption, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, gWindowW, gWindowH, SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE);
 	if (!window) {
@@ -97,6 +133,17 @@ int main(int argc, char *argv[]) {
 	}
 	setupKeyMap();
 	setupAudio(stub);
+	SDL_Joystick *joystick = 0;
+	SDL_GameController *controller = 0;
+	if (SDL_NumJoysticks() > 0) {
+		SDL_GameControllerAddMappingsFromFile("gamecontrollerdb.txt");
+		if (SDL_IsGameController(kJoystickIndex)) {
+			controller = SDL_GameControllerOpen(kJoystickIndex);
+		}
+		if (!controller) {
+			joystick = SDL_JoystickOpen(kJoystickIndex);
+		}
+	}
 	stub->initGL(gWindowW, gWindowH);
 	bool quitGame = false;
 	bool paused = false;
@@ -174,6 +221,62 @@ int main(int argc, char *argv[]) {
 					stub->queueKeyInput(gKeyScancodeMap[ev.key.keysym.scancode], 1);
 				}
 				break;
+			case SDL_JOYHATMOTION:
+				if (joystick) {
+					stub->queueKeyInput(kKeyCodeUp,    (ev.jhat.value & SDL_HAT_UP)    != 0);
+					stub->queueKeyInput(kKeyCodeDown,  (ev.jhat.value & SDL_HAT_DOWN)  != 0);
+					stub->queueKeyInput(kKeyCodeLeft,  (ev.jhat.value & SDL_HAT_LEFT)  != 0);
+					stub->queueKeyInput(kKeyCodeRight, (ev.jhat.value & SDL_HAT_RIGHT) != 0);
+				}
+				break;
+			case SDL_JOYAXISMOTION:
+				if (joystick) {
+					switch (ev.jaxis.axis) {
+					case 0:
+						stub->queueKeyInput(kKeyCodeLeft,  (ev.jaxis.value < -kJoystickCommitValue));
+						stub->queueKeyInput(kKeyCodeRight, (ev.jaxis.value >  kJoystickCommitValue));
+						break;
+					case 1:
+						stub->queueKeyInput(kKeyCodeUp,   (ev.jaxis.value < -kJoystickCommitValue));
+						stub->queueKeyInput(kKeyCodeDown, (ev.jaxis.value >  kJoystickCommitValue));
+						break;
+					}
+				}
+				break;
+			case SDL_JOYBUTTONDOWN:
+			case SDL_JOYBUTTONUP:
+				if (joystick) {
+					if (ev.jbutton.button >= 0 && ev.jbutton.button < kJoystickMapSize) {
+						if (gJoystickMap[ev.jbutton.button] != 0) {
+							stub->queueKeyInput(gJoystickMap[ev.jbutton.button], ev.jbutton.state == SDL_PRESSED);
+						}
+					}
+				}
+				break;
+			case SDL_CONTROLLERAXISMOTION:
+				if (controller) {
+					switch (ev.caxis.axis) {
+					case SDL_CONTROLLER_AXIS_LEFTX:
+					case SDL_CONTROLLER_AXIS_RIGHTX:
+						stub->queueKeyInput(kKeyCodeLeft,  (ev.caxis.value < -kJoystickCommitValue));
+						stub->queueKeyInput(kKeyCodeRight, (ev.caxis.value >  kJoystickCommitValue));
+						break;
+					case SDL_CONTROLLER_AXIS_LEFTY:
+					case SDL_CONTROLLER_AXIS_RIGHTY:
+						stub->queueKeyInput(kKeyCodeUp,   (ev.caxis.value < -kJoystickCommitValue));
+						stub->queueKeyInput(kKeyCodeDown, (ev.caxis.value >  kJoystickCommitValue));
+						break;
+					}
+				}
+				break;
+			case SDL_CONTROLLERBUTTONDOWN:
+			case SDL_CONTROLLERBUTTONUP:
+				if (controller) {
+					if (gGamepadMap[ev.cbutton.button] != 0) {
+						stub->queueKeyInput(gGamepadMap[ev.cbutton.button], ev.cbutton.state == SDL_PRESSED);
+					}
+				}
+				break;
 			default:
 				break;
 			}
@@ -198,6 +301,12 @@ int main(int argc, char *argv[]) {
 	stub->quit();
 	SDL_GL_DeleteContext(glcontext);
 	SDL_DestroyWindow(window);
+	if (controller) {
+		SDL_GameControllerClose(controller);
+	}
+	if (joystick) {
+		SDL_JoystickClose(joystick);
+	}
 	SDL_Quit();
 	return 0;
 }

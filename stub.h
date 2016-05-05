@@ -16,23 +16,23 @@ enum {
 	kKeyCodeRight,
 	kKeyCodeUp,
 	kKeyCodeDown,
-	kKeyCodeAlt,
-	kKeyCodeCtrl,
-	kKeyCodeShift,
-	kKeyCodeSpace,
-	kKeyCodeReturn,
-	kKeyCodeTab,
-	kKeyCodeEscape,
+	kKeyCodeAlt,     // gun
+	kKeyCodeCtrl,    // shoot
+	kKeyCodeShift,   // walk
+	kKeyCodeSpace,   // use / open
+	kKeyCodeReturn,  // recharge gun
+	kKeyCodeTab,     // skip cutscene
+	kKeyCodeEscape,  // menu
 	kKeyCodeH,
-	kKeyCodeI,
-	kKeyCodeJ,
+	kKeyCodeI,       // inventory
+	kKeyCodeJ,       // jump
 	kKeyCodeK,
 	kKeyCodeU,
-	kKeyCode1,
-	kKeyCode2,
-	kKeyCode3,
-	kKeyCode4,
-	kKeyCode5,
+	kKeyCode1,       // item #1
+	kKeyCode2,       // item #2
+	kKeyCode3,       // item #3
+	kKeyCode4,       // item #4
+	kKeyCode5,       // item #5
 	kKeyCodeCheatLifeCounter,
 };
 
