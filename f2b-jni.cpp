@@ -8,20 +8,54 @@
 #include <stdio.h>
 #include <string.h>
 #include <sys/param.h>
+#include <sys/time.h>
 #include <jni.h>
 #include <android/keycodes.h>
 #include <android/log.h>
 #include <dlfcn.h>
 #include "stub.h"
 
+static const int kHz = 25;
+
 static GameStub *g_stub;
+static uint32_t g_timeStamp;
+static char g_dataPath[MAXPATHLEN];
+static char g_savePath[MAXPATHLEN];
 
 extern "C" {
 
+static uint32_t getTimeMs() {
+	struct timeval tv;
+	if (gettimeofday(&tv, 0) == 0) {
+		return tv.tv_sec * 1000 + tv.tv_usec / 1000;
+	}
+	return 0;
+}
+
 JNIEXPORT void JNICALL Java_org_cyxdown_f2b_F2bJni_drawFrame(JNIEnv *env, jclass c, jint ticks) {
 	if (g_stub) {
-		g_stub->doTick(ticks);
+		const int t = getTimeMs() - g_timeStamp;
+		if (t >= 1000 / kHz) {
+			g_stub->doTick(ticks);
+			g_timeStamp = getTimeMs();
+		}
 		g_stub->drawGL();
+	}
+}
+
+JNIEXPORT void JNICALL Java_org_cyxdown_f2b_F2bJni_setDataDirectory(JNIEnv *env, jclass c, jstring jpath) {
+	if (jpath) {
+		const char *path = env->GetStringUTFChars(jpath, 0);
+		snprintf(g_dataPath, sizeof(g_dataPath), "--datapath=%s", path);
+		env->ReleaseStringUTFChars(jpath, path);
+	}
+}
+
+JNIEXPORT void JNICALL Java_org_cyxdown_f2b_F2bJni_setSaveDirectory(JNIEnv *env, jclass c, jstring jpath) {
+	if (jpath) {
+		const char *path = env->GetStringUTFChars(jpath, 0);
+		snprintf(g_dataPath, sizeof(g_dataPath), "--savepath=%s", path);
+		env->ReleaseStringUTFChars(jpath, path);
 	}
 }
 
@@ -35,11 +69,12 @@ JNIEXPORT void JNICALL Java_org_cyxdown_f2b_F2bJni_initGame(JNIEnv *env, jclass 
 		const int ret = g_stub->init(2, argv);
 		env->ReleaseStringUTFChars(jpath, dataPath);
 		if (ret != 0) {
-			__android_log_print(ANDROID_LOG_ERROR, LOG_TAG, "init() failed ret %d", ret);
+			__android_log_print(ANDROID_LOG_ERROR, LOG_TAG, "F2bJni.init() failed ret %d", ret);
 			g_stub = 0;
 			return;
 		}
 		g_stub->initGL(w, h);
+		g_timeStamp = getTimeMs();
 	}
 }
 
@@ -52,7 +87,7 @@ JNIEXPORT void JNICALL Java_org_cyxdown_f2b_F2bJni_quitGame(JNIEnv *env, jclass 
 
 JNIEXPORT void JNICALL Java_org_cyxdown_f2b_F2bJni_queueKeyEvent(JNIEnv *env, jclass c, jint keycode, jint pressed) {
 	if (g_stub) {
-		__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "keyEvent %d pressed %d", keycode, pressed);
+//		__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "keyEvent %d pressed %d", keycode, pressed);
 		int key = -1;
 		switch (keycode) {
 		case AKEYCODE_SPACE:
