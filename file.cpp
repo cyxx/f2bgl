@@ -244,6 +244,10 @@ bool fileInit(int language, int voice, const char *dataPath, const char *savePat
 	return ret;
 }
 
+int fileLanguage() {
+	return _fileLanguage;
+}
+
 File *fileOpen(const char *fileName, int *fileSize, int fileType, bool errorIfNotFound) {
 	if (g_isDemo) {
 		if (fileType == kFileType_VOICE) {

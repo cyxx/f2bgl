@@ -327,6 +327,17 @@ static const struct {
 	{ "ddealogo.cin", 7 }
 };
 
+static const struct {
+	const char *name;
+	int num;
+} _scenesTable_gr[] = {
+	{ "gr_expl.cin", 2 },
+	{ "gr_lasr.cin", 4 },
+	{ "gr_mc.cin", 7 },
+	{ "gr_int2.cin", 29 },
+	{ "gr_sumo.cin", 34 }
+};
+
 bool Cutscene::load(int num) {
 	debug(kDebug_CUTSCENE, "Cutscene::load() num %d", num);
 	_interrupted = false;
@@ -356,6 +367,23 @@ bool Cutscene::load(int num) {
 			return false;
 		}
 		_duration = _scenesTable_demo[num].duration * 1000 / kCutsceneFrameDelay;
+	} else {
+		if (fileLanguage() == kFileLanguage_GR) {
+			for (int i = 0; i < ARRAYSIZE(_scenesTable_gr); ++i) {
+				if (_scenesTable_gr[i].num == num) {
+					name = _scenesTable_gr[i].name;
+					debug(kDebug_CUTSCENE, "GR cutscene '%s'", name);
+					break;
+				}
+			}
+		}
+		// look for 'b' prefixed videos (higher bitrate)
+		static char bname[32];
+		snprintf(bname, sizeof(bname), "b%s", name);
+		if (fileExists(bname, kFileType_DATA)) {
+			name = bname;
+			debug(kDebug_CUTSCENE, "Found '%s'", name);
+		}
 	}
 	_fp = fileOpen(name, 0, kFileType_DATA);
 	if (!readFileHeader(&_fileHdr)) {
