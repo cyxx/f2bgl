@@ -130,7 +130,7 @@ void Sound::playMidi(int16_t objKey, int index) {
 		int16_t sndKey = _res->getKeyFromPath(_res->_musicKeyPathsTable[index]);
 		const uint8_t *p_sndinfo = _res->getData(kResType_SND, sndKey, "SNDINFO");
 		if (p_sndinfo && READ_LE_UINT32(p_sndinfo + 32) == 2) {
-//			printf("play.midi '%s'\n", (const char *)p_sndinfo);
+			debug(kDebug_SOUND, "Sound::playMidi() key %d '%s'", sndKey, (const char *)p_sndinfo);
 		}
 	}
 }
