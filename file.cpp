@@ -147,7 +147,7 @@ bool g_isDemo = false;
 static int _fileLanguage;
 static int _fileVoice;
 static const char *_fileDataPath;
-static const char *_fileSavePath = ".";
+static const char *_fileSavePath;
 static bool _exitOnError = true;
 
 static void fileMakeFilePath(const char *fileName, int fileType, int fileLang, char *filePath) {
@@ -231,10 +231,11 @@ bool fileExists(const char *fileName, int fileType) {
 	return exists;
 }
 
-bool fileInit(int language, int voice, const char *dataPath) {
+bool fileInit(int language, int voice, const char *dataPath, const char *savePath) {
 	_fileLanguage = language;
 	_fileVoice = voice;
 	_fileDataPath = dataPath;
+	_fileSavePath = savePath;
 	bool ret = fileExists("player.ini", kFileType_DATA);
 	if (ret) {
 		g_isDemo = fileExists("ddtitle.cin", kFileType_DATA);

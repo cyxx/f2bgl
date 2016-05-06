@@ -14,12 +14,13 @@
 static const char *USAGE =
 	"Fade2Black/OpenGL\n"
 	"Usage: f2b [OPTIONS]...\n"
-	"  --datapath=PATH             Path to data files (default 'DATA')\n"
+	"  --datapath=PATH             Path to data files (default '.')\n"
 	"  --language=EN|FR|GR|SP|IT   Language files to use (default 'EN')\n"
 	"  --playdemo                  Use inputs from .DEM files\n"
 	"  --level=NUM                 Start at level NUM\n"
 	"  --voice=EN|FR|GR            Voice files (default 'EN')\n"
-	"  --subtitles                 Display cutscene subtitles\n";
+	"  --subtitles                 Display cutscene subtitles\n"
+	"  --savepath=PATH             Path to save files (default '.')\n";
 
 static const struct {
 	FileLanguage lang;
@@ -79,6 +80,7 @@ static int getNextIntroCutsceneNum(int num) {
 }
 
 static char *_dataPath;
+static char *_savePath;
 static bool _skipCutscenes;
 
 struct GameStub_F2B : GameStub {
@@ -146,6 +148,7 @@ struct GameStub_F2B : GameStub {
 				{ "level",    required_argument, 0, 4 },
 				{ "voice",    required_argument, 0, 5 },
 				{ "subtitles", no_argument,      0, 6 },
+				{ "savepath", required_argument, 0, 7 },
 #ifdef F2B_DEBUG
 				{ "xpos_conrad",    required_argument, 0, 100 },
 				{ "zpos_conrad",    required_argument, 0, 101 },
@@ -177,6 +180,9 @@ struct GameStub_F2B : GameStub {
 			case 6:
 				params.subtitles = true;
 				break;
+			case 7:
+				_savePath = strdup(optarg);
+				break;
 #ifdef F2B_DEBUG
 			case 100:
 				params.xPosConrad = atoi(optarg);
@@ -193,9 +199,6 @@ struct GameStub_F2B : GameStub {
 				return -1;
 			}
 		}
-		if (!_dataPath) {
-			_dataPath = strdup(".");
-		}
 		g_utilDebugMask = kDebug_INFO;
 #ifdef F2B_DEBUG
 		g_utilDebugMask |= kDebug_GAME /* | kDebug_RESOURCE */ | kDebug_FILE | kDebug_CUTSCENE | kDebug_OPCODES | kDebug_SOUND;
@@ -207,8 +210,8 @@ struct GameStub_F2B : GameStub {
 		language = 0;
 		free(voice);
 		voice = 0;
-		if (!fileInit(fileLanguage, fileVoice, _dataPath)) {
-			warning("Unable to find datafiles in '%s'", _dataPath);
+		if (!fileInit(fileLanguage, fileVoice, _dataPath ? _dataPath : ".", _savePath ? _savePath : ".")) {
+			warning("Unable to find datafiles");
 			return -2;
 		}
 		_render = new Render;

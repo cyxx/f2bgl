@@ -35,12 +35,13 @@ directory. The expected directory structure is :
 Defaults can be changed using command line switches :
 
     Usage: f2b [OPTIONS]...
-    --datapath=PATH             Path to data files (default 'DATA')
+    --datapath=PATH             Path to data files (default '.')
     --language=EN|FR|GR|SP|IT   Language files to use (default 'EN')
     --playdemo                  Use inputs from .DEM files
     --level=NUM                 Start at level NUM
     --voice=EN|FR|GR            Voice files (default 'EN')
     --subtitles                 Display cutscene subtitles
+    --savepath=PATH             Path to save files (default '.')
 
 In-game hotkeys :
 
