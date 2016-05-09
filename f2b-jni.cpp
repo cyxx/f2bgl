@@ -16,6 +16,7 @@
 #include "stub.h"
 
 static const int kHz = 25;
+static const int kSaveGameSlot = 0;
 
 static GameStub *g_stub;
 static uint32_t g_timeStamp;
@@ -82,6 +83,12 @@ JNIEXPORT void JNICALL Java_org_cyxdown_f2b_F2bJni_quitGame(JNIEnv *env, jclass 
 	if (g_stub) {
 		g_stub->quit();
 		g_stub = 0;
+	}
+}
+
+JNIEXPORT void JNICALL Java_org_cyxdown_f2b_F2bJni_saveGame(JNIEnv *env, jclass c) {
+	if (g_stub) {
+		g_stub->saveState(kSaveGameSlot);
 	}
 }
 
