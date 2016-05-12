@@ -624,8 +624,8 @@ int Game::op_getShootInfo(int argc, int32_t *argv) {
 	if (!o || !o->o_child) {
 		return 0;
 	}
-	if (o == _objectsPtrTable[11]) {
-		switch (_objectsPtrTable[11]->specialData[1][22]) {
+	if (o == _objectsPtrTable[kObjPtrGun]) {
+		switch (_objectsPtrTable[kObjPtrGun]->specialData[1][22]) {
 		case 64:
 			break;
 		case 4096:
@@ -666,7 +666,7 @@ int Game::op_getShootInfo(int argc, int32_t *argv) {
 			}
 			break;
 		default:
-			error("Game::op_getShootInfo() unhandled mode %d", _objectsPtrTable[11]->specialData[1][22]);
+			error("Game::op_getShootInfo() unhandled mode %d", _objectsPtrTable[kObjPtrGun]->specialData[1][22]);
 			break;
 		}
 	} else if (mode == 0) {

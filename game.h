@@ -23,6 +23,7 @@ enum {
 	kObjPtrTarget = 5,
 	kObjPtrTargetCommand = 6,
 	kObjPtrUtil = 8,
+	kObjPtrGun = 11,
 	kObjPtrFondScanInfo = 14,
 	kObjPtrMusic = 15,
 	kObjPtrSaveloadOption = 16,

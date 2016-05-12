@@ -3257,7 +3257,7 @@ bool Game::testObjectsRoom(int16_t obj1Key, int16_t obj2Key) {
 }
 
 void Game::readInputEvents() {
-	GameObject *o = _objectsPtrTable[11];
+	GameObject *o = _objectsPtrTable[kObjPtrGun];
 	if (o->specialData[1][22] != 0x1000 && o->customData[1] == 0 && o->customData[0] == 0) {
 		GameObject *o_tmp = o;
 		while (o_tmp->o_next) {
@@ -3267,11 +3267,11 @@ void Game::readInputEvents() {
 		_objectsPtrTable[kObjPtrInventaire]->o_child->o_child = o->o_next;
 		o->o_next = 0;
 		_objectsPtrTable[kObjPtrTargetCommand]->specialData[1][16] = 1;
-		_objectsPtrTable[11] = _objectsPtrTable[kObjPtrInventaire]->o_child->o_child;
-		if (_objectsPtrTable[11]) {
-			_varsTable[15] = _objectsPtrTable[11]->objKey;
-			if (getMessage(_objectsPtrTable[11]->objKey, 0, &_tmpMsg)) {
-				_objectsPtrTable[11]->text = (const char *)_tmpMsg.data;
+		_objectsPtrTable[kObjPtrGun] = _objectsPtrTable[kObjPtrInventaire]->o_child->o_child;
+		if (_objectsPtrTable[kObjPtrGun]) {
+			_varsTable[15] = _objectsPtrTable[kObjPtrGun]->objKey;
+			if (getMessage(_objectsPtrTable[kObjPtrGun]->objKey, 0, &_tmpMsg)) {
+				_objectsPtrTable[kObjPtrGun]->text = (const char *)_tmpMsg.data;
 			}
 		}
 		setObjectParent(o, _objectsPtrTable[kObjPtrCimetiere]);
@@ -3304,20 +3304,20 @@ void Game::readInputEvents() {
 		if (num != 8 && num != 9) {
 			if (inp.numKeys[4]) {
 				inp.numKeys[4] = false;
-				if (_objectsPtrTable[11] && _objectsPtrTable[11]->o_next) {
-					GameObject *tmpObj = _objectsPtrTable[11];
+				if (_objectsPtrTable[kObjPtrGun] && _objectsPtrTable[kObjPtrGun]->o_next) {
+					GameObject *tmpObj = _objectsPtrTable[kObjPtrGun];
 					while (tmpObj->o_next) {
 						tmpObj = tmpObj->o_next;
 					}
-					tmpObj->o_next = _objectsPtrTable[11];
-					_objectsPtrTable[kObjPtrInventaire]->o_child->o_child = _objectsPtrTable[11]->o_next;
-					_objectsPtrTable[11]->o_next = 0;
+					tmpObj->o_next = _objectsPtrTable[kObjPtrGun];
+					_objectsPtrTable[kObjPtrInventaire]->o_child->o_child = _objectsPtrTable[kObjPtrGun]->o_next;
+					_objectsPtrTable[kObjPtrGun]->o_next = 0;
 					_objectsPtrTable[kObjPtrTargetCommand]->specialData[1][16] = 1;
-					_objectsPtrTable[11] = _objectsPtrTable[kObjPtrInventaire]->o_child->o_child;
-					if (_objectsPtrTable[11]) {
-						_varsTable[15] = _objectsPtrTable[11]->objKey;
-						if (getMessage(_objectsPtrTable[11]->objKey, 0, &_tmpMsg) && _tmpMsg.data) {
-							_objectsPtrTable[11]->text = (const char *)_tmpMsg.data;
+					_objectsPtrTable[kObjPtrGun] = _objectsPtrTable[kObjPtrInventaire]->o_child->o_child;
+					if (_objectsPtrTable[kObjPtrGun]) {
+						_varsTable[15] = _objectsPtrTable[kObjPtrGun]->objKey;
+						if (getMessage(_objectsPtrTable[kObjPtrGun]->objKey, 0, &_tmpMsg) && _tmpMsg.data) {
+							_objectsPtrTable[kObjPtrGun]->text = (const char *)_tmpMsg.data;
 						}
 					}
 				}
@@ -3884,8 +3884,8 @@ void Game::drawInfoPanel() {
 	const int life = 48 * _objectsPtrTable[kObjPtrConrad]->specialData[1][18] / _varsTable[kVarConradLife];
 	_render->drawRectangle(xPos + 1, yPos + 1 + 48 - life, 2, life, color);
 
-	if (_objectsPtrTable[11] && _objectsPtrTable[11]->specialData[1][22] == 4096) {
-		const int amount = (48 * _objectsPtrTable[11]->customData[4]) / _varsTable[kVarConradLife];
+	if (_objectsPtrTable[kObjPtrGun] && _objectsPtrTable[kObjPtrGun]->specialData[1][22] == 4096) {
+		const int amount = (48 * _objectsPtrTable[kObjPtrGun]->customData[4]) / _varsTable[kVarConradLife];
 		const int h = (amount * 10) / 100;
 		_render->drawRectangle(xPos + 1, yPos + 1 + 48 - h, 2, h, 68);
 	}
@@ -3915,17 +3915,17 @@ void Game::drawInfoPanel() {
 			snprintf(buf, sizeof(buf), "%s%d", _objectsPtrTable[9]->text, _objectsPtrTable[9]->customData[0]);
 			drawString(xPos + 33, yPos + 18, buf, kFontNameCart, 0);
 		}
-		if (_objectsPtrTable[11]) {
+		if (_objectsPtrTable[kObjPtrGun]) {
 			char buf[64];
-			const int type = _objectsPtrTable[11]->specialData[1][22];
+			const int type = _objectsPtrTable[kObjPtrGun]->specialData[1][22];
 			if (type != 4096) {
-				snprintf(buf, sizeof(buf), "%d", _objectsPtrTable[11]->customData[0]);
+				snprintf(buf, sizeof(buf), "%d", _objectsPtrTable[kObjPtrGun]->customData[0]);
 				drawString(xPos + 11, yPos + 31, buf, kFontNbCart, 0);
 			}
-			strcpy(buf, _objectsPtrTable[11]->text);
+			strcpy(buf, _objectsPtrTable[kObjPtrGun]->text);
 			if (type != 64 && type != 512 && type != 4096) {
-				int count = _objectsPtrTable[11]->customData[1] / 9;
-				if ((_objectsPtrTable[11]->customData[1] % 9) != 0) {
+				int count = _objectsPtrTable[kObjPtrGun]->customData[1] / 9;
+				if ((_objectsPtrTable[kObjPtrGun]->customData[1] % 9) != 0) {
 					count++;
 				}
 				char str[16];
