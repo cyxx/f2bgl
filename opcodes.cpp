@@ -1390,6 +1390,14 @@ int Game::op_setCamera(int argc, int32_t *argv) {
 					_cameraState = value;
 				}
 				break;
+			case 1:
+				if (_cameraDefaultDist && isConradInShootingPos()) {
+					_cameraDeltaRotYValue2 = value;
+				} else {
+					_cameraDeltaRotY = value;
+					_cameraDeltaRotYTicks = ticks;
+				}
+				break;
 			case 2:
 				if (_cameraDefaultDist && isConradInShootingPos()) {
 					_cameraDistValue2 = value << 15;

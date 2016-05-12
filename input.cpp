@@ -7,7 +7,8 @@
 
 void Game::updateInput() {
 	int currentInput = getCurrentInput();
-	uint8_t inputKey0 = _inputsTable[currentInput].inputKey0;
+	const uint8_t inputKey0 = _inputsTable[currentInput].inputKey0;
+	const uint8_t inputKey1 = _inputsTable[currentInput].inputKey1;
 
 	if (inp.dirMask & kInputDirRight) {
 		_inputDirKeyPressed[inputKey0] |= 1;
@@ -70,6 +71,25 @@ void Game::updateInput() {
 	_inputKeyJump = inp.jumpKey;
 	inp.jumpKey = false;
 
+	if (inp.lookRight) {
+		if (_level != 12) {
+			_inputDirKeyPressed[inputKey1] |= 1;
+		}
+		inp.lookRight = false;
+	} else {
+		_inputDirKeyPressed[inputKey1] &= ~1;
+		// _inputDirKeyReleased[inputKey1]
+	}
+	if (inp.lookBack) {
+		if (_level != 12) {
+			_inputDirKeyPressed[inputKey1] |= 4;
+		}
+		inp.lookBack = false;
+	} else {
+		_inputDirKeyPressed[inputKey1] &= ~4;
+		// _inputDirKeyReleased[inputKey1]
+	}
+
 	for (int i = 0; i < _inputsCount; ++i) {
 		_inputsTable[i].sysmaskPrev = _inputsTable[i].sysmask;
 		if (currentInput == i) {
@@ -106,10 +126,10 @@ void Game::updateGameInput() {
 				inp.enterKey = input->pressed;
 				break;
 			case 64:
-				inp.numKeys[2] = input->pressed;
+				inp.lookBack = true;
 				break;
 			case 70:
-				inp.numKeys[6] = input->pressed;
+				inp.lookRight = true;
 				break;
 			case 73:
 				if (input->pressed) {
