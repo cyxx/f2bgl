@@ -414,7 +414,7 @@ bool Cutscene::play() {
 	}
 	++_frameCounter;
 	if (g_isDemo && _frameCounter == _duration) {
-		return false;
+		_frameCounter = 1;
 	}
 	if (!g_isDemo || _frameCounter == 1) {
 		if (!readFrameHeader(&_frameHdr)) {
