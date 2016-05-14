@@ -3413,8 +3413,8 @@ void Game::readInputEvents() {
 				break;
 			case 2:
 				if (_conradUsingGun) {
-					_cameraStandingDist = !_cameraStandingDist;
-					if (_cameraStandingDist != _cameraDefaultDist) {
+					_cameraUsingGunDist = !_cameraUsingGunDist;
+					if (_cameraUsingGunDist != _cameraDefaultDist) {
 						fixCamera();
 					}
 				}

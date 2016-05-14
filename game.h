@@ -341,8 +341,7 @@ struct PlayerInput {
 	bool escapeKey;
 	bool numKeys[10];
 	uint8_t cameraKey;
-	bool lookRight;
-	bool lookBack;
+	uint8_t lookAtDir;
 };
 
 struct DrawBuffer {

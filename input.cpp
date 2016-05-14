@@ -71,22 +71,37 @@ void Game::updateInput() {
 	_inputKeyJump = inp.jumpKey;
 	inp.jumpKey = false;
 
-	if (inp.lookRight) {
+	if (inp.lookAtDir & kInputDirRight) {
 		if (_level != 12) {
 			_inputDirKeyPressed[inputKey1] |= 1;
 		}
-		inp.lookRight = false;
+		inp.lookAtDir &= ~kInputDirRight;
 	} else {
 		_inputDirKeyPressed[inputKey1] &= ~1;
 		// _inputDirKeyReleased[inputKey1]
 	}
-	if (inp.lookBack) {
+	if (inp.lookAtDir & kInputDirLeft) {
+		if (_level != 12) {
+			_inputDirKeyPressed[inputKey1] |= 2;
+		}
+		inp.lookAtDir &= ~kInputDirLeft;
+	}
+	if (inp.lookAtDir & kInputDirDown) {
 		if (_level != 12) {
 			_inputDirKeyPressed[inputKey1] |= 4;
 		}
-		inp.lookBack = false;
+		inp.lookAtDir &= ~kInputDirDown;
 	} else {
 		_inputDirKeyPressed[inputKey1] &= ~4;
+		// _inputDirKeyReleased[inputKey1]
+	}
+	if (inp.lookAtDir & kInputDirUp) {
+		if (_level != 12) {
+			_inputDirKeyPressed[inputKey1] |= 8;
+		}
+		inp.lookAtDir &= ~kInputDirDown;
+	} else {
+		_inputDirKeyPressed[inputKey1] &= ~8;
 		// _inputDirKeyReleased[inputKey1]
 	}
 
@@ -126,10 +141,18 @@ void Game::updateGameInput() {
 				inp.enterKey = input->pressed;
 				break;
 			case 64:
-				inp.lookBack = true;
+				if (input->pressed) {
+					inp.lookAtDir |= kInputDirDown;
+				} else {
+					inp.lookAtDir &= ~kInputDirDown;
+				}
 				break;
 			case 70:
-				inp.lookRight = true;
+				if (input->pressed) {
+					inp.lookAtDir |= kInputDirRight;
+				} else {
+					inp.lookAtDir &= ~kInputDirRight;
+				}
 				break;
 			case 73:
 				if (input->pressed) {
