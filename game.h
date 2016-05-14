@@ -340,7 +340,6 @@ struct PlayerInput {
 	bool jumpKey;
 	bool escapeKey;
 	bool numKeys[10];
-	uint8_t cameraKey;
 	uint8_t lookAtDir;
 };
 

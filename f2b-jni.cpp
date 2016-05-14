@@ -131,17 +131,11 @@ JNIEXPORT void JNICALL Java_org_cyxdown_f2b_F2bJni_queueKeyEvent(JNIEnv *env, jc
 		case AKEYCODE_DPAD_RIGHT:
 			key = kKeyCodeRight;
 			break;
-		case AKEYCODE_H:
-			key = kKeyCodeH;
-			break;
 		case AKEYCODE_I:
 			key = kKeyCodeI;
 			break;
 		case AKEYCODE_J:
 			key = kKeyCodeJ;
-			break;
-		case AKEYCODE_K:
-			key = kKeyCodeK;
 			break;
 		case AKEYCODE_U:
 			key = kKeyCodeU;

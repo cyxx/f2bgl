@@ -3400,29 +3400,6 @@ void Game::readInputEvents() {
 			}
 		}
 	}
-	if (inp.cameraKey != 0) {
-		if (_level != 6 && _level != 12) {
-			switch (inp.cameraKey) {
-			case 1:
-				if (!_conradUsingGun && !_cameraDefaultDist) {
-					_cameraStandingDist = !_cameraStandingDist;
-					if (_cameraStandingDist != _cameraDefaultDist) {
-						fixCamera();
-					}
-				}
-				break;
-			case 2:
-				if (_conradUsingGun) {
-					_cameraUsingGunDist = !_cameraUsingGunDist;
-					if (_cameraUsingGunDist != _cameraDefaultDist) {
-						fixCamera();
-					}
-				}
-				break;
-			}
-		}
-		inp.cameraKey = 0;
-	}
 }
 
 static const struct {

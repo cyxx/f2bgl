@@ -23,10 +23,8 @@ enum {
 	kKeyCodeReturn,  // recharge gun
 	kKeyCodeTab,     // skip cutscene
 	kKeyCodeEscape,  // menu
-	kKeyCodeH,
 	kKeyCodeI,       // inventory
 	kKeyCodeJ,       // jump
-	kKeyCodeK,
 	kKeyCodeU,
 	kKeyCode1,       // item #1
 	kKeyCode2,       // item #2

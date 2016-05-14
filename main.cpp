@@ -46,10 +46,8 @@ static void setupKeyMap() {
 	gKeyScancodeMap[SDL_SCANCODE_RETURN] = kKeyCodeReturn;
 	gKeyScancodeMap[SDL_SCANCODE_TAB]    = kKeyCodeTab;
 	gKeyScancodeMap[SDL_SCANCODE_ESCAPE] = kKeyCodeEscape;
-	gKeyScancodeMap[SDL_SCANCODE_H]      = kKeyCodeH;
 	gKeyScancodeMap[SDL_SCANCODE_I]      = kKeyCodeI;
 	gKeyScancodeMap[SDL_SCANCODE_J]      = kKeyCodeJ;
-	gKeyScancodeMap[SDL_SCANCODE_K]      = kKeyCodeK;
 	for (int i = 0; i < 5; ++i) {
 		gKeyScancodeMap[SDL_SCANCODE_1 + i] = kKeyCode1 + i;
 	}

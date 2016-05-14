@@ -278,17 +278,11 @@ struct GameStub_F2B : GameStub {
 		case kKeyCodeEscape:
 			_g->inp.escapeKey = pressed;
 			break;
-		case kKeyCodeH:
-			_g->inp.cameraKey = 1;
-			break;
 		case kKeyCodeI:
 			_g->inp.inventoryKey = pressed;
 			break;
 		case kKeyCodeJ:
 			_g->inp.jumpKey = pressed;
-			break;
-		case kKeyCodeK:
-			_g->inp.cameraKey = 2;
 			break;
 		case kKeyCodeU:
 			_g->inp.useKey = pressed;
