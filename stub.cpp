@@ -365,8 +365,9 @@ struct GameStub_F2B : GameStub {
 		case kStateInventory:
 			_g->updateInventoryInput();
 			_g->doInventory();
-			if (_g->inp.inventoryKey) {
+			if (_g->inp.inventoryKey || _g->inp.escapeKey) {
 				_g->inp.inventoryKey = false;
+				_g->inp.escapeKey = false;
 				_g->closeInventory();
 				_nextState = kStateGame;
 			}
