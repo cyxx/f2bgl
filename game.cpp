@@ -121,6 +121,8 @@ void Game::clearLevelData() {
 	_currentCamera = 0;
 	_cameraDx = _cameraDy = _cameraDz = 0;
 
+	_rnd.reset();
+
 	_spriteCache.flush();
 	_infoPanelSpr.data = 0;
 	_render->flushCachedTextures();

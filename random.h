@@ -7,10 +7,16 @@
 #define RANDOM_H__
 
 struct Random {
+	static const int k0 = 10001;
+
 	int _randSeed;
 
 	Random()
-		: _randSeed(10001) {
+		: _randSeed(k0) {
+	}
+
+	void reset() {
+		_randSeed = k0;
 	}
 
 	int getRandomNumber() {
