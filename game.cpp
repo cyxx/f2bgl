@@ -3629,7 +3629,10 @@ bool Game::sendMessage(int msg, int16_t destObjKey) {
 		}
 	} else {
 		o = getObjectByKey(destObjKey);
-		assert(o);
+		if (!o) {
+			warning("sendMessage: object %d not found", destObjKey);
+			return false;
+		}
 	}
 	if ((_currentObject->flags[1] & 0x80) != 0 && (o->flags[1] & 0x80) != 0 && msg == 57) {
 		return false;
