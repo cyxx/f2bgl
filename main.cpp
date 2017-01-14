@@ -4,6 +4,7 @@
  */
 
 #include <SDL.h>
+#include <string.h>
 #include "stub.h"
 
 const char *g_caption = "Fade2Black/OpenGL";

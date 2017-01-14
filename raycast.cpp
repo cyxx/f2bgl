@@ -25,30 +25,32 @@ void Game::rayCastInit(int sx) {
 	const int rzb = (_ySinObserver * xb) + (_yCosObserver * zb);
 	int dx = (rxb - rxa) >> 2;
 	int dz = (rzb - rza) >> 2;
+	static const int kMin = (1 << kFracShift);
+	static const int kMax = (1024 << kFracShift) - 1;
 	if (dx > 0) {
-		if (dx < (1 << kFracShift)) {
-			dx = 1 << kFracShift;
-		} else if (dx > 0x3FFFFFF) {
-			dx = 0x3FFFFFF;
+		if (dx < kMin) {
+			dx = kMin;
+		} else if (dx > kMax) {
+			dx = kMax;
 		}
 	} else {
-		if (dx > (-1 << kFracShift)) {
-			dx = -1 << kFracShift;
-		} else if (dx < -0x3FFFFFF) {
-			dx = -0x3FFFFFF;
+		if (dx > -kMin) {
+			dx = -kMin;
+		} else if (dx < -kMax) {
+			dx = -kMax;
 		}
 	}
 	if (dz > 0) {
-		if (dz < (1 << kFracShift)) {
-			dz = 1 << kFracShift;
-		} else if (dz > 0x3FFFFFF) {
-			dz = 0x3FFFFFF;
+		if (dz < kMin) {
+			dz = kMin;
+		} else if (dz > kMax) {
+			dz = kMax;
 		}
 	} else {
-		if (dz > (-1 << kFracShift)) {
-			dz = -1 << kFracShift;
-		} else if (dz < -0x3FFFFFF) {
-			dz = -0x3FFFFFF;
+		if (dz > -kMin) {
+			dz = -kMin;
+		} else if (dz < -kMax) {
+			dz = -kMax;
 		}
 	}
 

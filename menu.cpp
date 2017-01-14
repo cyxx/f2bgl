@@ -6,8 +6,8 @@
 #include "game.h"
 #include "render.h"
 
-static const int _y0 = -36;
-static const int _y1 = _y0 - 8;
+static const int _y0 = 36;
+static const int _y1 = _y0 + 8;
 
 void Game::resetObjectAnim(GameObject *o) {
 	GameObjectAnimation *anim = &o->anim;
@@ -48,9 +48,9 @@ void Game::initMenu() {
 	resetObjectAnim(_objectsPtrTable[kObjPtrSaveloadOption]);
 	_objectsPtrTable[kObjPtrSaveloadOption]->specialData[1][9] = 16;
 	SceneObject *so = &_sceneObjectsTable[0];
-	so->x =   0 << kPosShift;
-	so->y = _y0 << kPosShift;
-	so->z =  56 << kPosShift;
+	so->x =     0;
+	so->y = -(_y0 << kPosShift);
+	so->z =    56 << kPosShift;
 }
 
 void Game::loadMenuObjectMesh(GameObject *o, int16_t key) {
@@ -100,5 +100,5 @@ void Game::doMenu() {
 	if (inp.dirMask & kInputDirDown) {
 		setNextObjectAnim(o, -1);
 	}
-	so->y = (_y0 << kPosShift) + (o->anim.framesCount * (_y1 - _y0) << kPosShift) / (o->anim.aniheadData[1] - 1);
+	so->y = -(_y0 << kPosShift) - (o->anim.framesCount * (_y1 - _y0) << kPosShift) / (o->anim.aniheadData[1] - 1);
 }

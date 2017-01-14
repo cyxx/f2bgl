@@ -317,8 +317,8 @@ void Game::updateSceneCameraPos() {
 			}
 			_observerColMask = getCollidingHorizontalMask (-_yPosObserver - (64 << 15), 1, 1);
 		}
-		if (!flag && _level != 6 && _cameraDist < (-12 << 15)) {
-			_cameraDist = (-12 << 15);
+		if (!flag && _level != 6 && _cameraDist < -(12 << 15)) {
+			_cameraDist = -(12 << 15);
 		}
 		camcosy =  g_cos[_yRotObserver & 1023];
 		camsiny = -g_sin[_yRotObserver & 1023];
