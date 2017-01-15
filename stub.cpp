@@ -35,24 +35,28 @@ static const struct {
 };
 
 static FileLanguage parseLanguage(const char *language) {
-	for (int i = 0; i < ARRAYSIZE(_languages); ++i) {
-		if (strcasecmp(_languages[i].str, language) == 0) {
-			return _languages[i].lang;
+	if (language) {
+		for (int i = 0; i < ARRAYSIZE(_languages); ++i) {
+			if (strcasecmp(_languages[i].str, language) == 0) {
+				return _languages[i].lang;
+			}
 		}
 	}
-	return _languages[0].lang;
+	return kFileLanguage_EN;
 }
 
 static FileLanguage parseVoice(const char *voice, FileLanguage lang) {
 	switch (lang) {
 	case kFileLanguage_SP:
 	case kFileLanguage_IT:
-		for (int i = 0; i < ARRAYSIZE(_languages); ++i) {
-			if (strcasecmp(_languages[i].str, voice) == 0) {
-				if (_languages[i].voice) {
-					return _languages[i].lang;
+		if (voice) {
+			for (int i = 0; i < ARRAYSIZE(_languages); ++i) {
+				if (strcasecmp(_languages[i].str, voice) == 0) {
+					if (_languages[i].voice) {
+						return _languages[i].lang;
+					}
+					break;
 				}
-				break;
 			}
 		}
 		// default to English
@@ -204,8 +208,8 @@ struct GameStub_F2B : GameStub {
 		g_utilDebugMask |= kDebug_GAME /* | kDebug_RESOURCE */ | kDebug_FILE | kDebug_CUTSCENE | kDebug_OPCODES | kDebug_SOUND;
 		_skipCutscenes = 1;
 #endif
-		FileLanguage fileLanguage = language ? parseLanguage(language) : kFileLanguage_EN;
-		FileLanguage fileVoice = voice ? parseVoice(voice, fileLanguage) : fileLanguage;
+		FileLanguage fileLanguage = parseLanguage(language);
+		FileLanguage fileVoice = parseVoice(voice, fileLanguage);
 		free(language);
 		language = 0;
 		free(voice);
