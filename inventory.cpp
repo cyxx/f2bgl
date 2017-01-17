@@ -61,7 +61,7 @@ void Game::closeInventory() {
 		_snd.stopVoice(_inventoryCurrentObj->objKey);
 	}
 	_snd.playSfx(_objectsPtrTable[kObjPtrWorld]->objKey, _res._sndKeysTable[3]);
-	const int num = (_objectsPtrTable[7]->specialData[1][22] == 1) ? 5 : 0;
+	const int num = (_objectsPtrTable[kObjPtrShield]->specialData[1][22] == 1) ? 5 : 0;
 	setObjectData(_objectsPtrTable[kObjPtrConrad], 20, num);
 }
 
@@ -170,23 +170,23 @@ void Game::updateInventoryInput() {
 				}
 				break;
 			case 2:
-				_objectsPtrTable[9] = _inventoryCurrentObj;
-				if (getMessage(_objectsPtrTable[9]->objKey, 0, &_tmpMsg)) {
-					_objectsPtrTable[9]->text = (const char *)_tmpMsg.data;
+				_objectsPtrTable[kObjPtrProj] = _inventoryCurrentObj;
+				if (getMessage(_objectsPtrTable[kObjPtrProj]->objKey, 0, &_tmpMsg)) {
+					_objectsPtrTable[kObjPtrProj]->text = (const char *)_tmpMsg.data;
 				}
 				break;
 			case 3:
-				_objectsPtrTable[7] = _inventoryCurrentObj;
-				_varsTable[25] = _objectsPtrTable[7]->objKey;
-				if (getMessage(_objectsPtrTable[7]->objKey, 0, &_tmpMsg)) {
-					_objectsPtrTable[7]->text = (const char *)_tmpMsg.data;
+				_objectsPtrTable[kObjPtrShield] = _inventoryCurrentObj;
+				_varsTable[25] = _objectsPtrTable[kObjPtrShield]->objKey;
+				if (getMessage(_objectsPtrTable[kObjPtrShield]->objKey, 0, &_tmpMsg)) {
+					_objectsPtrTable[kObjPtrShield]->text = (const char *)_tmpMsg.data;
 				}
 				break;
 			case 4:
-				_objectsPtrTable[10] = _inventoryCurrentObj;
-				_varsTable[24] = _objectsPtrTable[10]->objKey;
-				if (getMessage(_objectsPtrTable[10]->objKey, 0, &_tmpMsg)) {
-					_objectsPtrTable[10]->text = (const char *)_tmpMsg.data;
+				_objectsPtrTable[kObjPtrScan] = _inventoryCurrentObj;
+				_varsTable[24] = _objectsPtrTable[kObjPtrScan]->objKey;
+				if (getMessage(_objectsPtrTable[kObjPtrScan]->objKey, 0, &_tmpMsg)) {
+					_objectsPtrTable[kObjPtrScan]->text = (const char *)_tmpMsg.data;
 				}
 				break;
 			}

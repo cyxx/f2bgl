@@ -1185,7 +1185,7 @@ void Game::initLevel() {
 
 void Game::setupConradObject() {
 	GameObject *o = getObjectByKey(_conradObjectKey);
-	_objectsPtrTable[12] = _objectsPtrTable[13] = o;
+	_objectsPtrTable[kObjPtrObject1] = _objectsPtrTable[kObjPtrObject2] = o;
 	_cameraViewKey = o->objKey;
 	_cameraViewObj = 1;
 	_varsTable[31] = _cameraViewKey;
@@ -1566,7 +1566,7 @@ static const Game::OpcodeProc _opcodeTable[kOpcodesCount] = {
 	&Game::op_updateTarget,
 	// 24
 	&Game::op_moveObjectToObject,
-	&Game::op_getObject9,
+	&Game::op_getProjObject,
 	&Game::op_setObjectParent,
 	&Game::op_removeObjectMessage,
 	// 28
@@ -2523,33 +2523,33 @@ if (_mainLoopCurrentMode == 1) {
 }
 	clearObjectsDrawList();
 if (_mainLoopCurrentMode == 1) {
-	if (_objectsPtrTable[10]) {
-		const int scannerLife = _objectsPtrTable[10]->specialData[1][18];
+	if (_objectsPtrTable[kObjPtrScan]) {
+		const int scannerLife = _objectsPtrTable[kObjPtrScan]->specialData[1][18];
 		const int conradLife = _objectsPtrTable[kObjPtrConrad]->specialData[1][18];
 		if (scannerLife || (conradLife >= scannerLife && (conradLife >= scannerLife * 36 || (_ticks % (scannerLife / 2) > scannerLife / 4)))) {
-			if (_objectsPtrTable[10]->specialData[1][21] == 64) {
+			if (_objectsPtrTable[kObjPtrScan]->specialData[1][21] == 64) {
 				warning("Game::doTick() Unimplemented scanner");
 			}
 		}
 		if (_object10Counter <= 0) {
 			_object10Counter = 10;
-			_objectsPtrTable[kObjPtrConrad]->specialData[1][18] -= _objectsPtrTable[10]->specialData[1][18];
+			_objectsPtrTable[kObjPtrConrad]->specialData[1][18] -= _objectsPtrTable[kObjPtrScan]->specialData[1][18];
 			if (_objectsPtrTable[kObjPtrConrad]->specialData[1][18] <= 0) {
 				_objectsPtrTable[kObjPtrConrad]->specialData[1][18] = 1;
-				while ((_objectsPtrTable[10]->specialData[1][21] != 2) && (_objectsPtrTable[10]->specialData[1][22] != 0xFFFF)) {
-					GameObject *o_tmp = _objectsPtrTable[10];
+				while ((_objectsPtrTable[kObjPtrScan]->specialData[1][21] != 2) && (_objectsPtrTable[kObjPtrScan]->specialData[1][22] != 0xFFFF)) {
+					GameObject *o_tmp = _objectsPtrTable[kObjPtrScan];
 					while (o_tmp->o_next) {
 						o_tmp = o_tmp->o_next;
 					}
-					o_tmp->o_next = _objectsPtrTable[10];
-					_objectsPtrTable[kObjPtrInventaire]->o_child->o_next->o_next->o_next->o_next->o_child = _objectsPtrTable[10]->o_next;
-					_objectsPtrTable[10]->o_next = 0;
-					_objectsPtrTable[10] = _objectsPtrTable[kObjPtrInventaire]->o_child->o_next->o_next->o_next->o_next->o_child;
+					o_tmp->o_next = _objectsPtrTable[kObjPtrScan];
+					_objectsPtrTable[kObjPtrInventaire]->o_child->o_next->o_next->o_next->o_next->o_child = _objectsPtrTable[kObjPtrScan]->o_next;
+					_objectsPtrTable[kObjPtrScan]->o_next = 0;
+					_objectsPtrTable[kObjPtrScan] = _objectsPtrTable[kObjPtrInventaire]->o_child->o_next->o_next->o_next->o_next->o_child;
 				}
-				if (_objectsPtrTable[10]) {
-					_varsTable[24] = _objectsPtrTable[10]->objKey;
-					if (getMessage(_objectsPtrTable[10]->objKey, 0, &_tmpMsg)) {
-						_objectsPtrTable[10]->text = (const char *)_tmpMsg.data;
+				if (_objectsPtrTable[kObjPtrScan]) {
+					_varsTable[24] = _objectsPtrTable[kObjPtrScan]->objKey;
+					if (getMessage(_objectsPtrTable[kObjPtrScan]->objKey, 0, &_tmpMsg)) {
+						_objectsPtrTable[kObjPtrScan]->text = (const char *)_tmpMsg.data;
 					}
 				}
 			}
@@ -2561,43 +2561,43 @@ if (_mainLoopCurrentMode == 1) {
 		_objectsPtrTable[kObjPtrConrad]->specialData[1][18] -= 2;
 		if (_objectsPtrTable[kObjPtrConrad]->specialData[1][18] < 2) {
 			_objectsPtrTable[kObjPtrConrad]->specialData[1][18] = 2;
-			while (_objectsPtrTable[7]->specialData[1][22] != 0) {
-				GameObject *o_tmp = _objectsPtrTable[7];
+			while (_objectsPtrTable[kObjPtrShield]->specialData[1][22] != 0) {
+				GameObject *o_tmp = _objectsPtrTable[kObjPtrShield];
 				while (o_tmp->o_next) {
 					o_tmp = o_tmp->o_next;
 				}
-				o_tmp->o_next = _objectsPtrTable[7];
-				_objectsPtrTable[kObjPtrInventaire]->o_child->o_next->o_next->o_next->o_child = _objectsPtrTable[7]->o_next;
-				_objectsPtrTable[7]->o_next = 0;
-				_objectsPtrTable[7] = _objectsPtrTable[kObjPtrInventaire]->o_child->o_next->o_next->o_next->o_child;
+				o_tmp->o_next = _objectsPtrTable[kObjPtrShield];
+				_objectsPtrTable[kObjPtrInventaire]->o_child->o_next->o_next->o_next->o_child = _objectsPtrTable[kObjPtrShield]->o_next;
+				_objectsPtrTable[kObjPtrShield]->o_next = 0;
+				_objectsPtrTable[kObjPtrShield] = _objectsPtrTable[kObjPtrInventaire]->o_child->o_next->o_next->o_next->o_child;
 			}
-			if (_objectsPtrTable[7]) {
-				_varsTable[25] = _objectsPtrTable[7]->objKey;
-				if (getMessage(_objectsPtrTable[7]->objKey, 0, &_tmpMsg)) {
-					_objectsPtrTable[7]->text = (const char *)_tmpMsg.data;
+			if (_objectsPtrTable[kObjPtrShield]) {
+				_varsTable[25] = _objectsPtrTable[kObjPtrShield]->objKey;
+				if (getMessage(_objectsPtrTable[kObjPtrShield]->objKey, 0, &_tmpMsg)) {
+					_objectsPtrTable[kObjPtrShield]->text = (const char *)_tmpMsg.data;
 				}
 			}
 			setObjectData(_objectsPtrTable[kObjPtrConrad], 20, 0);
 		}
 	}
-	if (_objectsPtrTable[7]->specialData[1][22] == 2) {
+	if (_objectsPtrTable[kObjPtrShield]->specialData[1][22] == 2) {
 		_objectsPtrTable[kObjPtrConrad]->specialData[1][18] -= 1;
 		if (_objectsPtrTable[kObjPtrConrad]->specialData[1][18] < 1) {
 			_objectsPtrTable[kObjPtrConrad]->specialData[1][18] = 1;
-			while (_objectsPtrTable[7]->specialData[1][22] != 0) {
-				GameObject *o_tmp = _objectsPtrTable[7];
+			while (_objectsPtrTable[kObjPtrShield]->specialData[1][22] != 0) {
+				GameObject *o_tmp = _objectsPtrTable[kObjPtrShield];
 				while (o_tmp->o_next) {
 					o_tmp = o_tmp->o_next;
 				}
-				o_tmp->o_next = _objectsPtrTable[7];
-				_objectsPtrTable[kObjPtrInventaire]->o_child->o_next->o_next->o_next->o_child = _objectsPtrTable[7]->o_next;
-				_objectsPtrTable[7]->o_next = 0;
-				_objectsPtrTable[7] = _objectsPtrTable[kObjPtrInventaire]->o_child->o_next->o_next->o_next->o_child;
+				o_tmp->o_next = _objectsPtrTable[kObjPtrShield];
+				_objectsPtrTable[kObjPtrInventaire]->o_child->o_next->o_next->o_next->o_child = _objectsPtrTable[kObjPtrShield]->o_next;
+				_objectsPtrTable[kObjPtrShield]->o_next = 0;
+				_objectsPtrTable[kObjPtrShield] = _objectsPtrTable[kObjPtrInventaire]->o_child->o_next->o_next->o_next->o_child;
 			}
-			if (_objectsPtrTable[7]) {
-				_varsTable[25] = _objectsPtrTable[7]->objKey;
-				if (getMessage(_objectsPtrTable[7]->objKey, 0, &_tmpMsg)) {
-					_objectsPtrTable[7]->text = (const char *)_tmpMsg.data;
+			if (_objectsPtrTable[kObjPtrShield]) {
+				_varsTable[25] = _objectsPtrTable[kObjPtrShield]->objKey;
+				if (getMessage(_objectsPtrTable[kObjPtrShield]->objKey, 0, &_tmpMsg)) {
+					_objectsPtrTable[kObjPtrShield]->text = (const char *)_tmpMsg.data;
 				}
 			}
 		}
@@ -3278,7 +3278,7 @@ void Game::readInputEvents() {
 		}
 		setObjectParent(o, _objectsPtrTable[kObjPtrCimetiere]);
 	}
-	o = _objectsPtrTable[9];
+	o = _objectsPtrTable[kObjPtrProj];
 	if (o && o->customData[0] == 0) {
 		if (o->o_next) {
 			GameObject *o_tmp = o;
@@ -3288,17 +3288,17 @@ void Game::readInputEvents() {
 			o_tmp->o_next = o;
 			_objectsPtrTable[kObjPtrInventaire]->o_child->o_next->o_next->o_child = o->o_next;
 			o->o_next = 0;
-			_objectsPtrTable[9] = _objectsPtrTable[kObjPtrInventaire]->o_child->o_next->o_next->o_child;
-			if (_objectsPtrTable[9]) {
-				if (getMessage(_objectsPtrTable[9]->objKey, 0, &_tmpMsg)) {
-					_objectsPtrTable[9]->text = (const char *)_tmpMsg.data;
+			_objectsPtrTable[kObjPtrProj] = _objectsPtrTable[kObjPtrInventaire]->o_child->o_next->o_next->o_child;
+			if (_objectsPtrTable[kObjPtrProj]) {
+				if (getMessage(_objectsPtrTable[kObjPtrProj]->objKey, 0, &_tmpMsg)) {
+					_objectsPtrTable[kObjPtrProj]->text = (const char *)_tmpMsg.data;
 				}
 			}
 			setObjectParent(o, _objectsPtrTable[kObjPtrCimetiere]);
 		} else {
-			GameObject *o_prev = _objectsPtrTable[9];
+			GameObject *o_prev = _objectsPtrTable[kObjPtrProj];
 			setObjectParent(o_prev, _objectsPtrTable[kObjPtrCimetiere]);
-			_objectsPtrTable[9] = _objectsPtrTable[1]->o_child->o_next->o_next->o_child = 0;
+			_objectsPtrTable[kObjPtrProj] = _objectsPtrTable[1]->o_child->o_next->o_next->o_child = 0;
 		}
 	}
 	if (_res._levelDescriptionsTable[_level].inventory) {
@@ -3345,57 +3345,57 @@ void Game::readInputEvents() {
 			}
 			if (inp.numKeys[3]) {
 				inp.numKeys[3] = false;
-				if (_objectsPtrTable[9] && _objectsPtrTable[9]->o_next) {
-					GameObject *tmpObj = _objectsPtrTable[9];
+				if (_objectsPtrTable[kObjPtrProj] && _objectsPtrTable[kObjPtrProj]->o_next) {
+					GameObject *tmpObj = _objectsPtrTable[kObjPtrProj];
 					while (tmpObj->o_next) {
 						tmpObj = tmpObj->o_next;
 					}
-					tmpObj->o_next = _objectsPtrTable[9];
-					_objectsPtrTable[kObjPtrInventaire]->o_child->o_next->o_next->o_child = _objectsPtrTable[9]->o_next;
-					_objectsPtrTable[9]->o_next = 0;
-					_objectsPtrTable[9] = _objectsPtrTable[kObjPtrInventaire]->o_child->o_next->o_next->o_child;
-					if (_objectsPtrTable[9]) {
-						if (getMessage(_objectsPtrTable[9]->objKey, 0, &_tmpMsg) && _tmpMsg.data) {
-							_objectsPtrTable[9]->text = (const char *)_tmpMsg.data;
+					tmpObj->o_next = _objectsPtrTable[kObjPtrProj];
+					_objectsPtrTable[kObjPtrInventaire]->o_child->o_next->o_next->o_child = _objectsPtrTable[kObjPtrProj]->o_next;
+					_objectsPtrTable[kObjPtrProj]->o_next = 0;
+					_objectsPtrTable[kObjPtrProj] = _objectsPtrTable[kObjPtrInventaire]->o_child->o_next->o_next->o_child;
+					if (_objectsPtrTable[kObjPtrProj]) {
+						if (getMessage(_objectsPtrTable[kObjPtrProj]->objKey, 0, &_tmpMsg) && _tmpMsg.data) {
+							_objectsPtrTable[kObjPtrProj]->text = (const char *)_tmpMsg.data;
 						}
 					}
 				}
 			}
 			if (inp.numKeys[2]) {
 				inp.numKeys[2] = false;
-				if (_objectsPtrTable[7] && _objectsPtrTable[7]->o_next) {
-					GameObject *tmpObj = _objectsPtrTable[7];
+				if (_objectsPtrTable[kObjPtrShield] && _objectsPtrTable[kObjPtrShield]->o_next) {
+					GameObject *tmpObj = _objectsPtrTable[kObjPtrShield];
 					while (tmpObj->o_next) {
 						tmpObj = tmpObj->o_next;
 					}
-					tmpObj->o_next = _objectsPtrTable[7];
-					_objectsPtrTable[kObjPtrInventaire]->o_child->o_next->o_next->o_next->o_child = _objectsPtrTable[7]->o_next;
-					_objectsPtrTable[7]->o_next = 0;
-					_objectsPtrTable[7] = _objectsPtrTable[kObjPtrInventaire]->o_child->o_next->o_next->o_next->o_child;
-					if (_objectsPtrTable[7]) {
-						_varsTable[25] = _objectsPtrTable[7]->objKey;
-						if (getMessage(_objectsPtrTable[7]->objKey, 0, &_tmpMsg) && _tmpMsg.data) {
-							_objectsPtrTable[7]->text = (const char *)_tmpMsg.data;
+					tmpObj->o_next = _objectsPtrTable[kObjPtrShield];
+					_objectsPtrTable[kObjPtrInventaire]->o_child->o_next->o_next->o_next->o_child = _objectsPtrTable[kObjPtrShield]->o_next;
+					_objectsPtrTable[kObjPtrShield]->o_next = 0;
+					_objectsPtrTable[kObjPtrShield] = _objectsPtrTable[kObjPtrInventaire]->o_child->o_next->o_next->o_next->o_child;
+					if (_objectsPtrTable[kObjPtrShield]) {
+						_varsTable[25] = _objectsPtrTable[kObjPtrShield]->objKey;
+						if (getMessage(_objectsPtrTable[kObjPtrShield]->objKey, 0, &_tmpMsg) && _tmpMsg.data) {
+							_objectsPtrTable[kObjPtrShield]->text = (const char *)_tmpMsg.data;
 						}
-						_objectsPtrTable[kObjPtrConrad]->specialData[1][20] = (_objectsPtrTable[7]->specialData[1][22] == 1) ? 5 : 0;
+						_objectsPtrTable[kObjPtrConrad]->specialData[1][20] = (_objectsPtrTable[kObjPtrShield]->specialData[1][22] == 1) ? 5 : 0;
 					}
 				}
 			}
 			if (inp.numKeys[1]) {
 				inp.numKeys[1] = false;
-				if (_objectsPtrTable[10] && _objectsPtrTable[10]->o_next) {
-					GameObject *tmpObj = _objectsPtrTable[10];
+				if (_objectsPtrTable[kObjPtrScan] && _objectsPtrTable[kObjPtrScan]->o_next) {
+					GameObject *tmpObj = _objectsPtrTable[kObjPtrScan];
 					while (tmpObj->o_next) {
 						tmpObj = tmpObj->o_next;
 					}
-					tmpObj->o_next = _objectsPtrTable[10];
-					_objectsPtrTable[kObjPtrInventaire]->o_child->o_next->o_next->o_next->o_next->o_child = _objectsPtrTable[10]->o_next;
-					_objectsPtrTable[10]->o_next = 0;
-					_objectsPtrTable[10] = _objectsPtrTable[kObjPtrInventaire]->o_child->o_next->o_next->o_next->o_next->o_child;
-					if (_objectsPtrTable[10]) {
-						_varsTable[24] = _objectsPtrTable[10]->objKey;
-						if (getMessage(_objectsPtrTable[10]->objKey, 0, &_tmpMsg) && _tmpMsg.data) {
-							_objectsPtrTable[10]->text = (const char *)_tmpMsg.data;
+					tmpObj->o_next = _objectsPtrTable[kObjPtrScan];
+					_objectsPtrTable[kObjPtrInventaire]->o_child->o_next->o_next->o_next->o_next->o_child = _objectsPtrTable[kObjPtrScan]->o_next;
+					_objectsPtrTable[kObjPtrScan]->o_next = 0;
+					_objectsPtrTable[kObjPtrScan] = _objectsPtrTable[kObjPtrInventaire]->o_child->o_next->o_next->o_next->o_next->o_child;
+					if (_objectsPtrTable[kObjPtrScan]) {
+						_varsTable[24] = _objectsPtrTable[kObjPtrScan]->objKey;
+						if (getMessage(_objectsPtrTable[kObjPtrScan]->objKey, 0, &_tmpMsg) && _tmpMsg.data) {
+							_objectsPtrTable[kObjPtrScan]->text = (const char *)_tmpMsg.data;
 						}
 					}
 				}
@@ -3874,27 +3874,27 @@ void Game::drawInfoPanel() {
 
 	memset(&_drawCharBuf, 0, sizeof(_drawCharBuf));
 	if (_level != 6 && _level != 12) {
-		if (_objectsPtrTable[10]) {
-			if (_objectsPtrTable[10]->specialData[1][18] > 0) {
+		if (_objectsPtrTable[kObjPtrScan]) {
+			if (_objectsPtrTable[kObjPtrScan]->specialData[1][18] > 0) {
 				if (_ticks & 1) {
-					drawString(xPos + 33, yPos - 2, _objectsPtrTable[10]->text, kFontNameCart, 0);
+					drawString(xPos + 33, yPos - 2, _objectsPtrTable[kObjPtrScan]->text, kFontNameCart, 0);
 				}
 			} else {
-				drawString(xPos + 33, yPos - 2, _objectsPtrTable[10]->text, kFontNameCart, 0);
+				drawString(xPos + 33, yPos - 2, _objectsPtrTable[kObjPtrScan]->text, kFontNameCart, 0);
 			}
 		}
-		if (_objectsPtrTable[7]) {
-			if (_objectsPtrTable[7]->specialData[1][22] == 2 || (_objectsPtrTable[kObjPtrConrad]->specialData[1][20] & 15) == 5) {
+		if (_objectsPtrTable[kObjPtrShield]) {
+			if (_objectsPtrTable[kObjPtrShield]->specialData[1][22] == 2 || (_objectsPtrTable[kObjPtrConrad]->specialData[1][20] & 15) == 5) {
 				if (_ticks & 1) {
-					drawString(xPos + 33, yPos + 7, _objectsPtrTable[7]->text, kFontNameCart, 0);
+					drawString(xPos + 33, yPos + 7, _objectsPtrTable[kObjPtrShield]->text, kFontNameCart, 0);
 				}
 			} else {
-				drawString(xPos + 33, yPos + 7, _objectsPtrTable[7]->text, kFontNameCart, 0);
+				drawString(xPos + 33, yPos + 7, _objectsPtrTable[kObjPtrShield]->text, kFontNameCart, 0);
 			}
 		}
-		if (_objectsPtrTable[9]) {
+		if (_objectsPtrTable[kObjPtrProj]) {
 			char buf[64];
-			snprintf(buf, sizeof(buf), "%s%d", _objectsPtrTable[9]->text, _objectsPtrTable[9]->customData[0]);
+			snprintf(buf, sizeof(buf), "%s%d", _objectsPtrTable[kObjPtrProj]->text, _objectsPtrTable[kObjPtrProj]->customData[0]);
 			drawString(xPos + 33, yPos + 18, buf, kFontNameCart, 0);
 		}
 		if (_objectsPtrTable[kObjPtrGun]) {

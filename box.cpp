@@ -71,17 +71,17 @@ void Game::doBox() {
 						}
 						break;
 					case 8:
-						_objectsPtrTable[7] = _objectsPtrTable[kObjPtrInventaire]->o_child->o_next->o_next->o_next->o_child;
-						_varsTable[25] = _objectsPtrTable[7]->objKey;
-						if (getMessage(_objectsPtrTable[7]->objKey, 0, &_tmpMsg) && _tmpMsg.data) {
-							_objectsPtrTable[7]->text = (const char *)_tmpMsg.data;
+						_objectsPtrTable[kObjPtrShield] = _objectsPtrTable[kObjPtrInventaire]->o_child->o_next->o_next->o_next->o_child;
+						_varsTable[25] = _objectsPtrTable[kObjPtrShield]->objKey;
+						if (getMessage(_objectsPtrTable[kObjPtrShield]->objKey, 0, &_tmpMsg) && _tmpMsg.data) {
+							_objectsPtrTable[kObjPtrShield]->text = (const char *)_tmpMsg.data;
 						}
 						break;
 					case 16:
-						_objectsPtrTable[10] = _objectsPtrTable[kObjPtrInventaire]->o_child->o_next->o_next->o_next->o_next->o_child;
-						_varsTable[24] = _objectsPtrTable[10]->objKey;
-						if (getMessage(_objectsPtrTable[10]->objKey, 0, &_tmpMsg) && _tmpMsg.data) {
-							_objectsPtrTable[10]->text = (const char *)_tmpMsg.data;
+						_objectsPtrTable[kObjPtrScan] = _objectsPtrTable[kObjPtrInventaire]->o_child->o_next->o_next->o_next->o_next->o_child;
+						_varsTable[24] = _objectsPtrTable[kObjPtrScan]->objKey;
+						if (getMessage(_objectsPtrTable[kObjPtrScan]->objKey, 0, &_tmpMsg) && _tmpMsg.data) {
+							_objectsPtrTable[kObjPtrScan]->text = (const char *)_tmpMsg.data;
 						}
 						break;
 					}
@@ -92,11 +92,11 @@ void Game::doBox() {
 				if (tmpObj->o_parent->o_parent->specialData[1][21] != 128) {
 					if (num == 8192 || num == 16384 || num == 32768 || num == 65536) {
 						setObjectParent(tmpObj, getObjectByKey(tmpObj->customData[1]));
-						_objectsPtrTable[9] = _objectsPtrTable[kObjPtrInventaire]->o_child->o_next->o_next->o_child;
-						_objectsPtrTable[9] = tmpObj;
-						if (_objectsPtrTable[9]) {
-							if (getMessage(_objectsPtrTable[9]->objKey, 0, &_tmpMsg) && _tmpMsg.data) {
-								_objectsPtrTable[9]->text = (const char *)_tmpMsg.data;
+						_objectsPtrTable[kObjPtrProj] = _objectsPtrTable[kObjPtrInventaire]->o_child->o_next->o_next->o_child;
+						_objectsPtrTable[kObjPtrProj] = tmpObj;
+						if (_objectsPtrTable[kObjPtrProj]) {
+							if (getMessage(_objectsPtrTable[kObjPtrProj]->objKey, 0, &_tmpMsg) && _tmpMsg.data) {
+								_objectsPtrTable[kObjPtrProj]->text = (const char *)_tmpMsg.data;
 							}
 						}
 					} else {

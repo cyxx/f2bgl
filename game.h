@@ -22,8 +22,13 @@ enum {
 	kObjPtrConrad = 4,
 	kObjPtrTarget = 5,
 	kObjPtrTargetCommand = 6,
+	kObjPtrShield = 7,
 	kObjPtrUtil = 8,
+	kObjPtrProj = 9,
+	kObjPtrScan = 10,
 	kObjPtrGun = 11,
+	kObjPtrObject1 = 12,
+	kObjPtrObject2 = 13,
 	kObjPtrFondScanInfo = 14,
 	kObjPtrMusic = 15,
 	kObjPtrSaveloadOption = 16,
@@ -715,7 +720,7 @@ struct Game {
 	int op_sendShootMessage(int argc, int32_t *argv);
 	int op_getShootInfo(int argc, int32_t *argv);
 	int op_moveObjectToObject(int argc, int32_t *argv);
-	int op_getObject9(int argc, int32_t *argv);
+	int op_getProjObject(int argc, int32_t *argv);
 	int op_setObjectParent(int argc, int32_t *argv);
 	int op_removeObjectMessage(int argc, int32_t *argv);
 	int op_setBoxItem(int argc, int32_t *argv);

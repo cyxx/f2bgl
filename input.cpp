@@ -294,7 +294,7 @@ void Game::updateInputKeyMask(int inputIndex) {
 	if (testInputKeyMask(0, 0, 8, inputIndex)) {
 		keymask |= 0x40000000;
 	}
-	if (testInputKeyMask(num0, 0, 8, inputIndex) && _objectsPtrTable[9] && _objectsPtrTable[9]->customData[0] > 0) {
+	if (testInputKeyMask(num0, 0, 8, inputIndex) && _objectsPtrTable[kObjPtrProj] && _objectsPtrTable[kObjPtrProj]->customData[0] > 0) {
 		keymask |= 0x80000;
 	}
 	if (testInputKeyMask(num0, 0, 1, inputIndex)) {

@@ -867,11 +867,11 @@ int Game::op_moveObjectToObject(int argc, int32_t *argv) {
 	return -1;
 }
 
-int Game::op_getObject9(int argc, int32_t *argv) {
+int Game::op_getProjObject(int argc, int32_t *argv) {
 	assert(argc == 1);
-	debug(kDebug_OPCODES, "Game::op_getObject9() [%d]", argv[0]);
+	debug(kDebug_OPCODES, "Game::op_getProjObject() [%d]", argv[0]);
 	int param = argv[0];
-	GameObject *o = _objectsPtrTable[9]->o_child;
+	GameObject *o = _objectsPtrTable[kObjPtrProj]->o_child;
 	if (!o) {
 		return 0;
 	}
