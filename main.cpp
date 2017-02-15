@@ -284,6 +284,7 @@ int main(int argc, char *argv[]) {
 		if (w != gWindowW || h != gWindowH) {
 			gWindowW = w;
 			gWindowH = h;
+			SDL_SetWindowSize(window, gWindowW, gWindowH);
 			stub->initGL(gWindowW, gWindowH);
 		}
 		if (!paused) {
