@@ -1,12 +1,10 @@
 
-SDL_CFLAGS = `sdl2-config --cflags`
-SDL_LIBS = `sdl2-config --libs`
+SDL_CFLAGS := `sdl2-config --cflags`
+SDL_LIBS   := `sdl2-config --libs`
 
-CXX = i686-w64-mingw32-g++
-STRIP = i686-w64-mingw32-strip
-CXXFLAGS := -g -O -Wall -Wuninitialized -Wno-sign-compare
-
-DEFINES = 
+CXX      := i686-w64-mingw32-g++
+STRIP    := i686-w64-mingw32-strip
+CXXFLAGS += -g -O -Wall  -Wno-sign-compare -MMD $(SDL_CFLAGS)
 
 LIBS = $(SDL_LIBS) -lopengl32 -lz
 
@@ -19,16 +17,10 @@ SRCS = box.cpp camera.cpp collision.cpp cutscene.cpp decoder.cpp file.cpp \
 OBJS = $(SRCS:.cpp=.o)
 DEPS = $(SRCS:.cpp=.d)
 
-CXXFLAGS += -MMD $(DEFINES) $(SDL_CFLAGS)
-
-all: f2bgl.exe
-
-f2bgl.exe: f2bgl
-	$(STRIP) -o $@ $^
+f2bgl.exe: $(OBJS)
+	$(CXX) $(LDFLAGS) -o $@ $^ -static-libgcc -static-libstdc++ $(LIBS) -Wl,-Bstatic -lz
+	$(STRIP) $@
 	upx -9 $@
-
-f2bgl: $(OBJS)
-	$(CXX) $(LDFLAGS) -o $@ $^ -static-libgcc -static-libstdc++ $(LIBS)
 
 clean:
 	rm -f *.o *.d
