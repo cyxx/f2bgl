@@ -7,7 +7,10 @@ static const char *kFn = "f2bgl-level%d-%02d.%s";
 
 static const char *kSaveText = "1.00 Aug 25 1995  09:11:45 (c) 1995 Delphine Software, France";
 static int kHeaderSize = 96;
-static int kSaveVersion = 21;
+
+// 21 - first version
+// 22 - persists GameObject.text
+static int kSaveVersion = 22;
 
 enum {
 	kModeSave,
@@ -34,14 +37,16 @@ P(Uint32LE, uint32_t)
 
 #undef P
 
+static int _saveVersion;
+
 template <int M, typename T>
-static void persistPtr(File *fp, const T *&ptr, const T *base) {
+static void persistPtr(File *fp, const T *&ptr, const T *base, const T *def = 0) {
 	static const uint32_t kPtr = 0xFFFFFFFF;
 	if (M == kModeLoad) {
 		const uint32_t offset = fileReadUint32LE(fp);
-		ptr = (offset == kPtr) ? 0 : base + offset;
+		ptr = (offset == kPtr) ? def : base + offset;
 	 }else if (M == kModeSave) {
-		const uint32_t offset = base && ptr ? uint32_t(ptr - base) : kPtr;
+		const uint32_t offset = base && ptr != def ? uint32_t(ptr - base) : kPtr;
 		assert(offset == kPtr || (offset & 0x80000000) == 0);
 		fileWriteUint32LE(fp, offset);
 	}
@@ -208,7 +213,11 @@ static void persistGameMessageList(File *fp, GameObject *o) {
 
 template <int M>
 static void persistGameObject(File *fp, Game &g, GameObject *o) {
-        persist<M>(fp, o->scriptKey);
+	if (_saveVersion >= 22) {
+		assert(o->text);
+		persistPtr<M>(fp, o->text, (const char *)g._res._objectTextData, o->name);
+	}
+	persist<M>(fp, o->scriptKey);
 	persistGameObjectAnimation<M>(fp, o->anim);
 	if (M == kModeLoad) {
 		g.setupObjectScriptAnim(o);
@@ -498,6 +507,7 @@ void Game::saveGameState(int num) {
 	char header[kHeaderSize];
 	snprintf(header, sizeof(header), "PC__%4d : %s", kSaveVersion, kSaveText);
 	fileWrite(fp, header, sizeof(header));
+	_saveVersion = kSaveVersion;
 	// 160x100 thumbnail
 	persist<kModeSave>(fp, _level);
 	persistGameState<kModeSave>(fp, *this);
@@ -513,8 +523,7 @@ void Game::loadGameState(int num) {
 	}
 	char header[kHeaderSize];
 	fileRead(fp, header, sizeof(header));
-	int version;
-	if (sscanf(header, "PC__%4d", &version) == 1 && version == kSaveVersion) {
+	if (sscanf(header, "PC__%4d", &_saveVersion) == 1 && _saveVersion >= 21) {
 		int level = -1;
 		persist<kModeLoad>(fp, level);
 		debug(kDebug_SAVELOAD, "level %d currentLevel %d", level, _level);
