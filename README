@@ -58,9 +58,9 @@ In-game hotkeys :
     J              jump
     U              use
     1 .. 5         use item #
-    Ctrl S         save game state
-    Ctrl L         load game state
-    Ctrl + and -   change game state slot
+    S              save game state
+    L              load game state
+    + and -        change game state slot
 
 Debug hotkeys :
 

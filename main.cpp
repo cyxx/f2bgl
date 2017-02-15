@@ -171,30 +171,23 @@ int main(int argc, char *argv[]) {
 			case SDL_KEYUP:
 				if (gKeyScancodeMap[ev.key.keysym.scancode] != 0) {
 					stub->queueKeyInput(gKeyScancodeMap[ev.key.keysym.scancode], 0);
-				}
-				break;
-			case SDL_KEYDOWN:
-				if (ev.key.keysym.mod & KMOD_MODE) {
+				} else {
 					switch (ev.key.keysym.sym) {
 					case SDLK_PAGEUP:
 						if (gScale < 8) {
 							++gScale;
+							w = (int)(kDefaultW * gScale * .5);
+							h = (int)(kDefaultH * gScale * .5);
 						}
 						break;
 					case SDLK_PAGEDOWN:
 						if (gScale > 1) {
 							--gScale;
+							w = (int)(kDefaultW * gScale * .5);
+							h = (int)(kDefaultH * gScale * .5);
 						}
 						break;
-					default:
-						break;
-					}
-					w = (int)(kDefaultW * gScale * .5);
-					h = (int)(kDefaultH * gScale * .5);
-					break;
-				} else if (ev.key.keysym.mod & KMOD_CTRL) {
-					switch (ev.key.keysym.sym) {
-					case SDLK_i:
+					case SDLK_EXCLAIM:
 						stub->queueKeyInput(kKeyCodeCheatLifeCounter, 1);
 						break;
 					case SDLK_s:
@@ -203,20 +196,25 @@ int main(int argc, char *argv[]) {
 					case SDLK_l:
 						stub->loadState(gSaveSlot);
 						break;
+					case SDLK_p:
+					case SDLK_PLUS:
 					case SDLK_KP_PLUS:
-					case SDLK_PAGEUP:
 						if (gSaveSlot < 99) {
 							++gSaveSlot;
 						}
 						break;
+					case SDLK_m:
+					case SDLK_MINUS:
 					case SDLK_KP_MINUS:
-					case SDLK_PAGEDOWN:
 						if (gSaveSlot > 1) {
 							--gSaveSlot;
 						}
 						break;
 					}
-				} else if (gKeyScancodeMap[ev.key.keysym.scancode] != 0) {
+				}
+				break;
+			case SDL_KEYDOWN:
+				if (gKeyScancodeMap[ev.key.keysym.scancode] != 0) {
 					stub->queueKeyInput(gKeyScancodeMap[ev.key.keysym.scancode], 1);
 				}
 				break;
