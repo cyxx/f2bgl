@@ -537,8 +537,6 @@ void Game::loadGameState(int num) {
 }
 
 void Game::saveScreenshot(int num) {
-	char filename[32];
-	snprintf(filename, sizeof(filename), kFn, _level + 1, num, "bmp");
 	int w, h;
 	const uint8_t *p = _render->captureScreen(&w, &h);
 	if (p) {

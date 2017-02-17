@@ -120,6 +120,7 @@ void Game::clearLevelData() {
 	_prevCameraState = _cameraState = 0;
 	_currentCamera = 0;
 	_cameraDx = _cameraDy = _cameraDz = 0;
+	_animDx = _animDz = 0;
 
 	_rnd.reset();
 
@@ -2880,8 +2881,8 @@ void Game::drawSceneObjectMesh(const uint8_t *polygonsData, const uint8_t *verti
 		polygonsData += shadowPolySize;
 	}
 	int count = *polygonsData++;
-	int color = READ_LE_UINT16(polygonsData); polygonsData += 2;
 	while (count != 0) {
+		int color = READ_LE_UINT16(polygonsData); polygonsData += 2;
 		Vertex polygonPoints[16];
 		if (count & 0x40) {
 			count &= 15;
@@ -2957,7 +2958,6 @@ void Game::drawSceneObjectMesh(const uint8_t *polygonsData, const uint8_t *verti
 			}
 		}
 		count = *polygonsData++;
-		color = READ_LE_UINT16(polygonsData); polygonsData += 2;
 	}
 }
 
