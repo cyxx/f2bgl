@@ -3402,6 +3402,22 @@ void Game::readInputEvents() {
 			}
 		}
 	}
+	if (inp.farNear) {
+		inp.farNear = false;
+		if (_level != 6 && _level != 12) {
+			if (_conradUsingGun) {
+				_cameraUsingGunDist = !_cameraUsingGunDist;
+				if (_cameraUsingGunDist != _cameraDefaultDist) {
+					fixCamera();
+				}
+			} else {
+				_cameraStandingDist = !_cameraStandingDist;
+				if (_cameraStandingDist != _cameraDefaultDist) {
+					fixCamera();
+				}
+			}
+		}
+	}
 }
 
 static const struct {

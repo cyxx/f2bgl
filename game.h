@@ -345,6 +345,7 @@ struct PlayerInput {
 	bool jumpKey;
 	bool escapeKey;
 	bool numKeys[10];
+	bool farNear;
 	uint8_t lookAtDir;
 };
 

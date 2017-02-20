@@ -301,6 +301,9 @@ struct GameStub_F2B : GameStub {
 		case kKeyCode5:
 			_g->inp.numKeys[1 + keycode - kKeyCode1] = pressed;
 			break;
+		case kKeyCodeFarNear:
+			_g->inp.farNear = pressed;
+			break;
 		case kKeyCodeCheatLifeCounter:
 			_g->_cheats ^= kCheatLifeCounter;
 			break;

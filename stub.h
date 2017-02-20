@@ -31,6 +31,7 @@ enum {
 	kKeyCode3,       // item #3
 	kKeyCode4,       // item #4
 	kKeyCode5,       // item #5
+	kKeyCodeFarNear,
 	kKeyCodeCheatLifeCounter,
 };
 
