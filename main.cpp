@@ -49,6 +49,7 @@ static void setupKeyMap() {
 	gKeyScancodeMap[SDL_SCANCODE_ESCAPE] = kKeyCodeEscape;
 	gKeyScancodeMap[SDL_SCANCODE_I]      = kKeyCodeI;
 	gKeyScancodeMap[SDL_SCANCODE_J]      = kKeyCodeJ;
+	gKeyScancodeMap[SDL_SCANCODE_U]      = kKeyCodeU;
 	for (int i = 0; i < 5; ++i) {
 		gKeyScancodeMap[SDL_SCANCODE_1 + i] = kKeyCode1 + i;
 	}
@@ -60,8 +61,8 @@ static void setupKeyMap() {
 	gJoystickMap[3] = kKeyCodeReturn;
 	gJoystickMap[4] = kKeyCodeSpace;
 	gJoystickMap[5] = kKeyCodeI;
-	gJoystickMap[6] = kKeyCodeU;
-	gJoystickMap[7] = kKeyCodeJ;
+	gJoystickMap[6] = kKeyCodeJ;
+	gJoystickMap[7] = kKeyCodeU;
 	// gamecontroller buttons
 	memset(gGamepadMap, 0, sizeof(gGamepadMap));
 	gGamepadMap[SDL_CONTROLLER_BUTTON_A] = kKeyCodeAlt;
