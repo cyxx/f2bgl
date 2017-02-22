@@ -3801,9 +3801,11 @@ bool Game::sendMessage(int msg, int16_t destObjKey) {
 							_conradHit = 2;
 						}
 					}
-					if (o == _objectsPtrTable[kObjPtrConrad] && msg == 58 && o->specialData[1][18] <= 0) {
-						playDeathCutscene(_currentObject->objKey);
-						_endGame = true;
+					if ((_cheats & kCheatLifeCounter) == 0) {
+						if (o == _objectsPtrTable[kObjPtrConrad] && msg == 58 && o->specialData[1][18] <= 0) {
+							playDeathCutscene(_currentObject->objKey);
+							_endGame = true;
+						}
 					}
 					debug(kDebug_GAME, "Send message (%s,%d) -> (%s,%d)", _currentObject->name, _currentObject->objKey, o->name, o->objKey);
 				}
