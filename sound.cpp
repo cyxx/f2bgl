@@ -7,6 +7,8 @@
 #include "resource.h"
 #include "sound.h"
 
+static const int kMidiType = MIDI_FM;
+
 Sound::Sound(Resource *res)
 	: _res(res), _mix() {
 	_sfxVolume = kDefaultVolume;
@@ -14,11 +16,47 @@ Sound::Sound(Resource *res)
 	_digiCount = 0;
 	_digiTable = 0;
 	_fpSnd = 0;
+	_midiCount = 0;
+	_midiTable = 0;
+	_fpSng = 0;
 }
 
 Sound::~Sound() {
 	free(_digiTable);
 	_digiTable = 0;
+	if (_fpSnd) {
+		fileClose(_fpSnd);
+		_fpSnd = 0;
+	}
+	free(_midiTable);
+	_midiTable = 0;
+	if (_fpSng) {
+		fileClose(_fpSng);
+		_fpSng = 0;
+	}
+}
+
+static const char *getSngName(int type) {
+	const char *name = 0;
+	switch (type) {
+	case MIDI_AWE32:
+		name = "AWE32";
+		break;
+	case MIDI_MT32:
+		name = "MT32";
+		break;
+	case MIDI_GUS:
+		if (!g_isDemo) {
+			name = "GUS";
+		}
+		// fall-through
+	default:
+		name = "FM";
+		break;
+	}
+	static char fname[16];
+	snprintf(fname, sizeof(fname), "%s%s.SNG", g_isDemo ? "L1" : "", name);
+	return fname;
 }
 
 void Sound::init() {
@@ -26,6 +64,8 @@ void Sound::init() {
 	_digiCompressed = !g_isDemo;
 	_fpSnd = fileOpen(g_isDemo ? "L1DIGI.SND" : "DIGICMP.SND", &dataSize, kFileType_SOUND);
 	loadDigiSnd(_fpSnd);
+	_fpSng = fileOpen(getSngName(kMidiType), &dataSize, kFileType_SOUND);
+	loadMidiSng(_fpSng);
 }
 
 void Sound::loadDigiSnd(File *fp) {
@@ -56,6 +96,39 @@ void Sound::loadDigiSnd(File *fp) {
 			_digiTable[i].offset = offsets[i].data;
 			_digiTable[i].size = offsets[i + 1].data - offsets[i].data;
 		}
+		debug(kDebug_SOUND, "loadDigiSnd() count %d", _digiCount);
+	}
+}
+
+void Sound::loadMidiSng(File *fp) {
+	struct {
+		uint32_t name;
+		uint32_t data;
+	} offsets[1024];
+	_midiCount = 0;
+	for (int i = 0; i < 1024; ++i) {
+		offsets[i].name = fileReadUint32LE(fp);
+		offsets[i].data = fileReadUint32LE(fp);
+		if (i != 0 && offsets[i].name == offsets[0].data) {
+			_midiCount = i;
+			break;
+		}
+	}
+	_midiTable = (MidiSng *)calloc(_midiCount, sizeof(MidiSng));
+	if (_midiTable) {
+		for (int i = 0; i < _midiCount; ++i) {
+			fileSetPos(fp, offsets[i].name, kFilePosition_SET);
+			char *p = _midiTable[i].name;
+			for (int j = 0; j < 16; ++j) {
+				p[j] = fileReadByte(fp);
+				if (p[j] == 0) {
+					break;
+				}
+			}
+			_midiTable[i].offset = offsets[i].data;
+			_midiTable[i].size = offsets[i + 1].data - offsets[i].data;
+		}
+		debug(kDebug_SOUND, "loadMidiSng() count %d", _midiCount);
 	}
 }
 
@@ -63,6 +136,15 @@ const DigiSnd *Sound::findDigiSndByName(const char *name) const {
 	for (int i = 0; i < _digiCount; ++i) {
 		if (strcasecmp(_digiTable[i].name, name) == 0) {
 			return &_digiTable[i];
+		}
+	}
+	return 0;
+}
+
+const MidiSng *Sound::findMidiSngByName(const char *name) const {
+	for (int i = 0; i < _midiCount; ++i) {
+		if (strcasecmp(_midiTable[i].name, name) == 0) {
+			return &_midiTable[i];
 		}
 	}
 	return 0;
@@ -131,6 +213,10 @@ void Sound::playMidi(int16_t objKey, int index) {
 		const uint8_t *p_sndinfo = _res->getData(kResType_SND, sndKey, "SNDINFO");
 		if (p_sndinfo && READ_LE_UINT32(p_sndinfo + 32) == 2) {
 			debug(kDebug_SOUND, "Sound::playMidi() key %d '%s'", sndKey, (const char *)p_sndinfo);
+			const MidiSng *ms = findMidiSngByName((const char *)p_sndinfo);
+			if (ms) {
+				debug(kDebug_SOUND, "Sound::playMidi() offset 0x%x size %d", ms->offset, ms->size);
+			}
 		}
 	}
 }

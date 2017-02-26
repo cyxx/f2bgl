@@ -18,6 +18,19 @@ struct DigiSnd {
 	uint32_t size;
 };
 
+struct MidiSng {
+	char name[16];
+	uint32_t offset;
+	uint32_t size;
+};
+
+enum {
+	MIDI_AWE32,
+	MIDI_FM,
+	MIDI_GUS,
+	MIDI_MT32
+};
+
 struct Sound {
 
 	Sound(Resource *res);
@@ -27,6 +40,9 @@ struct Sound {
 
 	void loadDigiSnd(File *fp);
 	const DigiSnd *findDigiSndByName(const char *name) const;
+
+	void loadMidiSng(File *fp);
+	const MidiSng *findMidiSngByName(const char *name) const;
 
 	void setVolume(int volume);
 	void setPan(int pan);
@@ -49,6 +65,9 @@ struct Sound {
 	int _digiCount;
 	DigiSnd *_digiTable;
 	File *_fpSnd;
+	int _midiCount;
+	MidiSng *_midiTable;
+	File *_fpSng;
 	int _musicMode;
 	int16_t _musicKey;
 };
