@@ -1094,6 +1094,8 @@ void Game::init() {
 	debug(kDebug_GAME, "Game::init()");
 
 	_res.loadTrigo();
+	_res.loadDelphineINI();
+	_skillLevel = _res._userConfig.skillLevel;
 
 	int dataSize;
 	File *fp = fileOpen("PLAYER.INI", &dataSize, kFileType_DATA);
@@ -3872,8 +3874,8 @@ void Game::initViewport() {
 }
 
 void Game::drawInfoPanel() {
-	const int xPos = 6;
-	const int yPos = 140;
+	const int xPos = _res._userConfig.iconLrInvX;
+	const int yPos = _res._userConfig.iconLrInvY;
 	if (_level != 6 && _level != 12) {
 		_render->drawSprite(xPos, yPos, _infoPanelSpr.data, _infoPanelSpr.w, _infoPanelSpr.h, _infoPanelSpr.key);
 	} else {

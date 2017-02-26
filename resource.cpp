@@ -31,6 +31,7 @@ Resource::Resource() {
 	memset(_musicKeyPathsTable, 0, sizeof(_musicKeyPathsTable));
 	_demoInputDataSize = 0;
 	_demoInputData = 0;
+	memset(&_userConfig, 0, sizeof(_userConfig));
 }
 
 Resource::~Resource() {
@@ -625,4 +626,62 @@ void Resource::loadDEM(File *fp, int dataSize) {
 		input->key = fileReadUint16LE(fp);
 		input->pressed = fileReadUint16LE(fp) != 0;
 	}
+}
+
+static int convertParameterPlayLevel(const char *value) {
+	if (strncmp(value, "EASY", 4) == 0) {
+		return kSkillEasy;
+	} else if (strncmp(value, "HARD", 4) == 0) {
+		return kSkillHard;
+	}
+	return kSkillNormal;
+}
+
+void Resource::loadDelphineINI() {
+	int dataSize;
+	File *fp = fileOpen("DELPHINE.INI", &dataSize, kFileType_RUNTIME);
+
+	char *iniData = ALLOC<char>(dataSize + 1);
+	fileRead(fp, iniData, dataSize);
+	iniData[dataSize] = '\0';
+
+	fileClose(fp);
+
+	struct {
+		const char *name;
+		int *p;
+		int (*convert)(const char *);
+	} parameters[] = {
+		{ "ICON_LR_INV_X", &_userConfig.iconLrInvX, 0 },
+		{ "ICON_LR_INV_Y", &_userConfig.iconLrInvY, 0 },
+		{ "PLAY_LEVEL", &_userConfig.skillLevel, convertParameterPlayLevel },
+		{ 0, 0 }
+	};
+
+	for (char *p = iniData; *p; ) {
+		char *next = strchr(p, '\n');
+		if (p[0] != '#') {
+			for (int i = 0; parameters[i].name; ++i) {
+				const char *param = parameters[i].name;
+				if (strncmp(param, p, strlen(param)) == 0) {
+					const char *q = p + strlen(param);
+					while (q < next && *q == ' ') {
+						++q;
+					}
+					if (parameters[i].convert) {
+						*parameters[i].p = parameters[i].convert(q);
+					} else {
+						*parameters[i].p = strtol(q, 0, 10);
+					}
+					break;
+				}
+			}
+		}
+		if (!next) {
+			break;
+		}
+		p = next + 1;
+	}
+
+	free(iniData);
 }

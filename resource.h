@@ -75,6 +75,18 @@ struct ResDemoInput {
 	bool pressed;
 };
 
+enum {
+	kSkillEasy = 0,
+	kSkillNormal,
+	kSkillHard
+};
+
+struct ResUserConfig {
+	int iconLrInvX;
+	int iconLrInvY;
+	int skillLevel;
+};
+
 struct Resource {
 	ResTreeNode *_treesTable[kResTypeCount];
 	uint16_t _treesTableCount[kResTypeCount];
@@ -98,6 +110,7 @@ struct Resource {
 	char _musicKeyPathsTable[kMusicKeyPathsTableSize][kKeyPathNameLength];
 	int _demoInputDataSize;
 	ResDemoInput *_demoInputData;
+	ResUserConfig _userConfig;
 
 	Resource();
 	~Resource();
@@ -126,6 +139,7 @@ struct Resource {
 	void loadObjectText(File *fp, int dataSize);
 	void loadTrigo();
 	void loadDEM(File *fp, int dataSize);
+	void loadDelphineINI();
 };
 
 #endif // RESOURCE_H__

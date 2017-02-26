@@ -83,12 +83,6 @@ enum {
 };
 
 enum {
-	kSkillEasy = 0,
-	kSkillNormal,
-	kSkillHard
-};
-
-enum {
 	kIndirectColorShadow = 0,
 	kIndirectColorLight,
 	kIndirectColorGreen,
