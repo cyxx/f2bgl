@@ -492,11 +492,20 @@ void Render::setOverlayDim(int w, int h, bool hflip) {
 	_overlay.hflip = hflip;
 }
 
-void Render::setPalette(const uint8_t *pal, int count) {
+void Render::setPalette(const uint8_t *pal, int count, int rgbScale, bool greyScale) {
 	for (int i = 0; i < count; ++i) {
-		const int r = pal[0];
-		const int g = pal[1];
-		const int b = pal[2];
+		int r = pal[0];
+		int g = pal[1];
+		int b = pal[2];
+		if (greyScale) {
+			const int grey = (r * 30 + g * 59 + b * 11) / 100;
+			r = g = b = grey;
+		}
+		if (rgbScale != 256) {
+			r = (r * rgbScale) >> 8;
+			g = (g * rgbScale) >> 8;
+			b = (b * rgbScale) >> 8;
+		}
 		_clut[3 * i] = r;
 		_clut[3 * i + 1] = g;
 		_clut[3 * i + 2] = b;

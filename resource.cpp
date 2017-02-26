@@ -628,6 +628,13 @@ void Resource::loadDEM(File *fp, int dataSize) {
 	}
 }
 
+static int convertParameterOnOff(const char *value) {
+	if (strncmp(value, "ON", 2) == 0) {
+		return 1;
+	}
+	return 0;
+}
+
 static int convertParameterPlayLevel(const char *value) {
 	if (strncmp(value, "EASY", 4) == 0) {
 		return kSkillEasy;
@@ -652,6 +659,8 @@ void Resource::loadDelphineINI() {
 		int *p;
 		int (*convert)(const char *);
 	} parameters[] = {
+		{ "GREY_SCALE", &_userConfig.greyScale, convertParameterOnOff },
+		{ "LIGHT_COEF", &_userConfig.lightCoef, 0 },
 		{ "ICON_LR_INV_X", &_userConfig.iconLrInvX, 0 },
 		{ "ICON_LR_INV_Y", &_userConfig.iconLrInvY, 0 },
 		{ "PLAY_LEVEL", &_userConfig.skillLevel, convertParameterPlayLevel },

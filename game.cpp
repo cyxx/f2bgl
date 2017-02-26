@@ -701,7 +701,7 @@ void Game::setPalette(int16_t key) {
 	}
 	const uint8_t *p = _res.getData(kResType_PAL, key, "PALDATA");
 	memcpy(_screenPalette, p, 256 * 3);
-	_render->setPalette(p, 256);
+	_render->setPalette(p, 256, _res._userConfig.lightCoef, _res._userConfig.greyScale != 0);
 }
 
 void Game::updatePalette() {
