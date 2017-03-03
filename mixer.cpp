@@ -323,17 +323,9 @@ void Mixer::stopXmi() {
 void Mixer::mixBuf(int16_t *buf, int len) {
 	assert((len & 1) == 0);
 	memset(buf, 0, len * sizeof(int16_t));
-	_xmiPlayer->readSamples(buf, len);
-	for (int i = 0; i < kMaxSoundsCount; ++i) {
-		if (_soundsTable[i]) {
-			if (!_soundsTable[i]->read(buf, len)) {
-				delete _soundsTable[i];
-				_soundsTable[i] = 0;
-				_idsMap[i] = 0;
-			}
-		}
-	}
-	if (_queue && _queue->size >= _queue->preloadSize) {
+	if (!_queue) {
+		_xmiPlayer->readSamples(buf, len);
+	} else if (_queue->size >= _queue->preloadSize) {
 		MixerQueueList *mql = _queue->head;
 		for (int i = 0; mql && i < len; i += 2) {
 			int sample = _queue->decoder.decode(mql->buffer[mql->read]);
@@ -350,6 +342,15 @@ void Mixer::mixBuf(int16_t *buf, int len) {
 				delete mql;
 				mql = next;
 				_queue->head = mql;
+			}
+		}
+	}
+	for (int i = 0; i < kMaxSoundsCount; ++i) {
+		if (_soundsTable[i]) {
+			if (!_soundsTable[i]->read(buf, len)) {
+				delete _soundsTable[i];
+				_soundsTable[i] = 0;
+				_idsMap[i] = 0;
 			}
 		}
 	}
