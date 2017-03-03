@@ -6,6 +6,7 @@
 #include "file.h"
 #include "mixer.h"
 #include "render.h"
+#include "xmiplayer.h"
 
 static const int16_t _delta16Table[128] = {
 	    0,      1,      2,      3,      4,      5,      6,      7,
@@ -184,6 +185,7 @@ Mixer::Mixer() {
 	_rate = 0;
 	memset(_soundsTable, 0, sizeof(_soundsTable));
 	_queue = 0;
+	_xmiPlayer = new XmiPlayer;
 	memset(_idsMap, 0, sizeof(_idsMap));
 	_lock = &nullMixerLock;
 }
@@ -193,10 +195,12 @@ Mixer::~Mixer() {
 		stopWav(_idsMap[i]);
 	}
 	stopQueue();
+	delete _xmiPlayer;
 }
 
 void Mixer::setFormat(int rate, int fmt) {
 	_rate = rate;
+	_xmiPlayer->setRate(rate);
 }
 
 int Mixer::findIndexById(uint32_t id) const {
@@ -301,9 +305,25 @@ void Mixer::stopQueue() {
 	}
 }
 
+void Mixer::playXmi(File *f, int size) {
+	MixerLock ml(_lock);
+	uint8_t *buf = (uint8_t *)malloc(size);
+	if (buf) {
+		fileRead(f, buf, size);
+		_xmiPlayer->load(buf, size);
+		free(buf);
+	}
+}
+
+void Mixer::stopXmi() {
+	MixerLock ml(_lock);
+	_xmiPlayer->unload();
+}
+
 void Mixer::mixBuf(int16_t *buf, int len) {
 	assert((len & 1) == 0);
 	memset(buf, 0, len * sizeof(int16_t));
+	_xmiPlayer->readSamples(buf, len);
 	for (int i = 0; i < kMaxSoundsCount; ++i) {
 		if (_soundsTable[i]) {
 			if (!_soundsTable[i]->read(buf, len)) {

@@ -146,19 +146,19 @@ struct GzipFile: File {
 bool g_isDemo = false;
 static int _fileLanguage;
 static int _fileVoice;
-static const char *_fileDataPath;
-static const char *_fileSavePath;
+const char *g_fileDataPath;
+const char *g_fileSavePath;
 static bool _exitOnError = true;
 
 static void fileMakeFilePath(const char *fileName, int fileType, int fileLang, char *filePath) {
-	static const char *dataDirsTable[] = { "DATA", "DATA/SOUND", "TEXT", "VOICE" };
+	static const char *dataDirsTable[] = { "DATA", "DATA/SOUND", "TEXT", "VOICE", "DATA/DRIVERS" };
 	static const char *langDirsTable[] = { "US", "FR", "GR", "SP", "IT" };
 
 	if (fileType == kFileType_RUNTIME) {
-		sprintf(filePath, "%s/", _fileDataPath);
+		sprintf(filePath, "%s/", g_fileDataPath);
 	} else {
 		assert(fileType >= 0 && fileType < ARRAYSIZE(dataDirsTable));
-		sprintf(filePath, "%s/%s/", _fileDataPath, dataDirsTable[fileType]);
+		sprintf(filePath, "%s/%s/", g_fileDataPath, dataDirsTable[fileType]);
 	}
 	switch (fileLang) {
 	case kFileLanguage_SP:
@@ -181,8 +181,8 @@ static void fileMakeFilePath(const char *fileName, int fileType, int fileLang, c
 
 static File *fileOpenIntern(const char *fileName, int fileType) {
 	char filePath[MAXPATHLEN];
-	if (fileType == kFileType_SAVE || fileType == kFileType_LOAD || fileType == kFileType_SCREENSHOT) {
-		snprintf(filePath, sizeof(filePath), "%s/%s", _fileSavePath, fileName);
+	if (fileType == kFileType_SAVE || fileType == kFileType_LOAD || fileType == kFileType_SCREENSHOT || fileType == kFileType_CONFIG) {
+		snprintf(filePath, sizeof(filePath), "%s/%s", g_fileSavePath, fileName);
 		File *fp = 0;
 		switch (fileType) {
 		case kFileType_LOAD:
@@ -190,6 +190,7 @@ static File *fileOpenIntern(const char *fileName, int fileType) {
 			fp = new GzipFile;
 			break;
 		case kFileType_SCREENSHOT:
+		case kFileType_CONFIG:
 			fp = new StdioFile;
 			break;
 		default:
@@ -234,13 +235,13 @@ bool fileExists(const char *fileName, int fileType) {
 bool fileInit(int language, int voice, const char *dataPath, const char *savePath) {
 	_fileLanguage = language;
 	_fileVoice = voice;
-	_fileDataPath = dataPath;
-	_fileSavePath = savePath;
+	g_fileDataPath = dataPath;
+	g_fileSavePath = savePath;
 	bool ret = fileExists("player.ini", kFileType_DATA);
 	if (ret) {
 		g_isDemo = fileExists("ddtitle.cin", kFileType_DATA);
 	}
-	debug(kDebug_FILE, "fileInit() dataPath '%s' isDemo %d", _fileDataPath, g_isDemo);
+	debug(kDebug_FILE, "fileInit() dataPath '%s' isDemo %d", g_fileDataPath, g_isDemo);
 	return ret;
 }
 

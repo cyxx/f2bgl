@@ -7,7 +7,7 @@
 #include "resource.h"
 #include "sound.h"
 
-static const int kMidiType = MIDI_FM;
+static const int kMidiType = MIDI_GUS;
 
 Sound::Sound(Resource *res)
 	: _res(res), _mix() {
@@ -216,10 +216,14 @@ void Sound::playMidi(int16_t objKey, int index) {
 			const MidiSng *ms = findMidiSngByName((const char *)p_sndinfo);
 			if (ms) {
 				debug(kDebug_SOUND, "Sound::playMidi() offset 0x%x size %d", ms->offset, ms->size);
+				fileSetPos(_fpSng, ms->offset, kFilePosition_SET);
+				_mix.playXmi(_fpSng, ms->size);
 			}
 		}
 	}
 }
 
 void Sound::stopMidi(int16_t objKey, int index) {
+	debug(kDebug_SOUND, "Sound::stopMidi() key 0x%x", objKey);
+	_mix.stopXmi();
 }
