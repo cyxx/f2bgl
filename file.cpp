@@ -181,27 +181,6 @@ static void fileMakeFilePath(const char *fileName, int fileType, int fileLang, c
 
 static File *fileOpenIntern(const char *fileName, int fileType) {
 	char filePath[MAXPATHLEN];
-	if (fileType == kFileType_SAVE || fileType == kFileType_LOAD || fileType == kFileType_SCREENSHOT || fileType == kFileType_CONFIG) {
-		snprintf(filePath, sizeof(filePath), "%s/%s", g_fileSavePath, fileName);
-		File *fp = 0;
-		switch (fileType) {
-		case kFileType_LOAD:
-		case kFileType_SAVE:
-			fp = new GzipFile;
-			break;
-		case kFileType_SCREENSHOT:
-		case kFileType_CONFIG:
-			fp = new StdioFile;
-			break;
-		default:
-			break;
-		}
-		if (fp && !fp->open(filePath, (fileType == kFileType_LOAD) ? "rb" : "wb")) {
-			delete fp;
-			fp = 0;
-		}
-		return fp;
-	}
 	fileMakeFilePath(fileName, fileType, _fileLanguage, filePath);
 	char *p = strrchr(filePath, '/');
 	if (p) {
@@ -222,6 +201,12 @@ static File *fileOpenIntern(const char *fileName, int fileType) {
 }
 
 bool fileExists(const char *fileName, int fileType) {
+	if (fileType == kFileType_SAVE || fileType == kFileType_LOAD || fileType == kFileType_SCREENSHOT || fileType == kFileType_CONFIG) {
+		char filePath[MAXPATHLEN];
+		snprintf(filePath, sizeof(filePath), "%s/%s", g_fileSavePath, fileName);
+		struct stat st;
+		return stat(filePath, &st) == 0 && S_ISREG(st.st_mode);
+	}
 	bool exists = false;
 	File *fp = fileOpenIntern(fileName, fileType);
 	if (fp) {
@@ -250,6 +235,28 @@ int fileLanguage() {
 }
 
 File *fileOpen(const char *fileName, int *fileSize, int fileType, bool errorIfNotFound) {
+	if (fileType == kFileType_SAVE || fileType == kFileType_LOAD || fileType == kFileType_SCREENSHOT || fileType == kFileType_CONFIG) {
+		char filePath[MAXPATHLEN];
+		snprintf(filePath, sizeof(filePath), "%s/%s", g_fileSavePath, fileName);
+		File *fp = 0;
+		switch (fileType) {
+		case kFileType_LOAD:
+		case kFileType_SAVE:
+			fp = new GzipFile;
+			break;
+		case kFileType_SCREENSHOT:
+		case kFileType_CONFIG:
+			fp = new StdioFile;
+			break;
+		default:
+			break;
+		}
+		if (fp && !fp->open(filePath, (fileType == kFileType_LOAD) ? "rb" : "wb")) {
+			delete fp;
+			fp = 0;
+		}
+		return fp;
+	}
 	if (g_isDemo) {
 		if (fileType == kFileType_VOICE) {
 			return 0;
