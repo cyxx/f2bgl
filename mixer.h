@@ -20,11 +20,13 @@ enum {
 
 struct MixerSound;
 struct MixerQueue;
+struct XmiPlayer;
 
 struct Mixer {
 	int _rate;
 	MixerSound *_soundsTable[kMaxSoundsCount];
 	MixerQueue *_queue;
+	XmiPlayer *_xmiPlayer;
 	uint32_t _idsMap[kMaxSoundsCount];
 	void (*_lock)(int);
 
@@ -41,6 +43,9 @@ struct Mixer {
 	void playQueue(int preloadSize);
 	void appendToQueue(const uint8_t *buf, int size);
 	void stopQueue();
+
+	void playXmi(File *, int size);
+	void stopXmi();
 
 	void mixBuf(int16_t *buf, int len);
 	static void mixCb(void *param, uint8_t *buf, int len);

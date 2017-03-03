@@ -13,10 +13,12 @@ enum FileType {
 	kFileType_SOUND,
 	kFileType_TEXT,
 	kFileType_VOICE,
+	kFileType_DRIVERS,
 	kFileType_RUNTIME,
 	kFileType_LOAD,
 	kFileType_SAVE,
 	kFileType_SCREENSHOT,
+	kFileType_CONFIG,
 };
 
 enum FileLanguage {
@@ -35,6 +37,8 @@ enum FilePosition {
 struct File;
 
 extern bool g_isDemo;
+extern const char *g_fileDataPath;
+extern const char *g_fileSavePath;
 
 bool fileInit(int language, int voice, const char *dataPath, const char *savePath);
 int fileLanguage();
