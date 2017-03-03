@@ -537,8 +537,8 @@ void Render::setupProjection(int mode) {
 	if (mode == kProjMenu) {
 		glMatrixMode(GL_PROJECTION);
 		glLoadIdentity();
-		setPerspective(45., 1.6, 1., 128.);
-		glTranslatef(0., 0., -24.);
+		setPerspective(40., 1.5, 1., 128.);
+		glTranslatef(0., 0., -32.);
 		glRotatef(20., 1., 0., 0.);
 		glMatrixMode(GL_MODELVIEW);
 		glLoadIdentity();
@@ -558,8 +558,8 @@ void Render::setupProjection(int mode) {
 	}
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
-	setPerspective(45., 1.6, 1., 512.);
-	glTranslatef(0., 0., -24.);
+	setPerspective(40., 1.5, 1., 512.);
+	glTranslatef(0., 0., -32.);
 	glRotatef(20., 1., 0., 0.);
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
