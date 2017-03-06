@@ -11,7 +11,7 @@
 #include "render.h"
 
 Game::Game(Render *render, const GameParams *params)
-	: _cut(render, this, &_snd), _snd(&_res), _render(render), _params(*params) {
+	: _cut(render, this, &_snd), _snd(&_res), _xmi(&_res), _render(render), _params(*params) {
 
 	_cheats = 0;
 
@@ -1102,6 +1102,8 @@ void Game::init() {
 	_res.loadINI(fp, dataSize);
 	fileClose(fp);
 
+	_res.loadCustomGUS();
+	_snd._mix._xmiPlayer = &_xmi;
 	_snd.init();
 
 	_ticks = 0;

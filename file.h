@@ -56,5 +56,6 @@ void fileWrite(File *fp, const void *buf, int size);
 void fileWriteByte(File *fp, uint8_t value);
 void fileWriteUint16LE(File *fp, uint16_t value);
 void fileWriteUint32LE(File *fp, uint32_t value);
+void fileWriteLine(File *fp, const char *s, ...);
 
 #endif // __File_H__

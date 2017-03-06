@@ -30,6 +30,7 @@ enum {
 	kSoundKeyPathsTableSize = 10,
 	kMusicKeyPathsTableSize = 52,
 	kKeyPathNameLength = 96,
+	kGusPatchesTableSize = 256,
 	kLevelMusicTableSize = 14
 };
 
@@ -113,6 +114,7 @@ struct Resource {
 	int _demoInputDataSize;
 	ResDemoInput *_demoInputData;
 	ResUserConfig _userConfig;
+	char _gusPatches[kGusPatchesTableSize][16]; // bank0, drum0
 
 	Resource();
 	~Resource();
@@ -142,6 +144,7 @@ struct Resource {
 	void loadTrigo();
 	void loadDEM(File *fp, int dataSize);
 	void loadDelphineINI();
+	void loadCustomGUS();
 };
 
 #endif // RESOURCE_H__

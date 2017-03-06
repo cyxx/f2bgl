@@ -32,6 +32,7 @@ Resource::Resource() {
 	_demoInputDataSize = 0;
 	_demoInputData = 0;
 	memset(&_userConfig, 0, sizeof(_userConfig));
+	memset(_gusPatches, 0, sizeof(_gusPatches));
 }
 
 Resource::~Resource() {
@@ -693,4 +694,51 @@ void Resource::loadDelphineINI() {
 	}
 
 	free(iniData);
+}
+
+void Resource::loadCustomGUS() {
+	int dataSize;
+	File *fp = fileOpen("CUSTOM.GUS", &dataSize, kFileType_DRIVERS, false);
+	if (!fp) {
+		return;
+	}
+
+	char *gusData = ALLOC<char>(dataSize + 1);
+	fileRead(fp, gusData, dataSize);
+	gusData[dataSize] = '\0';
+
+	fileClose(fp);
+
+	static const int kOffsetBankPatches = 0;
+	static const int kOffsetDrumPatches = 128;
+
+	int offset = 0;
+	for (char *p = gusData; *p; ) {
+		char *next = strchr(p, '\n');
+		if (p[0] == '#') {
+			// ignore
+		} else if (strncmp(p, "[Melodic Patches]", 17) == 0) {
+			offset = kOffsetBankPatches;
+		} else if (strncmp(p, "[Drum Patches]", 14) == 0) {
+			offset = kOffsetDrumPatches;
+		} else {
+			char *q = strchr(p, '=');
+			if (q && q < next) {
+				const int index = atoi(p);
+				char *nl = strpbrk(q + 1, "\r\n");
+				if (nl) {
+					*nl = 0;
+					assert(offset + index <= kGusPatchesTableSize);
+					strcpy(_gusPatches[offset + index], q + 1);
+					debug(kDebug_RESOURCE, "GUS patch %d '%s.pat'", offset + index, _gusPatches[offset + index]);
+				}
+			}
+		}
+		if (!next) {
+			break;
+		}
+		p = next + 1;
+	}
+
+	free(gusData);
 }
