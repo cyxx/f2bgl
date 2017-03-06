@@ -4,16 +4,18 @@
 
 #include "util.h"
 
+struct Resource;
 struct XmiPlayerImpl;
 
 struct XmiPlayer {
 
 	XmiPlayerImpl *_impl;
+	Resource *_res;
 
-	XmiPlayer();
+	XmiPlayer(Resource *res);
 	~XmiPlayer();
 
-	void setRate(int mixingRate);
+	void setRate(int rate);
 
 	void load(const uint8_t *data, int size);
 	void unload();

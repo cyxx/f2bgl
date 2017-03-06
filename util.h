@@ -22,7 +22,8 @@ enum {
 	kDebug_CUTSCENE = 1 << 4,
 	kDebug_OPCODES  = 1 << 5,
 	kDebug_SOUND    = 1 << 6,
-	kDebug_SAVELOAD = 1 << 7
+	kDebug_SAVELOAD = 1 << 7,
+	kDebug_XMIDI    = 1 << 8,
 };
 
 extern const char *g_caption;

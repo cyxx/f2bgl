@@ -185,7 +185,7 @@ Mixer::Mixer() {
 	_rate = 0;
 	memset(_soundsTable, 0, sizeof(_soundsTable));
 	_queue = 0;
-	_xmiPlayer = new XmiPlayer;
+	_xmiPlayer = 0;
 	memset(_idsMap, 0, sizeof(_idsMap));
 	_lock = &nullMixerLock;
 }
@@ -195,12 +195,13 @@ Mixer::~Mixer() {
 		stopWav(_idsMap[i]);
 	}
 	stopQueue();
-	delete _xmiPlayer;
 }
 
 void Mixer::setFormat(int rate, int fmt) {
 	_rate = rate;
-	_xmiPlayer->setRate(rate);
+	if (_xmiPlayer) {
+		_xmiPlayer->setRate(rate);
+	}
 }
 
 int Mixer::findIndexById(uint32_t id) const {
@@ -323,7 +324,7 @@ void Mixer::stopXmi() {
 void Mixer::mixBuf(int16_t *buf, int len) {
 	assert((len & 1) == 0);
 	memset(buf, 0, len * sizeof(int16_t));
-	if (!_queue) {
+	if (!_queue && _xmiPlayer) {
 		_xmiPlayer->readSamples(buf, len);
 	} else if (_queue->size >= _queue->preloadSize) {
 		MixerQueueList *mql = _queue->head;

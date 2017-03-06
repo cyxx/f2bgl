@@ -365,3 +365,12 @@ void fileWriteUint32LE(File *fp, uint32_t value) {
 	}
 	fileWrite(fp, buf, sizeof(buf));
 }
+
+void fileWriteLine(File *fp, const char *s, ...) {
+	char buf[256];
+	va_list va;
+	va_start(va, s);
+	vsprintf(buf, s, va);
+	va_end(va);
+	fileWrite(fp, buf, strlen(buf));
+}

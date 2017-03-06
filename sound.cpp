@@ -6,6 +6,7 @@
 #include "file.h"
 #include "resource.h"
 #include "sound.h"
+#include "xmiplayer.h"
 
 static const int kMidiType = MIDI_GUS;
 
