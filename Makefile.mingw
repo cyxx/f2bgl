@@ -6,13 +6,13 @@ CXX      := i686-w64-mingw32-g++
 STRIP    := i686-w64-mingw32-strip
 CXXFLAGS += -g -O -Wall  -Wno-sign-compare -MMD $(SDL_CFLAGS)
 
-LIBS = $(SDL_LIBS) -lopengl32 -lz
+LIBS = $(SDL_LIBS) -lopengl32 -lWildMidi.dll
 
 SRCS = box.cpp camera.cpp collision.cpp cutscene.cpp decoder.cpp file.cpp \
 	font.cpp game.cpp input.cpp inventory.cpp main.cpp menu.cpp mixer.cpp \
 	opcodes.cpp raycast.cpp render.cpp resource.cpp saveload.cpp scaler.cpp \
 	screenshot.cpp sound.cpp spritecache.cpp stub.cpp texturecache.cpp \
-	trigo.cpp util.cpp
+	trigo.cpp util.cpp xmiplayer.cpp
 
 OBJS = $(SRCS:.cpp=.o)
 DEPS = $(SRCS:.cpp=.d)
