@@ -177,7 +177,7 @@ void Sound::playSfx(int16_t objKey, int16_t sndKey) {
 		if (dc) {
 			debug(kDebug_SOUND, "Sound::playSfx() '%s' offset 0x%X", (const char *)p_sndinfo, dc->offset);
 			fileSetPos(_fpSnd, dc->offset, kFilePosition_SET);
-			_mix.playWav(_fpSnd, dc->size, _sfxVolume, _sfxPan, id, _digiCompressed);
+			_mix.playWav(_fpSnd, dc->size, _sfxVolume, _sfxPan, id, false, _digiCompressed);
 		}
 	}
 	_sfxVolume = kDefaultVolume;
@@ -195,7 +195,7 @@ void Sound::playVoice(int16_t objKey, uint32_t crc) {
 	File *fp = fileOpen(name, &dataSize, kFileType_VOICE, false);
 	debug(kDebug_SOUND, "Sound::playVoice() '%s' dataSize %d", name, dataSize);
 	if (fp) {
-		_mix.playWav(fp, dataSize, kDefaultVolume, kDefaultPan, makeId(objKey));
+		_mix.playWav(fp, dataSize, kDefaultVolume, kDefaultPan, makeId(objKey), true);
 		fileClose(fp);
 	}
 }

@@ -88,6 +88,12 @@ struct ResUserConfig {
 	int iconLrInvX;
 	int iconLrInvY;
 	int skillLevel;
+	int soundVolume;
+	int musicVolume;
+	int voiceVolume;
+	int soundOn;
+	int musicOn;
+	int voiceOn;
 };
 
 struct Resource {
