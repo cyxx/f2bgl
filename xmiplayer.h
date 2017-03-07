@@ -16,6 +16,7 @@ struct XmiPlayer {
 	~XmiPlayer();
 
 	void setRate(int rate);
+	void setVolume(int volume);
 
 	void load(const uint8_t *data, int size);
 	void unload();

@@ -1104,6 +1104,9 @@ void Game::init() {
 
 	_res.loadCustomGUS();
 	_snd._mix._xmiPlayer = &_xmi;
+	_snd._mix.setSoundVolume(_res._userConfig.soundOn ? _res._userConfig.soundVolume : 0);
+	_snd._mix.setMusicVolume(_res._userConfig.musicOn ? _res._userConfig.musicVolume : 0);
+	_snd._mix.setVoiceVolume(_res._userConfig.voiceOn ? _res._userConfig.voiceVolume : 0);
 	_snd.init();
 
 	_ticks = 0;

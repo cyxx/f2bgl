@@ -47,6 +47,10 @@ struct XmiPlayerImpl {
 		debug(kDebug_XMIDI, "WildMidi_Init() path '%s' ret %d", path, ret);
 	}
 
+	void setVolume(int volume) {
+		WildMidi_MasterVolume(volume);
+	}
+
 	void fini() {
 		unload();
 		const int ret = WildMidi_Shutdown();
@@ -92,6 +96,10 @@ XmiPlayer::~XmiPlayer() {
 void XmiPlayer::setRate(int mixingRate) {
 	debug(kDebug_XMIDI, "XmiPlayer::setRate() rate %d", mixingRate);
 	_impl->init(mixingRate, _res);
+}
+
+void XmiPlayer::setVolume(int volume) {
+	_impl->setVolume(volume);
 }
 
 void XmiPlayer::load(const uint8_t *data, int size) {

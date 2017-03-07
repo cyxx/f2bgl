@@ -29,14 +29,21 @@ struct Mixer {
 	XmiPlayer *_xmiPlayer;
 	uint32_t _idsMap[kMaxSoundsCount];
 	void (*_lock)(int);
+	int _soundVolume;
+	int _musicVolume;
+	int _voiceVolume;
 
 	Mixer();
 	~Mixer();
 
+	void setSoundVolume(int volume);
+	void setMusicVolume(int volume);
+	void setVoiceVolume(int volume);
+
 	void setFormat(int rate, int fmt);
 	int findIndexById(uint32_t id) const;
 
-	void playWav(File *, int dataSize, int volume, int pan, uint32_t id, bool compressed = true);
+	void playWav(File *, int dataSize, int volume, int pan, uint32_t id, bool isVoice, bool compressed = true);
 	void stopWav(uint32_t);
 	bool isWavPlaying(uint32_t) const;
 

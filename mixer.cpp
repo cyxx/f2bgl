@@ -188,6 +188,9 @@ Mixer::Mixer() {
 	_xmiPlayer = 0;
 	memset(_idsMap, 0, sizeof(_idsMap));
 	_lock = &nullMixerLock;
+	_soundVolume = kDefaultVolume;
+	_musicVolume = kDefaultVolume;
+	_voiceVolume = kDefaultVolume;
 }
 
 Mixer::~Mixer() {
@@ -195,6 +198,21 @@ Mixer::~Mixer() {
 		stopWav(_idsMap[i]);
 	}
 	stopQueue();
+}
+
+void Mixer::setSoundVolume(int volume) {
+	_soundVolume = volume;
+}
+
+void Mixer::setMusicVolume(int volume) {
+	_musicVolume = volume;
+	if (_xmiPlayer) {
+		_xmiPlayer->setVolume(_musicVolume * 255 / kDefaultVolume);
+	}
+}
+
+void Mixer::setVoiceVolume(int volume) {
+	_voiceVolume = volume;
 }
 
 void Mixer::setFormat(int rate, int fmt) {
@@ -213,12 +231,17 @@ int Mixer::findIndexById(uint32_t id) const {
 	return -1;
 }
 
-void Mixer::playWav(File *fp, int dataSize, int volume, int pan, uint32_t id, bool compressed) {
+void Mixer::playWav(File *fp, int dataSize, int volume, int pan, uint32_t id, bool isVoice, bool compressed) {
 	MixerSound *snd = new MixerSound();
 	snd->data.load(fp, dataSize, _rate);
 	snd->readOffset = 0;
 	snd->compressed = compressed;
 	assert(volume >= 0 && volume < 128);
+	if (isVoice) {
+		volume = volume * _voiceVolume / kDefaultVolume;
+	} else {
+		volume = volume * _soundVolume / kDefaultVolume;
+	}
 	assert(pan >= 0 && pan < 128);
 	pan -= 64; // to -64,64 range
 	if (pan < 0) {
@@ -335,8 +358,8 @@ void Mixer::mixBuf(int16_t *buf, int len) {
 				sample = _queue->decoder.decode(mql->buffer[mql->read]);
 				++mql->read;
 			}
-			mix(&buf[i + 0], sample, kDefaultVolume);
-			mix(&buf[i + 1], sample, kDefaultVolume);
+			mix(&buf[i + 0], sample, _musicVolume);
+			mix(&buf[i + 1], sample, _musicVolume);
 			if (mql->read >= mql->size) {
 				MixerQueueList *next = mql->next;
 				free(mql->buffer);

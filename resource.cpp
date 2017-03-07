@@ -665,6 +665,12 @@ void Resource::loadDelphineINI() {
 		{ "ICON_LR_INV_X", &_userConfig.iconLrInvX, 0 },
 		{ "ICON_LR_INV_Y", &_userConfig.iconLrInvY, 0 },
 		{ "PLAY_LEVEL", &_userConfig.skillLevel, convertParameterPlayLevel },
+		{ "NOISE_VOLUME", &_userConfig.soundVolume, 0 },
+		{ "MUSIC_VOLUME", &_userConfig.musicVolume, 0 },
+		{ "VOICE_VOLUME", &_userConfig.voiceVolume, 0 },
+		{ "MUSIC", &_userConfig.musicOn, convertParameterOnOff },
+		{ "SOUND", &_userConfig.soundOn, convertParameterOnOff },
+		{ "VOICE", &_userConfig.voiceOn, convertParameterOnOff },
 		{ 0, 0 }
 	};
 
