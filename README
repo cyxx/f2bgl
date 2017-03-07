@@ -29,6 +29,7 @@ directory. The expected directory structure is :
 	DELPHINE.INI
 	TRIGO.DAT    - optional
 	DATA/
+	DATA/DRIVERS/
 	DATA/SOUND/
 	TEXT/        - not present with demo version
 	VOICE/       - not present with demo version
