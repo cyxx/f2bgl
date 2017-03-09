@@ -1956,8 +1956,16 @@ int Game::op_setLevelData(int argc, int32_t *argv) {
 int Game::op_drawNumber(int argc, int32_t *argv) {
 	assert(argc == 4);
 	debug(kDebug_OPCODES, "Game::op_drawNumber() [%d, %d, %d, %d]", argv[0], argv[1], argv[2], argv[3]);
-	warning("Game::op_drawNumber() unimplemented");
-	// TODO
+	if (_mainLoopCurrentMode == 1) {
+		_drawNumber.x = argv[0]; // getScaledCoord(argv[0]);
+		_drawNumber.y = argv[1]; // getScaledCoord(argv[1]);
+		int value = argv[2];
+		_drawNumber.font = argv[3];
+		if ((value % 10) != 0) {
+			value = (value / 10) * 10 + 10;
+		}
+		_drawNumber.value = value;
+	}
 	return 0;
 }
 

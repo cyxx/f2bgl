@@ -350,6 +350,12 @@ struct DrawBuffer {
 	void (*draw)(DrawBuffer *buf, int x, int y, int w, int h, const uint8_t *src);
 };
 
+struct DrawNumber {
+	int x, y;
+	int font;
+	int value;
+};
+
 struct Render;
 
 struct GameParams {
@@ -378,6 +384,7 @@ struct Game {
 	int _cheats;
 
 	DrawBuffer _drawCharBuf;
+	DrawNumber _drawNumber;
 	int _ticks;
 	int _level;
 	int _skillLevel;

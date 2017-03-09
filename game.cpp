@@ -16,6 +16,7 @@ Game::Game(Render *render, const GameParams *params)
 	_cheats = 0;
 
 	memset(&_drawCharBuf, 0, sizeof(_drawCharBuf));
+	memset(&_drawNumber, 0, sizeof(_drawNumber));
 
 	_ticks = 0;
 	_level = 0;
@@ -2625,6 +2626,12 @@ if (_mainLoopCurrentMode == 1) {
 		y += 8;
 	}
 #endif
+	if (_drawNumber.font != 0) {
+		char buf[32];
+		snprintf(buf, sizeof(buf), "%d", _drawNumber.value);
+		drawString(_drawNumber.x, _drawNumber.y, buf, _drawNumber.font, 0);
+		memset(&_drawNumber, 0, sizeof(_drawNumber));
+	}
 	if (_cut._numToPlayCounter >= 0) {
 		if (_cut._numToPlayCounter == 0) {
 			if (_cut._numToPlay >= 0) {
