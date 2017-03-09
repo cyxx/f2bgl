@@ -2774,12 +2774,12 @@ bool Game::addSceneObjectToList(int xPos, int yPos, int zPos, GameObject *o) {
 			int cosy =  g_cos[o_parent->pitch & 1023];
 			int siny = -g_sin[o_parent->pitch & 1023];
 			const int xr = fixedMul(cosy, xo, kPosShift) - fixedMul(siny, zo, kPosShift);
-			so->x = o_parent->xPosParent + o->xPos;
+			so->x = o->xPosParent + o->xPos;
 			so->x += xr;
-			so->y = o_parent->yPosParent + o->yPos;
+			so->y = o->yPosParent + o->yPos;
 			so->y += ((int16_t)READ_LE_UINT16(p_anikeyf + 14)) << 11;
 			const int zr = fixedMul(siny, xo, kPosShift) + fixedMul(cosy, zo, kPosShift);
-			so->z = o_parent->zPosParent + o->zPos;
+			so->z = o->zPosParent + o->zPos;
 			so->z += zr;
 		} else {
 			so->x = xPos;
@@ -2999,8 +2999,8 @@ void Game::drawSceneObject(SceneObject *so) {
 		const int scale = (so->o->flags[1] & 0x20000) != 0 ? 2 : 1;
 		const int x0 = -scale * spr->w / 2;
 		const int y0 = -scale * spr->h / 2;
-		const int x1 = x0 + spr->w;
-		const int y1 = y0 + spr->h;
+		const int x1 = x0 + scale * spr->w;
+		const int y1 = y0 + scale * spr->h;
 		Vertex v[4];
 		v[0].x = x0; v[0].y = y0; v[0].z = 0;
 		v[1].x = x1; v[1].y = y0; v[1].z = 0;
