@@ -784,7 +784,7 @@ struct Game {
 	int rayCastCollisionCb2(GameObject *o, CellMap *cell, int ox, int oz);
 	int rayCastCameraCb1(GameObject *o, CellMap *cell, int ox, int oz);
 	int rayCastCameraCb2(GameObject *o, CellMap *cell, int ox, int oz);
-	int rayCastHelper(GameObject *o, int x, CellMap *cellMap, RayCastCallbackType callback, bool);
+	int rayCastHelper(GameObject *o, int x, RayCastCallbackType callback, bool);
 	int rayCastMono(GameObject *o, int x, CellMap *cellMap, RayCastCallbackType callback, int delta);
 	int rayCastCamera(GameObject *o, int x, CellMap *cellMap, RayCastCallbackType callback);
 
