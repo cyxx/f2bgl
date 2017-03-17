@@ -3499,6 +3499,16 @@ void Game::setupInventoryObjects() {
 		_infoPanelSpr.data = _spriteCache.getData(sprKey, _infoPanelSpr.data);
 		_infoPanelSpr.key = sprKey;
 		_res.unload(kResType_SPR, sprKey);
+		if (_level == 6 || _level == 12) {
+			// only display the energy level
+			static const int w = 4;
+			assert(_infoPanelSpr.w >= w);
+			for (int i = 1; i < _infoPanelSpr.h; ++i) {
+				memmove(_infoPanelSpr.data + i * w, _infoPanelSpr.data + i * _infoPanelSpr.w, w);
+			}
+			_infoPanelSpr.w = w;
+			return;
+		}
 	}
 
 	memset(&_drawCharBuf, 0, sizeof(_drawCharBuf));
@@ -3894,12 +3904,7 @@ void Game::initViewport() {
 void Game::drawInfoPanel() {
 	const int xPos = _res._userConfig.iconLrInvX;
 	const int yPos = _res._userConfig.iconLrInvY;
-	if (_level != 6 && _level != 12) {
-		_render->drawSprite(xPos, yPos, _infoPanelSpr.data, _infoPanelSpr.w, _infoPanelSpr.h, _infoPanelSpr.key);
-	} else {
-// TODO: pitch
-//		_render->drawSprite(xPos, yPos, _infoPanelSpr.data, _infoPanelSpr.w, pitch=4, _infoPanelSpr.h);
-	}
+	_render->drawSprite(xPos, yPos, _infoPanelSpr.data, _infoPanelSpr.w, _infoPanelSpr.h, _infoPanelSpr.key);
 	const uint8_t color = _indirectPalette[kIndirectColorYellow][1];
 	const int life = 48 * _objectsPtrTable[kObjPtrConrad]->specialData[1][18] / _varsTable[kVarConradLife];
 	_render->drawRectangle(xPos + 1, yPos + 1 + 48 - life, 2, life, color);
