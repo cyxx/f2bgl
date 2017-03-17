@@ -351,7 +351,7 @@ void Render::drawPolygonTexture(const Vertex *vertices, int verticesCount, int p
 void Render::drawParticle(const Vertex *pos, int color) {
 	assert(color >= 0 && color < 256);
 	glColor4f(_pixelColorMap[0][color], _pixelColorMap[1][color], _pixelColorMap[2][color], 1.);
-	glPointSize(1.5);
+	glPointSize(4.);
 	emitPoint3f(pos);
 	glPointSize(1.);
 	glColor4f(1., 1., 1., 1.);
