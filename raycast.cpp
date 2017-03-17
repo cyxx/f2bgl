@@ -15,6 +15,7 @@ static int _xPosRay, _zPosRay;
 static int _xStepDistance, _zStepDistance;
 static int _resXRayX, _resZRayX, _resXRayZ, _resZRayZ;
 static int _zRayStepX, _zRayStepZ, _xRayStepX, _xRayStepZ;
+static int _xRayMask, _zRayMask;
 
 void Game::rayCastInit(int sx) {
 	const int xb = ((sx - (kScreenWidth / 2)) << 1) - 1;
@@ -60,11 +61,22 @@ void Game::rayCastInit(int sx) {
 		_zRayStepX = -_zRayStepX;
 		_zRayStepZ = -_zRayStepZ;
 	}
+	if (_zRayStepX > 0) {
+		_zRayMask = -1;
+	} else {
+		_zRayMask = 0;
+	}
+
 	_xRayStepZ = 1 << kRayShift;
 	_xRayStepX = fixedDiv(dx, kRayShift, dz);
 	if (dz < 0) {
 		_xRayStepZ = -_xRayStepZ;
 		_xRayStepX = -_xRayStepX;
+	}
+	if (_xRayStepZ > 0) {
+		_xRayMask = 0;
+	} else {
+		_xRayMask = -1;
 	}
 
 	_xStepDistance = fixedMul(_yInvSinObserver, _xRayStepX, kFracShift);
@@ -79,10 +91,10 @@ void Game::rayCastInit(int sx) {
 	}
 }
 
-static int get2dIntersection(int reglage1, int ex, int ez, int stepx, int stepz, int *x, int *z) {
+static int get2dIntersection(int data, int ex, int ez, int stepx, int stepz, int *x, int *z) {
 	int cx = *x;
 	int cz = *z;
-	const int delta = (ex << kRayShift) + (reglage1 << (kRayShift - 6));
+	const int delta = (ex << kRayShift) + (data << (kRayShift - 6));
 	const int tmp = (stepx > 0) ? stepz : -stepz;
 	cz += fixedMul(tmp, (delta - cx), kRayShift);
 	if (cz >> kRayShift == ez) {
@@ -343,7 +355,71 @@ int Game::rayCastCameraCb2(GameObject * o, CellMap * cell, int ox, int oz) {
 	}
 }
 
-static int testRayX(int sx, CellMap *cell, int x, int z, int ex, int ez) {
+enum {
+	kRayCastMono,
+	kRayCastCamera,
+	kRayCastWall,
+};
+
+static int testRayX(int sx, CellMap *cell, int x, int z, int ex, int ez, int type) {
+	if (type == kRayCastWall) {
+		switch (cell->type) {
+		case 10:
+			if (get2dIntersection(cell->data[0], ex, ez, _zRayStepX, _zRayStepZ, &x, &z)) {
+				int num = ((z >> kFracShift) ^ _zRayMask) & ((kWallWidth << 2) - 1);
+				if ((num >> 2) & 1) {
+					return 0;
+				}
+				_resXRayX = x;
+				_resZRayX = z;
+				return 1;
+			}
+			return 0;
+		case 11:
+			if (get2dIntersection(cell->data[0], ez, ex, _xRayStepZ, _xRayStepX, &z, &x)) {
+				int num = ((x >> kFracShift) ^ _xRayMask) & ((kWallWidth << 2) - 1);
+				if ((num >> 2) & 1) {
+					return 0;
+				}
+				_resXRayX = x;
+				_resZRayX = z;
+				return 1;
+			}
+			return 0;
+		case 16:
+//			if (get2dIntersection(cell->data[0], ex, ez, _zRayStepX, _zRayStepZ, &x, &z)) {
+//				int num = (z >> kFracShift) & ((kWallWidth << 2) - 1);
+//				if (num > cell->data[1]) {
+//					return 0;
+//				}
+//			}
+			return 0;
+		case 17:
+//			if (get2dIntersection(cell->data[0], ex, ez, _zRayStepX, _zRayStepZ, &x, &z)) {
+//				int num = (z >> kFracShift) & ((kWallWidth << 2) - 1);
+//				if (num < 63 - cell->data[1]) {
+//					return 0;
+//				}
+//			}
+			return 0;
+		case 18:
+//			if (get2dIntersection(cell->data[0], ez, ex, _xRayStepZ, _xRayStepX, &z, &x)) {
+//				int num = (x >> kFracShift) & ((kWallWidth << 2) - 1);
+//				if (num > cell->data[1]) {
+//					return 0;
+//				}
+//			}
+			return 0;
+		case 19:
+//			if (get2dIntersection(cell->data[0], ez, ex, _xRayStepZ, _xRayStepX, &z, &x)) {
+//				int num = (x >> kFracShift) & ((kWallWidth << 2) - 1);
+//				if (num < 63 - cell->data[1]) {
+//					return 0;
+//				}
+//			}
+			return 0;
+		}
+	}
 	switch (cell->type) {
 	case 2:
 		if (get2dIntersection(cell->data[0], ex, ez, _zRayStepX, _zRayStepZ, &x, &z)) {
@@ -362,7 +438,7 @@ static int testRayX(int sx, CellMap *cell, int x, int z, int ex, int ez) {
 	case 4:
 	case 16:
 		if (get2dIntersection(cell->data[0], ex, ez, _zRayStepX, _zRayStepZ, &x, &z)) {
-			const int num = ((z >> kFracShift)) & ((kWallWidth << 2) - 1);
+			const int num = (z >> kFracShift) & ((kWallWidth << 2) - 1);
 			if (num > cell->data[1]) {
 				return 0;
 			}
@@ -374,7 +450,7 @@ static int testRayX(int sx, CellMap *cell, int x, int z, int ex, int ez) {
 	case 5:
 	case 17:
 		if (get2dIntersection(cell->data[0], ex, ez, _zRayStepX, _zRayStepZ, &x, &z)) {
-			const int num = ((z >> kFracShift)) & ((kWallWidth << 2) - 1);
+			const int num = (z >> kFracShift) & ((kWallWidth << 2) - 1);
 			if (num < 63 - cell->data[1]) {
 				return 0;
 			}
@@ -386,7 +462,7 @@ static int testRayX(int sx, CellMap *cell, int x, int z, int ex, int ez) {
 	case 6:
 	case 18:
 		if (get2dIntersection(cell->data[0], ez, ex, _xRayStepZ, _xRayStepX, &z, &x)) {
-			const int num = ((x >> kFracShift)) & ((kWallWidth << 2) - 1);
+			const int num = (x >> kFracShift) & ((kWallWidth << 2) - 1);
 			if (num > cell->data[1]) {
 				return 0;
 			}
@@ -398,7 +474,7 @@ static int testRayX(int sx, CellMap *cell, int x, int z, int ex, int ez) {
 	case 7:
 	case 19:
 		if (get2dIntersection(cell->data[0], ez, ex, _xRayStepZ, _xRayStepX, &z, &x)) {
-			const int num = ((x >> kFracShift)) & ((kWallWidth << 2) - 1);
+			const int num = (x >> kFracShift) & ((kWallWidth << 2) - 1);
 			if (num < 63 - cell->data[1]) {
 				return 0;
 			}
@@ -419,7 +495,65 @@ static int testRayX(int sx, CellMap *cell, int x, int z, int ex, int ez) {
 	return 0;
 }
 
-static int testRayZ(int sx, CellMap * cell, int x, int z, int ex, int ez) {
+static int testRayZ(int sx, CellMap *cell, int x, int z, int ex, int ez, int type) {
+	if (type == kRayCastWall) {
+		switch (cell->type) {
+		case 10:
+			if (get2dIntersection(cell->data[0], ex, ez, _zRayStepX, _zRayStepZ, &x, &z)) {
+				int num = ((z >> kFracShift) ^ _zRayMask) & ((kWallWidth << 2) - 1);
+				if ((num >> 2) & 1) {
+					return 0;
+				}
+				_resXRayZ = x;
+				_resZRayZ = z;
+				return 1;
+			}
+			return 0;
+		case 11:
+			if (get2dIntersection(cell->data[0], ez, ex, _xRayStepZ, _xRayStepX, &z, &x)) {
+				int num = ((x >> kFracShift) ^ _xRayMask) & ((kWallWidth << 2) - 1);
+				if ((num >> 2) & 1) {
+					return 0;
+				}
+				_resXRayZ = x;
+				_resZRayZ = z;
+				return 1;
+			}
+			return 0;
+		case 16:
+//			if (get2dIntersection(cell->data[0], ex, ez, _zRayStepX, _zRayStepZ, &x, &z)) {
+//				int num = (z >> kFracShift) & ((kWallWidth << 2) - 1);
+//				if (num > cell->data[1]) {
+//					return 0;
+//				}
+//			}
+			return 0;
+		case 17:
+//			if (get2dIntersection(cell->data[0], ex, ez, _zRayStepX, _zRayStepZ, &x, &z)) {
+//				int num = (z >> kFracShift) & ((kWallWidth << 2) - 1);
+//				if (num < 63 - cell->data[1]) {
+//					return 0;
+//				}
+//			}
+			return 0;
+		case 18:
+//			if (get2dIntersection(cell->data[0], ez, ex, _xRayStepZ, _xRayStepX, &z, &x)) {
+//				int num = (x >> kFracShift) & ((kWallWidth << 2) - 1);
+//				if (num > cell->data[1]) {
+//					return 0;
+//				}
+//			}
+			return 0;
+		case 19:
+//			if (get2dIntersection(cell->data[0], ez, ex, _xRayStepZ, _xRayStepX, &z, &x)) {
+//				int num = (x >> kFracShift) & ((kWallWidth << 2) - 1);
+//				if (num < 63 - cell->data[1]) {
+//					return 0;
+//				}
+//			}
+			return 0;
+		}
+	}
 	switch (cell->type) {
 	case 2:
 		if (get2dIntersection(cell->data[0], ex, ez, _zRayStepX, _zRayStepZ, &x, &z)) {
@@ -438,7 +572,7 @@ static int testRayZ(int sx, CellMap * cell, int x, int z, int ex, int ez) {
 	case 4:
 	case 16:
 		if (get2dIntersection(cell->data[0], ex, ez, _zRayStepX, _zRayStepZ, &x, &z)) {
-			const int num = ((z >> kFracShift)) & ((kWallWidth << 2) - 1);
+			const int num = (z >> kFracShift) & ((kWallWidth << 2) - 1);
 			if (num > cell->data[1]) {
 				return 0;
 			}
@@ -450,7 +584,7 @@ static int testRayZ(int sx, CellMap * cell, int x, int z, int ex, int ez) {
 	case 5:
 	case 17:
 		if (get2dIntersection(cell->data[0], ex, ez, _zRayStepX, _zRayStepZ, &x, &z)) {
-			const int num = ((z >> kFracShift)) & ((kWallWidth << 2) - 1);
+			const int num = (z >> kFracShift) & ((kWallWidth << 2) - 1);
 			if (num < 63 - cell->data[1]) {
 				return 0;
 			}
@@ -462,7 +596,7 @@ static int testRayZ(int sx, CellMap * cell, int x, int z, int ex, int ez) {
 	case 6:
 	case 18:
 		if (get2dIntersection(cell->data[0], ez, ex, _xRayStepZ, _xRayStepX, &z, &x)) {
-			const int num = ((x >> kFracShift)) & ((kWallWidth << 2) - 1);
+			const int num = (x >> kFracShift) & ((kWallWidth << 2) - 1);
 			if (num > cell->data[1]) {
 				return 0;
 			}
@@ -474,7 +608,7 @@ static int testRayZ(int sx, CellMap * cell, int x, int z, int ex, int ez) {
 	case 7:
 	case 19:
 		if (get2dIntersection(cell->data[0], ez, ex, _xRayStepZ, _xRayStepX, &z, &x)) {
-			const int num = ((x >> kFracShift)) & ((kWallWidth << 2) - 1);
+			const int num = (x >> kFracShift) & ((kWallWidth << 2) - 1);
 			if (num < 63 - cell->data[1]) {
 				return 0;
 			}
@@ -495,39 +629,44 @@ static int testRayZ(int sx, CellMap * cell, int x, int z, int ex, int ez) {
 	return 0;
 }
 
-int Game::rayCastHelper(GameObject *o, int sx, RayCastCallbackType callback, bool ignoreMonoCalc) {
+int Game::rayCastHelper(GameObject *o, int sx, RayCastCallbackType callback, int type) {
 	++_rayCastCounter;
 
-	int16_t objKey = 0;
-
-        const int ry = -o->pitch & 1023;
+	const int ry = -o->pitch & 1023;
 	_yCosObserver = g_cos[ry] * 2;
 	_ySinObserver = g_sin[ry] * 2;
-        const int invry = -ry & 1023;
+	const int invry = -ry & 1023;
 	_yInvCosObserver = g_cos[invry] * 2;
 	_yInvSinObserver = g_sin[invry] * 2;
 
 	_xPosRay = (o->xPos + o->xPosParent) << (kRayShift - 19);
 	_zPosRay = (o->zPos + o->zPosParent) << (kRayShift - 19);
 
-	if (!INRANGE<int>(_xPosRay >> 22, 0, kMapSizeX) || !INRANGE<int>(_zPosRay >> 22, 0, kMapSizeZ)) {
-		return 0;
-	}
-
 	unsigned int rayxex = _xPosRay >> 22;
 	unsigned int rayxez = _zPosRay >> 22;
+
+	if (!INRANGE<int>(rayxex, 0, kMapSizeX) || !INRANGE<int>(rayxez, 0, kMapSizeZ)) {
+		return 0;
+	}
 	if (rayxex < kMapSizeX - 1 && rayxez < kMapSizeZ - 1) {
 		CellMap *cellMap = getCellMap(rayxex, rayxez);
 		if (cellMap->colSlot && cellMap->rayCastCounter != _rayCastCounter) {
-			objKey = (this->*callback)(o, cellMap, _xPosRay, _zPosRay);
+			int16_t objKey = (this->*callback)(o, cellMap, _xPosRay, _zPosRay);
 			if (objKey) {
 				return (objKey == -1) ? 0 : objKey;
 			}
 		}
 	}
 	const int xStartRay = (kScreenWidth / 2) + sx;
+	return rayCast(o, xStartRay, callback, type);
+}
+
+int Game::rayCast(GameObject *o, int xStartRay, RayCastCallbackType callback, int type) {
+
 	rayCastInit(xStartRay);
 
+	unsigned int rayxex = _xPosRay >> 22;
+	unsigned int rayxez = _zPosRay >> 22;
 	unsigned int rayzex;
 	unsigned int rayzez;
 	int zDelta;
@@ -578,6 +717,9 @@ int Game::rayCastHelper(GameObject *o, int sx, RayCastCallbackType callback, boo
 				break;
 			}
 			CellMap *cellMap = getCellMap(rayxex, rayxez);
+			if (type == kRayCastWall) {
+				cellMap->visible = true;
+			}
 			if (cellMap->type > 0) {
 				if (cellMap->type == 1) {
 					const int num = (_dzRay > 0) ? cellMap->south : cellMap->north;
@@ -587,22 +729,36 @@ int Game::rayCastHelper(GameObject *o, int sx, RayCastCallbackType callback, boo
 					}
 				} else {
 					if (cellMap->colSlot && cellMap->rayCastCounter != _rayCastCounter) {
-						objKey = (this->*callback)(o, cellMap, _resXRayX, _resZRayX);
-						if (objKey) {
-							return (objKey == -1) ? 0 : objKey;
+						if (type == kRayCastWall) {
+							addObjectToDrawList(cellMap);
+						} else {
+							int16_t objKey = (this->*callback)(o, cellMap, _resXRayX, _resZRayX);
+							if (objKey) {
+								return (objKey == -1) ? 0 : objKey;
+							}
 						}
 						cellMap->rayCastCounter = _rayCastCounter;
 					}
-					if (ignoreMonoCalc || testRayX(xStartRay, cellMap, _resXRayX, _resZRayX, rayxex, rayxez)) {
+					if ((type == kRayCastCamera) || testRayX(xStartRay, cellMap, _resXRayX, _resZRayX, rayxex, rayxez, type)) {
 						xray = 2;
 						break;
 					}
 				}
 			} else {
 				if (cellMap->colSlot && cellMap->rayCastCounter != _rayCastCounter) {
-					objKey = (this->*callback)(o, cellMap, _resXRayX, _resZRayX);
-					if (objKey) {
-						return (objKey == -1) ? 0 : objKey;
+					if (type == kRayCastWall) {
+						switch (cellMap->type) {
+						case 0:
+						case -2:
+						case -3:
+							addObjectToDrawList(cellMap);
+							break;
+						}
+					} else {
+						int16_t objKey = (this->*callback)(o, cellMap, _resXRayX, _resZRayX);
+						if (objKey) {
+							return (objKey == -1) ? 0 : objKey;
+						}
 					}
 					cellMap->rayCastCounter = _rayCastCounter;
 				}
@@ -623,6 +779,9 @@ int Game::rayCastHelper(GameObject *o, int sx, RayCastCallbackType callback, boo
 				break;
 			}
 			CellMap *cellMap = getCellMap(rayzex, rayzez);
+			if (type == kRayCastWall) {
+				cellMap->visible = true;
+			}
 			if (cellMap->type > 0) {
 				if (cellMap->type == 1) {
 					const int num = (_dxRay > 0) ? cellMap->west : cellMap->east;
@@ -632,22 +791,36 @@ int Game::rayCastHelper(GameObject *o, int sx, RayCastCallbackType callback, boo
 					}
 				} else {
 					if (cellMap->colSlot && cellMap->rayCastCounter != _rayCastCounter) {
-						objKey = (this->*callback)(o, cellMap, _resXRayZ, _resZRayZ);
-						if (objKey) {
-							return (objKey == -1) ? 0 : objKey;
+						if (type == kRayCastWall) {
+							addObjectToDrawList(cellMap);
+						} else {
+							int16_t objKey = (this->*callback)(o, cellMap, _resXRayZ, _resZRayZ);
+							if (objKey) {
+								return (objKey == -1) ? 0 : objKey;
+							}
 						}
 						cellMap->rayCastCounter = _rayCastCounter;
 					}
-					if (ignoreMonoCalc || testRayZ(xStartRay, cellMap, _resXRayZ, _resZRayZ, rayzex, rayzez)) {
+					if ((type == kRayCastCamera) || testRayZ(xStartRay, cellMap, _resXRayZ, _resZRayZ, rayzex, rayzez, type)) {
 						zray = 2;
 						break;
 					}
 				}
 			} else {
 				if (cellMap->colSlot && cellMap->rayCastCounter != _rayCastCounter) {
-					objKey = (this->*callback)(o, cellMap, _resXRayZ, _resZRayZ);
-					if (objKey) {
-						return (objKey == -1) ? 0 : objKey;
+					if (type == kRayCastWall) {
+						switch (cellMap->type) {
+						case 0:
+						case -2:
+						case -3:
+							addObjectToDrawList(cellMap);
+							break;
+						}
+					} else {
+						int16_t objKey = (this->*callback)(o, cellMap, _resXRayZ, _resZRayZ);
+						if (objKey) {
+							return (objKey == -1) ? 0 : objKey;
+						}
 					}
 					cellMap->rayCastCounter = _rayCastCounter;
 				}
@@ -658,6 +831,9 @@ int Game::rayCastHelper(GameObject *o, int sx, RayCastCallbackType callback, boo
 			zRayDistance += _zStepDistance;
 			continue;
 		}
+	}
+	if (type == kRayCastWall) {
+		return 0;
 	}
 	int rrzx;
 	if (xray <= 0) {
@@ -686,11 +862,11 @@ int Game::rayCastHelper(GameObject *o, int sx, RayCastCallbackType callback, boo
 		o->xPos = _resXRayZ >> (kRayShift - 19);
 		o->zPos = _resZRayZ >> (kRayShift - 19);
 	}
-	return (objKey == -1) ? 0 : objKey;
+	return 0;
 }
 
 int Game::rayCastMono(GameObject *o, int sx, CellMap *cm, RayCastCallbackType callback, int delta) {
-	int objKey = rayCastHelper(o, sx, callback, false);
+	const int objKey = rayCastHelper(o, sx, callback, kRayCastMono);
 	if (delta != 0 || (delta == 0 && objKey == 0)) {
 		o->xPos += _ySinObserver << 2;
 		o->zPos -= _yCosObserver << 2;
@@ -699,8 +875,42 @@ int Game::rayCastMono(GameObject *o, int sx, CellMap *cm, RayCastCallbackType ca
 }
 
 int Game::rayCastCamera(GameObject *o, int sx, CellMap *cm, RayCastCallbackType callback) {
-	int objKey = rayCastHelper(o, sx, callback, true);
+	const int objKey = rayCastHelper(o, sx, callback, kRayCastCamera);
 	o->xPos += _ySinObserver << 2;
 	o->zPos -= _yCosObserver << 2;
 	return objKey;
+}
+
+void Game::rayCastWall(int x, int y) {
+	++_rayCastCounter;
+
+	_xPosRay = x << 2;
+	_zPosRay = y << 2;
+
+	_xPosRay += _ySinObserver << 6;
+	_zPosRay -= _yCosObserver << 6;
+
+	const int rayxex = _xPosRay >> 22;
+	const int rayxez = _zPosRay >> 22;
+
+	if (!INRANGE<int>(rayxex, 0, kMapSizeX) || !INRANGE<int>(rayxez, 0, kMapSizeZ)) {
+		return;
+	}
+	if (rayxex < kMapSizeX - 1 && rayxez < kMapSizeZ - 1) {
+		CellMap *cellMap = getCellMap(rayxex, rayxez);
+		if (cellMap->colSlot && cellMap->rayCastCounter != _rayCastCounter) {
+			switch (cellMap->type) {
+			case 0:
+			case -2:
+			case -3:
+				addObjectToDrawList(cellMap);
+				break;
+			}
+			cellMap->rayCastCounter = _rayCastCounter;
+		}
+	}
+	static const int delta = kScreenWidth / 4;
+	for (int x = -delta; x < kScreenWidth + delta; ++x) {
+		rayCast(0, x, 0, kRayCastWall);
+	}
 }

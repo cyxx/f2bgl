@@ -3226,30 +3226,18 @@ bool Game::redrawSceneGridCell(int x, int z, CellMap *cell) {
 }
 
 void Game::redrawSceneGroundWalls() {
-//	rayCast(_xPosObserver << 1, _zPosObserver << 1);
+	for (int x = 0; x < kMapSizeX; ++x) {
+		for (int z = 0; z < kMapSizeZ; ++z) {
+			_sceneCellMap[x][z].visible = false;
+		}
+	}
+	rayCastWall(_xPosObserver << 1, _zPosObserver << 1);
 	_render->setupProjection();
 	for (int x = 0; x < kMapSizeX; ++x) {
 		for (int z = 0; z < kMapSizeZ; ++z) {
 			CellMap *cell = &_sceneCellMap[x][z];
-			const bool visible = redrawSceneGridCell(x, z, cell);
-			if (!visible) {
-				Vertex quad[8];
-				initVerticesGround(&quad[0], x, z);
-				initVerticesGround(&quad[4], x, z);
-				for (int i = 0; i < 4; ++i) {
-					quad[i].y = 0;
-				}
-				if (!_render->isBoxInFrustrum(quad, 8)) {
-					continue;
-				}
-			}
-			switch (cell->type) {
-			case 0:
-			case -2:
-			case -3:
-case 32: // fixes objects on hole (level 4)
-				addObjectToDrawList(cell);
-				break;
+			if (cell->visible) {
+				redrawSceneGridCell(x, z, cell);
 			}
 		}
 	}

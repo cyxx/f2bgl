@@ -118,6 +118,7 @@ struct CellMap {
 	bool isDoor;
 	int rayCastCounter;
 	bool fixed;
+	bool visible;
 	int16_t north, south, west, east;
 	CollisionSlot *colSlot;
 };
@@ -784,9 +785,11 @@ struct Game {
 	int rayCastCollisionCb2(GameObject *o, CellMap *cell, int ox, int oz);
 	int rayCastCameraCb1(GameObject *o, CellMap *cell, int ox, int oz);
 	int rayCastCameraCb2(GameObject *o, CellMap *cell, int ox, int oz);
-	int rayCastHelper(GameObject *o, int x, RayCastCallbackType callback, bool);
+	int rayCastHelper(GameObject *o, int x, RayCastCallbackType callback, int);
+	int rayCast(GameObject *o, int x, RayCastCallbackType callback, int type);
 	int rayCastMono(GameObject *o, int x, CellMap *cellMap, RayCastCallbackType callback, int delta);
 	int rayCastCamera(GameObject *o, int x, CellMap *cellMap, RayCastCallbackType callback);
+	void rayCastWall(int x, int z);
 
 	// saveload.cpp
 	void saveGameState(int num);

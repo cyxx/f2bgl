@@ -62,7 +62,6 @@ struct Render {
 
 	void updateFrustrumPlanes();
 	bool isQuadInFrustrum(const Vertex *vertices, int verticesCount);
-	bool isBoxInFrustrum(const Vertex *vertices, int verticesCount);
 
 	void setOverlayBlendColor(int r, int g, int b);
 	void setOverlayDim(int w, int h, bool hflip = false);

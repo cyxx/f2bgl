@@ -456,23 +456,6 @@ bool Render::isQuadInFrustrum(const Vertex *vertices, int verticesCount) {
 	return ret;
 }
 
-bool Render::isBoxInFrustrum(const Vertex *vertices, int verticesCount) {
-	assert(verticesCount == 8);
-	for (int i = 0; i < 6; ++i) {
-		bool ret = false;
-		for (int j = 0; j < verticesCount; ++j) {
-			if (_frustum[i].x * vertices[j].x + _frustum[i].y * vertices[j].y + _frustum[i].z * vertices[j].z + _frustum[i].w > 0) {
-				ret = true;
-				break;
-			}
-		}
-		if (!ret) {
-			return false;
-		}
-	}
-	return true;
-}
-
 void Render::setOverlayBlendColor(int r, int g, int b) {
 	_overlay.r = r;
 	_overlay.g = g;
