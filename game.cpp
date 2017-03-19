@@ -2804,13 +2804,10 @@ bool Game::addSceneObjectToList(int xPos, int yPos, int zPos, GameObject *o) {
 		++_sceneObjectsCount;
 		drawSceneObject(so);
 		return true;
-	} else {
-#if 1 // TEMP
-		if (o->objKey == _cameraViewKey) {
-			warning("Game::addSceneObjectToList() cameraObject not visible");
-			_yRotViewpoint = o->pitch;
-		}
-#endif
+	}
+	if (o->objKey == _cameraViewKey) {
+		warning("Game::addSceneObjectToList() cameraObject not visible");
+		_yRotViewpoint = o->pitch;
 	}
 	return false;
 }
@@ -2846,9 +2843,6 @@ void Game::addObjectsToScene() {
 			zPos = o->zPosWorld;
 		}
 		addSceneObjectToList(xPos, yPos, zPos, o);
-//		if (strcmp(o->name, "conrad") == 0) printf("conrad.pos %d,%d %d\n", o->xPos >> 19, o->zPos >> 19, o->yPos >> 19);
-//		if (strcmp(o->name, "eclair_energie_S12_A") == 0) printf("eclair_energie_S12_A.pos %d,%d,%d flags 0x%X\n", xPos, yPos, zPos, (int)o->flags[1]);
-//		if (strncmp(o->name, "tir", 3) == 0) printf("tir.pos %d,%d %d\n", o->xPos >> 19, o->zPos >> 19, o->yPos >> 19);
 	}
 	if (!cameraInList) {
 		GameObject *o = getObjectByKey(_cameraViewKey);
