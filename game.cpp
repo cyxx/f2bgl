@@ -3599,14 +3599,55 @@ void Game::updateParticles() {
 	}
 }
 
+static const uint8_t blobTex[16 * 16] = {
+	0, 0, 0, 0, 0, 0, 3, 3, 3, 3, 0, 0, 0, 0, 0, 0,
+	0, 0, 0, 0, 3, 3, 3, 3, 3, 3, 3, 3, 0, 0, 0, 0,
+	0, 0, 0, 3, 3, 3, 2, 2, 2, 2, 3, 3, 3, 0, 0, 0,
+	0, 0, 3, 3, 3, 2, 2, 1, 1, 2, 2, 3, 3, 3, 0, 0,
+	0, 3, 3, 3, 2, 2, 1, 1, 1, 1, 2, 2, 3, 3, 3, 0,
+	0, 3, 3, 2, 2, 1, 1, 1, 1, 1, 1, 2, 2, 3, 3, 0,
+	3, 3, 3, 2, 2, 1, 1, 1, 1, 1, 1, 2, 2, 3, 3, 3,
+	3, 3, 3, 2, 2, 2, 1, 1, 1, 1, 2, 2, 2, 3, 3, 3,
+	3, 3, 3, 2, 2, 2, 2, 1, 1, 2, 2, 2, 2, 3, 3, 3,
+	3, 3, 3, 3, 2, 2, 2, 2, 2, 2, 2, 2, 3, 3, 3, 3,
+	0, 3, 3, 3, 3, 2, 2, 2, 2, 2, 2, 3, 3, 3, 3, 0,
+	0, 3, 3, 3, 3, 3, 2, 2, 2, 2, 3, 3, 3, 3, 3, 0,
+	0, 0, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 0, 0,
+	0, 0, 0, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 0, 0, 0,
+	0, 0, 0, 0, 3, 3, 3, 3, 3, 3, 3, 3, 0, 0, 0, 0,
+	0, 0, 0, 0, 0, 0, 3, 3, 3, 3, 0, 0, 0, 0, 0, 0
+};
+
 void Game::drawParticles() {
 	for (int i = 0; i < _particlesCount; ++i) {
 		Particle *part = &_particlesTable[i];
 		int color;
 		if (part->isBlob) {
-			color = part->fl & 255; // index 1
-			color = _indirectPalette[kIndirectColorShadow][color]; // index 2
-			color = _indirectPalette[kIndirectColorShadow][color]; // index 3
+			int clut[4];
+			clut[0] = 0;
+			clut[1] = part->fl & 255;
+			color = clut[1];
+			clut[2] = _indirectPalette[kIndirectColorShadow][color];
+			color = clut[2];
+			clut[3] = _indirectPalette[kIndirectColorShadow][color];
+			color = clut[3];
+			if (0) {
+				uint8_t tmpTex[16 * 16];
+				for (int i = 0; i < 16 * 16; ++i) {
+					tmpTex[i] = clut[blobTex[i]];
+				}
+				static const int kTexKeyBlob = 100000;
+				static const int kW = 2;
+				_render->beginObjectDraw(part->xPos, part->yPos, part->zPos, _yInvRotObserver, kPosShift);
+				Vertex v[4];
+				v[0].x = -kW; v[0].y = -kW; v[0].z = 0;
+				v[1].x =  kW; v[1].y = -kW; v[1].z = 0;
+				v[2].x =  kW; v[2].y =  kW; v[2].z = 0;
+				v[3].x = -kW; v[3].y =  kW; v[3].z = 0;
+				_render->drawPolygonTexture(v, 4, 0, tmpTex, 16, 16, kTexKeyBlob + clut[1]);
+				_render->endObjectDraw();
+				continue;
+			}
 		} else if (part->fl & 0x8000) {
 			color = _mrkBuffer[254 + (part->fl & 255)];
 		} else {
