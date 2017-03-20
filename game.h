@@ -304,6 +304,7 @@ struct Particle {
 	int fl;
 	int16_t ticks;
 	int16_t speed;
+	bool isBlob;
 };
 
 struct Font {
@@ -608,7 +609,7 @@ struct Game {
 	void updateCameraViewpoint(int xPos, int yPos, int zPos);
 	bool updateGlobalPos(int dx, int dy, int dz, int dx0, int dz0, int flag);
 	void drawPolygons(Vertex *polygonPoints, int count, int color);
-	void drawSceneObjectMesh(const uint8_t *polygonsData, const uint8_t *verticesData, int verticesCount);
+	void drawSceneObjectMesh(SceneObject *so, int flags = 0);
 	void drawSceneObject(SceneObject *so);
 	void redrawScene();
 	void drawWall(const Vertex *vertices, int verticesCount, int texture);
@@ -619,6 +620,7 @@ struct Game {
 	void readInputEvents();
 	void setupInventoryObjects();
 	void addParticle(int xPos, int yPos, int zPos, int rnd, int dx, int dy, int dz, int count, int ticks, int fl, int speed);
+	void addParticleBlob(SceneObject *so, int xPos, int yPos, int zPos, int rnd, int ticks, int fl);
 	void updateParticles();
 	void drawParticles();
 	void initSprites();

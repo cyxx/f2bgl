@@ -18,7 +18,7 @@ void Game::doBox() {
 		_render->setupProjection(kProjMenu);
 		SceneObject *so = &_sceneObjectsTable[0];
 		_render->beginObjectDraw(so->x, so->y, so->z, so->pitch);
-		drawSceneObjectMesh(so->polygonsData, so->verticesData, so->verticesCount);
+		drawSceneObjectMesh(so);
 		_render->endObjectDraw();
 		so->pitch += 6;
 		so->pitch &= 1023;

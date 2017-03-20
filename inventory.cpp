@@ -277,7 +277,7 @@ void Game::doInventory() {
 		if (type != 32) {
 			SceneObject *so = &_sceneObjectsTable[0];
 			_render->beginObjectDraw(so->x, so->y, so->z, so->pitch);
-			drawSceneObjectMesh(so->polygonsData, so->verticesData, so->verticesCount);
+			drawSceneObjectMesh(so);
 			_render->endObjectDraw();
 			so->pitch += 16;
 			so->pitch &= 1023;

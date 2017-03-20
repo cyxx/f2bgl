@@ -2882,7 +2882,10 @@ bool Game::getMessage(int16_t key, uint32_t value, ResMessageDescription *desc) 
 	return offset != -1 && _res.getMessageDescription(desc, value, offset);
 }
 
-void Game::drawSceneObjectMesh(const uint8_t *polygonsData, const uint8_t *verticesData, int verticesCount) {
+void Game::drawSceneObjectMesh(SceneObject *so, int flags) {
+	const uint8_t *polygonsData = so->polygonsData;
+	const uint8_t *verticesData = so->verticesData;
+	const int verticesCount = so->verticesCount;
 	if (polygonsData[0] & 0x80) {
 		const int shadowPolySize = -(int8_t)polygonsData[0];
 		const uint8_t *p = &polygonsData[1];
@@ -2928,6 +2931,13 @@ void Game::drawSceneObjectMesh(const uint8_t *polygonsData, const uint8_t *verti
 				assert(index < verticesCount);
 				polygonPoints[i] = READ_VERTEX32(verticesData + index * 4);
 			}
+		}
+		if (flags & 0x40000) {
+			for (int i = 0; i < count; ++i) {
+				addParticleBlob(so, polygonPoints[i].x, polygonPoints[i].y << 1, polygonPoints[i].z, 5, 6, color & 255);
+			}
+			count = *polygonsData++;
+			continue;
 		}
 		const int fill = (color >> 8) & 31;
 		if (fill == 8 || fill == 11 || fill == 12) {
@@ -2988,16 +2998,17 @@ void Game::drawSceneObjectMesh(const uint8_t *polygonsData, const uint8_t *verti
 }
 
 void Game::drawSceneObject(SceneObject *so) {
+	const int flags = so->o->flags[1];
 	if (so->verticesCount != 0) {
-		_render->beginObjectDraw(so->x, so->y, so->z, so->o->pitch, kPosShift);
+		_render->beginObjectDraw(so->x, so->y, so->z, so->pitch, kPosShift);
 		assert(so->polygonsData != 0 && so->verticesData != 0);
-		drawSceneObjectMesh(so->polygonsData, so->verticesData, so->verticesCount);
+		drawSceneObjectMesh(so, flags);
 		_render->endObjectDraw();
 	} else {
 		SpriteImage *spr = &so->spr;
 		const uint8_t *texData = _spriteCache.getData(spr->key, spr->data);
 		_render->beginObjectDraw(so->x, (kGroundY << kPosShift) + so->y, so->z, _yInvRotObserver, kPosShift);
-		const int scale = (so->o->flags[1] & 0x20000) != 0 ? 2 : 1;
+		const int scale = (flags & 0x20000) != 0 ? 2 : 1;
 		const int x0 = -scale * spr->w / 2;
 		const int y0 = -scale * spr->h / 2;
 		const int x1 = x0 + scale * spr->w;
@@ -3540,6 +3551,26 @@ void Game::addParticle(int xPos, int yPos, int zPos, int rnd, int dx, int dy, in
 	_particlesCount += count;
 }
 
+void Game::addParticleBlob(SceneObject *so, int xPos, int yPos, int zPos, int rnd, int ticks, int fl) {
+	if (_particlesCount < kParticlesTableSize) {
+		Particle *part = &_particlesTable[_particlesCount];
+		memset(part, 0, sizeof(Particle));
+		Vec_xz v(xPos, zPos);
+		v.rotate(so->pitch, 3);
+		part->xPos = v.x + so->x;
+		part->zPos = v.z + so->z;
+		part->yPos = (yPos << 13) + so->y;
+		part->dx =  _rnd.getRandomNumberShift(rnd);
+		part->dy = -_rnd.getRandomNumberShift(rnd);
+		part->dz =  _rnd.getRandomNumberShift(rnd);
+		part->ticks = ticks + (_rnd.getRandomNumber() >> 9);
+		part->fl = fl;
+		part->speed = 0;
+		part->isBlob = true;
+		++_particlesCount;
+	}
+}
+
 void Game::updateParticles() {
 	for (int i = 0; i < _particlesCount; ) {
 		Particle *part = &_particlesTable[i];
@@ -3572,7 +3603,11 @@ void Game::drawParticles() {
 	for (int i = 0; i < _particlesCount; ++i) {
 		Particle *part = &_particlesTable[i];
 		int color;
-		if (part->fl & 0x8000) {
+		if (part->isBlob) {
+			color = part->fl & 255; // index 1
+			color = _indirectPalette[0][color]; // index 2
+			color = _indirectPalette[0][color]; // index 3
+		} else if (part->fl & 0x8000) {
 			color = _mrkBuffer[254 + (part->fl & 255)];
 		} else {
 			color = _indirectPalette[part->fl & 15][0]; // TODO: pass true color
