@@ -665,13 +665,13 @@ void Game::setupIndirectColorPalette() {
 		if (i == 0) {
 			_indirectPalette[kIndirectColorLight][i] = 0;
 		} else if ((_mrkBuffer[i] & 1) != 0 || (_mrkBuffer[i - 1] & 1) != 0) {
-			_indirectPalette[kIndirectColorShadow][i] = i;
+			_indirectPalette[kIndirectColorLight][i] = i;
 		} else {
-			_indirectPalette[kIndirectColorShadow][i] = i - 1;
+			_indirectPalette[kIndirectColorLight][i] = i - 1;
 		}
 	}
 	int q[256];
-	for (int ind = 0; ind < 4; ++ind) {
+	for (int ind = 0; ind < 4; ++ind) { // gryb
 		int startColor = _mrkBuffer[256 + ind];
 		int color = 0;
 		do {
@@ -3605,12 +3605,34 @@ void Game::drawParticles() {
 		int color;
 		if (part->isBlob) {
 			color = part->fl & 255; // index 1
-			color = _indirectPalette[0][color]; // index 2
-			color = _indirectPalette[0][color]; // index 3
+			color = _indirectPalette[kIndirectColorShadow][color]; // index 2
+			color = _indirectPalette[kIndirectColorShadow][color]; // index 3
 		} else if (part->fl & 0x8000) {
 			color = _mrkBuffer[254 + (part->fl & 255)];
 		} else {
-			color = _indirectPalette[part->fl & 15][0]; // TODO: pass true color
+			switch (part->fl & 15) {
+			case 0:
+				color = kFlatColorShadow;
+				break;
+			case 1:
+				color = kFlatColorLight;
+				break;
+			case 2:
+				color = kFlatColorGreen;
+				break;
+			case 3:
+				color = kFlatColorRed;
+				break;
+			case 4:
+				color = kFlatColorYellow;
+				break;
+			case 5:
+				color = kFlatColorBlue;
+				break;
+			default:
+				warning("Game::drawParticles() Invalid color fl 0x%x", part->fl);
+				return;
+			}
 		}
 		Vertex v;
 		v.x = part->xPos >> kPosShift;
