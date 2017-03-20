@@ -97,7 +97,7 @@ void TextureCache::flush() {
 	memset(_clut, 0, sizeof(_clut));
 }
 
-Texture *TextureCache::getCachedTexture(const uint8_t *data, int w, int h, int16_t key) {
+Texture *TextureCache::getCachedTexture(int16_t key, const uint8_t *data, int w, int h, const uint8_t *pal) {
 	Texture *prev = 0;
 	for (Texture *t = _texturesListHead; t; t = t->next) {
 		if (t->key == key) {
@@ -113,7 +113,7 @@ Texture *TextureCache::getCachedTexture(const uint8_t *data, int w, int h, int16
 		}
 		prev = t;
 	}
-	Texture *t = createTexture(data, w, h);
+	Texture *t = createTexture(data, w, h, pal);
 	if (t) {
 		t->key = key;
 	}
@@ -152,7 +152,7 @@ void TextureCache::convertTexture(const uint8_t *src, int w, int h, const uint16
 	}
 }
 
-Texture *TextureCache::createTexture(const uint8_t *data, int w, int h) {
+Texture *TextureCache::createTexture(const uint8_t *data, int w, int h, const uint8_t *pal) {
 	Texture *t = new Texture;
 	t->bitmapW = w;
 	t->bitmapH = h;
@@ -171,7 +171,13 @@ Texture *TextureCache::createTexture(const uint8_t *data, int w, int h) {
 	glGenTextures(1, &t->id);
 	uint16_t *texData = (uint16_t *)malloc(t->texW * t->texH * sizeof(uint16_t));
 	if (texData) {
-		convertTexture(t->bitmapData, t->bitmapW, t->bitmapH, _clut, texData, t->texW);
+		if (pal) {
+			uint16_t clut[256];
+			convertPalette(pal, clut);
+			convertTexture(t->bitmapData, t->bitmapW, t->bitmapH, clut, texData, t->texW);
+		} else {
+			convertTexture(t->bitmapData, t->bitmapW, t->bitmapH, _clut, texData, t->texW);
+		}
 		glBindTexture(GL_TEXTURE_2D, t->id);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, kTextureMinMaxFilter);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, kTextureMinMaxFilter);
@@ -228,17 +234,21 @@ void TextureCache::updateTexture(Texture *t, const uint8_t *data, int w, int h) 
 	}
 }
 
-void TextureCache::setPalette(const uint8_t *pal, bool updateTextures) {
-	for (int i = 0; i < 256; ++i, pal += 3) {
-		const int r = pal[0];
-		const int g = pal[1];
-		const int b = pal[2];
+void TextureCache::convertPalette(const uint8_t *src, uint16_t *dst) {
+	for (int i = 0; i < 256; ++i, src += 3) {
+		const int r = src[0];
+		const int g = src[1];
+		const int b = src[2];
 		if (r == 0 && g == 0 && b == 0) {
-			_clut[i] = 0;
+			dst[i] = 0;
 		} else {
-			_clut[i] = _formats[_fmt].convertColor(r, g, b);
+			dst[i] = _formats[_fmt].convertColor(r, g, b);
 		}
 	}
+}
+
+void TextureCache::setPalette(const uint8_t *pal, bool updateTextures) {
+	convertPalette(pal, _clut);
 	if (updateTextures) {
 		for (Texture *t = _texturesListHead; t; t = t->next) {
 			uint16_t *texData = (uint16_t *)malloc(t->texW * t->texH * sizeof(uint16_t));

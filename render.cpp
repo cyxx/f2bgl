@@ -219,6 +219,10 @@ void Render::setCameraPitch(int ry) {
 	_cameraPitch = ry * 360 / 1024.;
 }
 
+void Render::prepareTexture(const uint8_t *texData, int texW, int texH, const uint8_t *clut, int16_t texKey) {
+	_textureCache.getCachedTexture(texKey, texData, texW, texH, clut);
+}
+
 void Render::drawPolygonFlat(const Vertex *vertices, int verticesCount, int color) {
 	switch (color) {
 	case kFlatColorRed:
@@ -255,7 +259,7 @@ void Render::drawPolygonTexture(const Vertex *vertices, int verticesCount, int p
 	assert(texData && texW > 0 && texH > 0);
 	assert(vertices && verticesCount >= 4);
 	glEnable(GL_TEXTURE_2D);
-	Texture *t = _textureCache.getCachedTexture(texData, texW, texH, texKey);
+	Texture *t = _textureCache.getCachedTexture(texKey, texData, texW, texH);
 	glBindTexture(GL_TEXTURE_2D, t->id);
 	const GLfloat tx = t->u;
 	const GLfloat ty = t->v;
@@ -384,7 +388,7 @@ void Render::drawParticle(const Vertex *pos, int color) {
 void Render::drawSprite(int x, int y, const uint8_t *texData, int texW, int texH, int16_t texKey) {
 	glDisable(GL_DEPTH_TEST);
 	glEnable(GL_TEXTURE_2D);
-	Texture *t = _textureCache.getCachedTexture(texData, texW, texH, texKey);
+	Texture *t = _textureCache.getCachedTexture(texKey, texData, texW, texH);
 	glBindTexture(GL_TEXTURE_2D, t->id);
 	GLfloat uv[] = { 0., 0., t->u, 0., t->u, t->v, 0., t->v };
 	emitQuadTex2i(x, y, texW, texH, uv);

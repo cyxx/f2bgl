@@ -51,6 +51,8 @@ struct Render {
 	void setCameraPos(int x, int y, int z, int shift = 0);
 	void setCameraPitch(int a);
 
+	void prepareTexture(const uint8_t *texData, int texW, int texH, const uint8_t *clut, int16_t texKey);
+
 	void drawPolygonFlat(const Vertex *vertices, int verticesCount, int color);
 	void drawPolygonTexture(const Vertex *vertices, int verticesCount, int primitive, const uint8_t *texData, int texW, int texH, int16_t texKey);
 	void drawParticle(const Vertex *pos, int color);
