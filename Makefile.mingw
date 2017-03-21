@@ -4,6 +4,7 @@ SDL_LIBS   := `sdl2-config --libs`
 
 CXX      := i686-w64-mingw32-g++
 STRIP    := i686-w64-mingw32-strip
+WINDRES  := i686-w64-mingw32-windres
 CXXFLAGS += -g -O -Wall  -Wno-sign-compare -MMD $(SDL_CFLAGS)
 
 LIBS = $(SDL_LIBS) -lopengl32 -lWildMidi.dll
@@ -17,10 +18,15 @@ SRCS = box.cpp camera.cpp collision.cpp cutscene.cpp decoder.cpp file.cpp \
 OBJS = $(SRCS:.cpp=.o)
 DEPS = $(SRCS:.cpp=.d)
 
-f2bgl.exe: $(OBJS)
+ICON = dists/win32/resource.rc
+
+f2bgl.exe: $(OBJS) $(ICON).o
 	$(CXX) $(LDFLAGS) -o $@ $^ -static-libgcc -static-libstdc++ $(LIBS) -Wl,-Bstatic -lz
 	$(STRIP) $@
 	upx -9 $@
+
+$(ICON).o: $(ICON)
+	$(WINDRES) -i $^ -o $@
 
 clean:
 	rm -f *.o *.d
