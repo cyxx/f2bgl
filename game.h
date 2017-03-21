@@ -89,7 +89,9 @@ enum {
 	kIndirectColorGreen,
 	kIndirectColorRed,
 	kIndirectColorYellow,
-	kIndirectColorBlue
+	kIndirectColorBlue,
+
+	kIndirectColorTableSize
 };
 
 enum {
@@ -425,8 +427,8 @@ struct Game {
 	GameRoom _roomsTable[kRoomsTableSize];
 	int16_t _mapKey;
 	int16_t _palKeysTable[kPalKeysTableSize];
-	CellMap _sceneCellMap[64][64];
-	int32_t _sceneGroundMap[64][64];
+	CellMap _sceneCellMap[kMapSizeX][kMapSizeZ];
+	int32_t _sceneGroundMap[kMapSizeX][kMapSizeZ];
 	int _sceneCamerasCount;
 	CameraPosMap _sceneCameraPosTable[256];
 	int _sceneAnimationsCount, _sceneAnimationsCount2;
@@ -455,7 +457,7 @@ struct Game {
 
 	bool _updatePalette;
 	uint8_t _screenPalette[256 * 3];
-	uint8_t _indirectPalette[6][256];
+	uint8_t _indirectPalette[kIndirectColorTableSize][256];
 	uint32_t _mrkBuffer[260];
 
 	int _particleDx, _particleDy, _particleDz, _particleRnd, _particleSpd;
