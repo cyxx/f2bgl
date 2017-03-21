@@ -118,8 +118,43 @@ void Game::getFixedCameraPos(int xPos, int zPos, int *xPosCam, int *zPosCam, int
 }
 
 bool Game::setCameraObject(GameObject *o, int16_t *cameraObjKey) {
-	warning("Game::setCameraObject() unimplemented");
-	return false;
+	*cameraObjKey = 0;
+	for (int i = 0; i < kSceneObjectsTableSize; ++i) {
+		if (_sceneObjectsTable[i].o == o) {
+			*cameraObjKey = i;
+			break;
+		}
+	}
+	if (o->flags[1] & 0x84) {
+		return false;
+	}
+	for (GameObject *o_tmp = o; o_tmp != _objectsPtrTable[kObjPtrWorld]; o_tmp = o_tmp->o_parent) {
+		const int state = (o_tmp->state == 1 || o_tmp->state == 3);
+		if (!state) {
+			return false;
+		}
+	}
+	const int prevCameraDefaultDist = _cameraDefaultDist;
+	GameObject *o_camera = getObjectByKey(_cameraViewKey);
+	if ((o_camera->flags[1] & 0x10000) != 0 && o_camera->customData[11] < _inputsCount) {
+		//
+	}
+	_cameraViewKey = o->objKey;
+	_xPosViewpoint = _x0PosViewpoint = o->xPosParent + o->xPos;
+	_yPosViewpoint = _y0PosViewpoint = o->yPosParent + o->yPos;
+	_zPosViewpoint = _z0PosViewpoint = o->zPosParent + o->zPos;
+	_yRotViewpoint = o->pitch;
+	_varsTable[31] = _cameraViewKey;
+	if ((o->flags[1] & 0x10000) != 0 && o->customData[11] < _inputsCount) {
+		//
+	}
+	_animDx = 0;
+	_animDz = 0;
+	if (_cameraDefaultDist != prevCameraDefaultDist) {
+		_cameraDefaultDist = !_cameraDefaultDist;
+		fixCamera();
+	}
+	return true;
 }
 
 void Game::fixCamera() {

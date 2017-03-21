@@ -1444,7 +1444,14 @@ int Game::op_setCamera(int argc, int32_t *argv) {
 				break;
 			}
 		} else {
-			error("op_setCameraParams() unhandled _cameraViewKey %d", _cameraViewKey);
+			// GameInput *inp = &_inputsTable[_objectsPtrTable[kObjPtrConrad]->customData[11]];
+			switch (param) {
+			case 7:
+				break;
+			default:
+				error("op_setCameraParams() unhandled param %d (_cameraViewKey %d)", param, _cameraViewKey);
+				break;
+			}
 		}
 	}
 	return -1;
