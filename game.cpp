@@ -3003,14 +3003,13 @@ void Game::drawSceneObjectMesh(SceneObject *so, int flags) {
 void Game::drawSceneObject(SceneObject *so) {
 	const int flags = so->o->flags[1];
 	if (so->verticesCount != 0) {
-		_render->beginObjectDraw(so->x, so->y, so->z, so->pitch, kPosShift);
 		assert(so->polygonsData != 0 && so->verticesData != 0);
+		_render->beginObjectDraw(so->x, so->y, so->z, so->pitch, kPosShift);
 		drawSceneObjectMesh(so, flags);
 		_render->endObjectDraw();
 	} else {
 		SpriteImage *spr = &so->spr;
 		const uint8_t *texData = _spriteCache.getData(spr->key, spr->data);
-		_render->beginObjectDraw(so->x, (kGroundY << kPosShift) + so->y, so->z, _yInvRotObserver, kPosShift);
 		const int scale = (flags & 0x20000) != 0 ? 2 : 1;
 		const int x0 = -scale * spr->w / 2;
 		const int y0 = -scale * spr->h / 2;
@@ -3021,6 +3020,7 @@ void Game::drawSceneObject(SceneObject *so) {
 		v[1].x = x1; v[1].y = y0; v[1].z = 0;
 		v[2].x = x1; v[2].y = y1; v[2].z = 0;
 		v[3].x = x0; v[3].y = y1; v[3].z = 0;
+		_render->beginObjectDraw(so->x, (kGroundY << kPosShift) + so->y, so->z, _yInvRotObserver, kPosShift);
 		_render->drawPolygonTexture(v, 4, 0, texData, spr->w, spr->h, spr->key);
 		_render->endObjectDraw();
 	}
@@ -3641,12 +3641,12 @@ void Game::drawParticles() {
 				}
 				static const int kTexKeyBlob = 100000;
 				static const int kW = 2;
-				_render->beginObjectDraw(part->xPos, part->yPos, part->zPos, _yInvRotObserver, kPosShift);
 				Vertex v[4];
 				v[0].x = -kW; v[0].y = -kW; v[0].z = 0;
 				v[1].x =  kW; v[1].y = -kW; v[1].z = 0;
 				v[2].x =  kW; v[2].y =  kW; v[2].z = 0;
 				v[3].x = -kW; v[3].y =  kW; v[3].z = 0;
+				_render->beginObjectDraw(part->xPos, part->yPos, part->zPos, _yInvRotObserver, kPosShift);
 				_render->drawPolygonTexture(v, 4, 0, tmpTex, 16, 16, kTexKeyBlob + clut[1]);
 				_render->endObjectDraw();
 				continue;
