@@ -662,6 +662,7 @@ void Resource::loadDelphineINI() {
 	} parameters[] = {
 		{ "GREY_SCALE", &_userConfig.greyScale, convertParameterOnOff },
 		{ "LIGHT_COEF", &_userConfig.lightCoef, 0 },
+		{ "SUB_TITLES", &_userConfig.subtitles, convertParameterOnOff },
 		{ "ICON_LR_INV_X", &_userConfig.iconLrInvX, 0 },
 		{ "ICON_LR_INV_Y", &_userConfig.iconLrInvY, 0 },
 		{ "PLAY_LEVEL", &_userConfig.skillLevel, convertParameterPlayLevel },

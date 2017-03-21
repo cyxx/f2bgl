@@ -1097,6 +1097,9 @@ void Game::init() {
 	_res.loadTrigo();
 	_res.loadDelphineINI();
 	_skillLevel = _res._userConfig.skillLevel;
+	if (!_params.subtitles) { // ignore value if set on the command line
+		_params.subtitles = _res._userConfig.subtitles;
+	}
 
 	int dataSize;
 	File *fp = fileOpen("PLAYER.INI", &dataSize, kFileType_DATA);

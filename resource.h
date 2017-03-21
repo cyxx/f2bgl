@@ -85,6 +85,7 @@ enum {
 struct ResUserConfig {
 	int greyScale;
 	int lightCoef;
+	int subtitles;
 	int iconLrInvX;
 	int iconLrInvY;
 	int skillLevel;
