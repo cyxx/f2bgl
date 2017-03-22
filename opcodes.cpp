@@ -1370,7 +1370,7 @@ int Game::op_setCamera(int argc, int32_t *argv) {
 						_yPosObserverTemp = _yPosObserver;
 						_yPosObserverValue = _yPosObserver = 0;
 						_cameraDistValue = _cameraDist = (kWallWidth * 2) << 15;
-//						_focalDistance = 0;
+						_focalDistance = 0;
 						_yPosObserverTicks = 1;
 						_cameraDistTicks = 1;
 					} else if (value == 0) {
@@ -1437,7 +1437,7 @@ int Game::op_setCamera(int argc, int32_t *argv) {
 				_cameraDelta = value;
 				break;
 			case 9:
-//				_focalDistance = value;
+				_focalDistance = value;
 				break;
 			default:
 				error("op_setCameraParams() unhandled param %d", param);

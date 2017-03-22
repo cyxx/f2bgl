@@ -477,6 +477,7 @@ struct Game {
 	int _cameraDefaultDist, _cameraStandingDist, _cameraUsingGunDist;
 	bool _conradUsingGun;
 	bool _cameraDistInitDone;
+	int _focalDistance;
 	int _yCosObserver, _ySinObserver, _yInvCosObserver, _yInvSinObserver;
 	int _yPosObserverValue, _yPosObserverValue2, _yPosObserverTicks;
 	int _xPosViewpoint, _yPosViewpoint, _zPosViewpoint;

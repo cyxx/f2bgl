@@ -415,7 +415,7 @@ static void persistCamera(File *fp, Game &g) {
 		persistCameraPosMap<M>(fp, g._sceneCameraPosTable[i]);
 	}
 	pad<M>(fp, sizeof(uint32_t));
-	pad<M>(fp, sizeof(uint32_t)); // _focalDistance);
+	persist<M>(fp, g._focalDistance);
 	persist<M>(fp, g._roomsTableCount);
 	persist<M>(fp, g._cameraDefaultDist);
 	persist<M>(fp, g._cameraFixDist);

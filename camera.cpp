@@ -169,7 +169,7 @@ void Game::fixCamera() {
 			_cameraDeltaRotYTicks = 1;
 			if (!isConradInShootingPos()) {
 				_cameraDistValue = (16 * 2) << 15;
-//				_focalDistance = 0;
+				_focalDistance = 0;
 				_yPosObserverValue = _yPosObserver = 0;
 			}
 		} else {
@@ -207,7 +207,7 @@ void Game::updateSceneCameraPos() {
 	} else if (_cameraState == 0 && !_cameraDefaultDist) {
 		if (!flag && _level != 6 && !isConradInShootingPos()) {
 			_cameraDistValue = _cameraDist = (16 * 2) << 15;
-//			_focalDistance = 0;
+			_focalDistance = 0;
 			_yPosObserverValue = _yPosObserver = -1;
 			_yPosObserverPrev = 0;
 		}
@@ -472,7 +472,7 @@ void Game::updateSceneCameraPos() {
 			_pitchObserverCamera &= 1023;
 			switch (direction) {
 			case 0:
-				setCameraPos (_xPosViewpoint, _zPosViewpoint);
+				setCameraPos(_xPosViewpoint, _zPosViewpoint);
 				_pitchObserverCamera = _yRotObserver;
 				break;
 			case 1:
@@ -537,7 +537,9 @@ void Game::updateSceneCameraPos() {
 			break;
 		}
 	}
-	_render->setCameraPos(_xPosObserver, _yPosObserver, _zPosObserver, kPosShift);
+	const int dx = 0;
+	const int dz = (_zTransform * _focalDistance) << kPosShift;
+	_render->setCameraPos(_xPosObserver + dx, _yPosObserver, _zPosObserver + dz, kPosShift);
 	_render->setCameraPitch(_yRotObserver & 1023);
 }
 

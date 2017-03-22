@@ -1183,16 +1183,16 @@ void Game::initLevel() {
 	_snd._musicMode = 1;
 	playMusic(-1);
 
-//	_focalDistance = 0;
+	_focalDistance = 0;
 	_currentObject = _objectsPtrTable[kObjPtrConrad];
-//	_xPosViewpoint = _x0PosViewpoint = _currentObject->xPosParent + _currentObject->xPos;
-//	_yPosViewpoint = _y0PosViewpoint = _currentObject->yPosParent + _currentObject->yPos;
-//	_zPosViewpoint = _z0PosViewpoint = _currentObject->zPosParent + _currentObject->zPos;
-//	_cameraState = 0;
-//	_cameraViewKey = _currentObject->objKey;
+	_xPosViewpoint = _x0PosViewpoint = _currentObject->xPosParent + _currentObject->xPos;
+	_yPosViewpoint = _y0PosViewpoint = _currentObject->yPosParent + _currentObject->yPos;
+	_zPosViewpoint = _z0PosViewpoint = _currentObject->zPosParent + _currentObject->zPos;
+	_cameraState = 0;
+	_cameraViewKey = _currentObject->objKey;
 	_currentObject->specialData[1][18] = 2000;
-//	setCameraObject(_currentObject, &_cameraViewObj);
-//	_varsTable[31] = _cameraViewKey;
+	setCameraObject(_currentObject, &_cameraViewObj);
+	_varsTable[31] = _cameraViewKey;
 }
 
 void Game::setupConradObject() {
