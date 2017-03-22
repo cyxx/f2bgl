@@ -3222,6 +3222,7 @@ bool Game::redrawSceneGridCell(int x, int z, CellMap *cell) {
                         drawWall(quad, 4, cell->texture[1]);
 			break;
 		case 20:
+			warning("Game::redrawScene() texture1 %d texture2 %d (room %d x %d z %d)", cell->texture[0], cell->texture[1], cell->room, x, z);
 			break;
 		case 32:
 			break;
