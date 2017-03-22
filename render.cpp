@@ -534,13 +534,16 @@ void Render::clearScreen() {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 
-static void setPerspective(GLfloat fovy, GLfloat aspect, GLfloat znear, GLfloat zfar) {
-	const GLfloat y = znear * tan(fovy * M_PI / 360.);
-	const GLfloat x = y * aspect;
-	glFrustum(-x, x, -y, y, znear, zfar);
-}
-
 void Render::setupProjection(int mode) {
+	if (mode == kProj2D) {
+		glMatrixMode(GL_PROJECTION);
+		glLoadIdentity();
+		glOrtho(0, kOverlayWidth, kOverlayHeight, 0, 0, 1);
+		glMatrixMode(GL_MODELVIEW);
+		glLoadIdentity();
+		return;
+	}
+	const GLfloat aspect = 1.5;
 #ifdef USE_GLES
 	glEnableClientState(GL_VERTEX_ARRAY);
 	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
@@ -548,13 +551,13 @@ void Render::setupProjection(int mode) {
 	if (mode == kProjMenu) {
 		glMatrixMode(GL_PROJECTION);
 		glLoadIdentity();
-		setPerspective(40., 1.5, 1., 128.);
-		glTranslatef(0., 0., -32.);
-		glRotatef(20., 1., 0., 0.);
+		glFrustum(-.5, .5, -aspect / 2, 0., 1., 512);
+		glTranslatef(0., 0., -20.);
 		glMatrixMode(GL_MODELVIEW);
 		glLoadIdentity();
 		glScalef(1., -.5, 1.);
-		glTranslatef(0., 0., -64.);
+		glTranslatef(0., 16., 0.);
+		glTranslatef(0., 0., -72.);
 		return;
 	}
 	clearScreen();
@@ -569,24 +572,14 @@ void Render::setupProjection(int mode) {
 	}
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
-	setPerspective(40., 1.5, 1., 512.);
-	glTranslatef(0., 0., -32.);
-	glRotatef(20., 1., 0., 0.);
+	glFrustum(-.5, .5, -aspect / 2, 0., 1., 512);
+	glTranslatef(0., 0., -16.);
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
 	glScalef(1., -.5, -1.);
 	glRotatef(_cameraPitch, 0., 1., 0.);
-	_cameraPos.y = -24;
 	glTranslatef(-_cameraPos.x, _cameraPos.y, -_cameraPos.z);
 	updateFrustrumPlanes();
-}
-
-void Render::setupProjection2d() {
-	glMatrixMode(GL_PROJECTION);
-	glLoadIdentity();
-	glOrtho(0, kOverlayWidth, kOverlayHeight, 0, 0, 1);
-	glMatrixMode(GL_MODELVIEW);
-	glLoadIdentity();
 }
 
 void Render::drawOverlay() {

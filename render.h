@@ -21,7 +21,8 @@ enum {
 enum {
 	kProjGame = 0,
 	kProjMenu,
-	kProjDefault
+	kProjDefault,
+	kProj2D
 };
 
 struct Texture;
@@ -72,7 +73,6 @@ struct Render {
 	void setPalette(const uint8_t *pal, int count, int rgbScale, bool greyScale);
 	void clearScreen();
 	void setupProjection(int mode = kProjGame);
-	void setupProjection2d();
 	void drawOverlay();
 	void resizeScreen(int w, int h);
 

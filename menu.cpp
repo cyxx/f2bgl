@@ -77,7 +77,7 @@ void Game::doMenu() {
 	drawSceneObjectMesh(so);
 	_render->endObjectDraw();
 
-	_render->setupProjection2d();
+	_render->setupProjection(kProj2D);
 	const int option = (((so->pitch + 512) & 1023) + 64) / 128;
 	if (getMessage(o->objKey, option, &_tmpMsg)) {
 		memset(&_drawCharBuf, 0, sizeof(_drawCharBuf));

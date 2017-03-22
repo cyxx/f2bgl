@@ -2614,7 +2614,7 @@ if (_mainLoopCurrentMode == 1) {
 			}
 		}
 	}
-	_render->setupProjection2d();
+	_render->setupProjection(kProj2D);
 	drawInfoPanel();
 #ifdef F2B_DEBUG
 	if (1) {
@@ -2659,7 +2659,7 @@ if (_mainLoopCurrentMode == 1) {
 		changeRoom(currentRoom);
 	}
 } else if (_mainLoopCurrentMode == 0) {
-	_render->setupProjection2d();
+	_render->setupProjection(kProj2D);
 	updateScreen();
 }
 	if (_collidingObjectsCount != 0) {
