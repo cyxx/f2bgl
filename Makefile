@@ -6,7 +6,7 @@ SDL_LIBS = `sdl2-config --libs`
 
 LIBS = $(SDL_LIBS) -lGL -lz -lWildMidi
 
-CXXFLAGS += -g -O -Wall -Wno-sign-compare
+CXXFLAGS += -Wall -Wno-sign-compare
 
 SRCS = box.cpp camera.cpp collision.cpp cutscene.cpp decoder.cpp file.cpp \
 	font.cpp game.cpp input.cpp inventory.cpp main.cpp menu.cpp mixer.cpp \
