@@ -66,7 +66,7 @@ struct Render {
 	bool isQuadInFrustrum(const Vertex *vertices, int verticesCount);
 
 	void setOverlayBlendColor(int r, int g, int b);
-	void setOverlayDim(int w, int h, bool hflip = false);
+	void resizeOverlay(int w, int h, bool hflip = false);
 	void copyToOverlay(int x, int y, const uint8_t *data, int pitch, int w, int h, int transparentColor = -1);
 
 	void setPalette(const uint8_t *pal, int count, int rgbScale, bool greyScale);

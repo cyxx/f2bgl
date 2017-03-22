@@ -12,8 +12,8 @@
 #include "render.h"
 #include "texturecache.h"
 
-static const bool kOverlayDisabled = false;
-static const int kOverlayBufSize = 320 * 200;
+static const int kOverlayWidth = 320;
+static const int kOverlayHeight = 200;
 
 struct Vertex3f {
 	GLfloat x, y, z;
@@ -174,7 +174,7 @@ static Vertex4f _frustum[6];
 Render::Render() {
 	memset(_clut, 0, sizeof(_clut));
 	_screenshotBuf = 0;
-	_overlay.buf = (uint8_t *)calloc(kOverlayBufSize, sizeof(uint8_t));
+	_overlay.buf = (uint8_t *)calloc(kOverlayWidth * kOverlayHeight, sizeof(uint8_t));
 	_overlay.tex = 0;
 	_overlay.hflip = false;
 	_overlay.r = _overlay.g = _overlay.b = 255;
@@ -406,7 +406,6 @@ void Render::drawRectangle(int x, int y, int w, int h, int color) {
 }
 
 void Render::copyToOverlay(int x, int y, const uint8_t *data, int pitch, int w, int h, int transparentColor) {
-	if (kOverlayDisabled) return;
 	assert(_overlay.tex);
 	assert(x + w <= _overlay.tex->bitmapW);
 	assert(y + h <= _overlay.tex->bitmapH);
@@ -490,7 +489,7 @@ void Render::setOverlayBlendColor(int r, int g, int b) {
 	_overlay.b = b;
 }
 
-void Render::setOverlayDim(int w, int h, bool hflip) {
+void Render::resizeOverlay(int w, int h, bool hflip) {
 	if (_overlay.tex) {
 		_textureCache.destroyTexture(_overlay.tex);
 		_overlay.tex = 0;
@@ -498,7 +497,8 @@ void Render::setOverlayDim(int w, int h, bool hflip) {
 	if (w == 0 && h == 0) {
 		return;
 	}
-	memset(_overlay.buf, 0, kOverlayBufSize);
+	assert(w <= kOverlayWidth && h <= kOverlayHeight);
+	memset(_overlay.buf, 0, kOverlayWidth * kOverlayHeight);
 	_overlay.tex = _textureCache.createTexture(_overlay.buf, w, h);
 	_overlay.hflip = hflip;
 }
@@ -584,13 +584,13 @@ void Render::setupProjection(int mode) {
 void Render::setupProjection2d() {
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
-	glOrtho(0, 320, 200, 0, 0, 1);
+	glOrtho(0, kOverlayWidth, kOverlayHeight, 0, 0, 1);
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
 }
 
 void Render::drawOverlay() {
-	if (!kOverlayDisabled && _overlay.tex) {
+	if (_overlay.tex) {
 		_textureCache.updateTexture(_overlay.tex, _overlay.buf, _overlay.tex->bitmapW, _overlay.tex->bitmapH);
 		glMatrixMode(GL_PROJECTION);
 		glLoadIdentity();
@@ -598,7 +598,7 @@ void Render::drawOverlay() {
 			glOrtho(0, _w, 0, _h, 0, 1);
 		} else {
 			glOrtho(0, _w, _h, 0, 0, 1);
-			memset(_overlay.buf, 0, kOverlayBufSize);
+			memset(_overlay.buf, 0, kOverlayWidth * kOverlayHeight);
 		}
 		glMatrixMode(GL_MODELVIEW);
 		glLoadIdentity();

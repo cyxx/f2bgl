@@ -410,7 +410,7 @@ bool Cutscene::load(int num) {
 
 bool Cutscene::play() {
 	if (_frameCounter == 0) {
-		_render->setOverlayDim(_fileHdr.videoFrameWidth, _fileHdr.videoFrameHeight, true);
+		_render->resizeOverlay(_fileHdr.videoFrameWidth, _fileHdr.videoFrameHeight, true);
 	}
 	++_frameCounter;
 	if (g_isDemo && _frameCounter == _duration) {

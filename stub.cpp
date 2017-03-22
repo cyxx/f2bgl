@@ -121,17 +121,17 @@ struct GameStub_F2B : GameStub {
 			_g->_cut.load(_g->_cut._numToPlay);
 		}
 		if (state == kStateGame) {
-			_render->setOverlayDim(0, 0);
+			_render->resizeOverlay(0, 0);
 			_g->updatePalette();
 		}
 		if (state == kStateInventory) {
-			_render->setOverlayDim(320, 200);
+			_render->resizeOverlay(kScreenWidth, kScreenHeight);
 			if (!_g->initInventory()) {
 				return;
 			}
 		}
 		if (state == kStateBox) {
-			_render->setOverlayDim(320, 200);
+			_render->resizeOverlay(kScreenWidth, kScreenHeight);
 			_g->initBox();
 		}
 		if (state == kStateMenu) {
