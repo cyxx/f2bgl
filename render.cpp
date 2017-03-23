@@ -238,7 +238,7 @@ void Render::drawPolygonFlat(const Vertex *vertices, int verticesCount, int colo
 		glColor4f(0., 0., 1., .5);
 		break;
 	case kFlatColorShadow:
-		glColor4f(0., 0., 0., .5);
+		glColor4f(0., 0., 0., .2);
 		break;
 	case kFlatColorLight:
 		glColor4f(1., 1., 1., .2);

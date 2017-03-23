@@ -2884,31 +2884,33 @@ bool Game::getMessage(int16_t key, uint32_t value, ResMessageDescription *desc) 
 	return offset != -1 && _res.getMessageDescription(desc, value, offset);
 }
 
+void Game::drawSceneObjectShadow(SceneObject *so) {
+	assert((so->polygonsData[0] & 0x80) != 0);
+	const uint8_t *p = &so->polygonsData[1];
+	int count = *p & 15;
+	while (count > 0) {
+		assert((*p & 0x40) != 0); // byte indexed
+		p += 3;
+		Vertex polygonPoints[16];
+		for (int i = 0; i <= count; ++i) {
+			const int index = *p++;
+			assert(index < 9);
+			const int8_t *q = (int8_t *)so->verticesData + so->verticesCount * 4 + index * 2;
+			polygonPoints[i].x = q[0];
+			polygonPoints[i].z = q[1];
+			polygonPoints[i].y = kGroundY * 2 - 1;
+		}
+		_render->drawPolygonFlat(polygonPoints, count + 1, kFlatColorShadow);
+		count = *p & 15;
+	}
+}
+
 void Game::drawSceneObjectMesh(SceneObject *so, int flags) {
 	const uint8_t *polygonsData = so->polygonsData;
 	const uint8_t *verticesData = so->verticesData;
 	const int verticesCount = so->verticesCount;
 	if (polygonsData[0] & 0x80) {
 		const int shadowPolySize = -(int8_t)polygonsData[0];
-		const uint8_t *p = &polygonsData[1];
-		if (0) {
-			int count = *p & 15;
-			while (count > 0) {
-				assert((*p & 0x40) != 0); // byte indexed
-				p += 3;
-				Vertex polygonPoints[16];
-				for (int i = 0; i <= count; ++i) {
-					const int index = *p++;
-					assert(index < 9);
-					const int8_t *q = (int8_t *)verticesData + verticesCount * 4 + index * 2;
-					polygonPoints[i].x = q[0];
-					polygonPoints[i].z = q[1];
-					polygonPoints[i].y = kGroundY * 2;
-				}
-				_render->drawPolygonFlat(polygonPoints, count + 1, kFlatColorShadow);
-				count = *p & 15;
-			}
-		}
 		polygonsData += shadowPolySize;
 	}
 	int count = *polygonsData++;
@@ -3003,6 +3005,11 @@ void Game::drawSceneObject(SceneObject *so) {
 	const int flags = so->o->flags[1];
 	if (so->verticesCount != 0) {
 		assert(so->polygonsData != 0 && so->verticesData != 0);
+		if (so->polygonsData[0] & 0x80) {
+			_render->beginObjectDraw(so->x, 0, so->z, so->pitch, kPosShift);
+			drawSceneObjectShadow(so);
+			_render->endObjectDraw();
+		}
 		_render->beginObjectDraw(so->x, so->y, so->z, so->pitch, kPosShift);
 		drawSceneObjectMesh(so, flags);
 		_render->endObjectDraw();

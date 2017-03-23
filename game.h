@@ -613,6 +613,7 @@ struct Game {
 	void updateCameraViewpoint(int xPos, int yPos, int zPos);
 	bool updateGlobalPos(int dx, int dy, int dz, int dx0, int dz0, int flag);
 	void drawPolygons(Vertex *polygonPoints, int count, int color);
+	void drawSceneObjectShadow(SceneObject *so);
 	void drawSceneObjectMesh(SceneObject *so, int flags = 0);
 	void drawSceneObject(SceneObject *so);
 	void redrawScene();
