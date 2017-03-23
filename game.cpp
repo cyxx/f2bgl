@@ -2635,13 +2635,7 @@ if (_mainLoopCurrentMode == 1) {
 		drawString(_drawNumber.x, _drawNumber.y, buf, _drawNumber.font, 0);
 		memset(&_drawNumber, 0, sizeof(_drawNumber));
 	}
-	if (_cut._numToPlayCounter >= 0) {
-		if (_cut._numToPlayCounter == 0) {
-			if (_cut._numToPlay >= 0) {
-//				playCutscene(_cut._numToPlay);
-//				_cut._numToPlay = -1;
-			}
-		}
+	if (_cut._numToPlayCounter > 0) {
 		--_cut._numToPlayCounter;
 	}
 	if (_changeLevel) {
@@ -4196,6 +4190,7 @@ void Game::playDeathCutscene(int objKey) {
 		_cut._numToPlayCounter = 0;
 		_cut._numToPlay = 12;
 	}
+	debug(kDebug_GAME, "Game::playDeathCutscene() queue playback num %d counter %d", _cut._numToPlay, _cut._numToPlayCounter);
 }
 
 void Game::displayTarget(int cx, int cy) {
