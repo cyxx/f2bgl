@@ -2937,9 +2937,8 @@ void Game::drawSceneObjectMesh(SceneObject *so, int flags) {
 			}
 		}
 		if (flags & 0x40000) {
-			for (int i = 0; i < count; ++i) {
-				addParticleBlob(so, polygonPoints[i].x, polygonPoints[i].y << 1, polygonPoints[i].z, 5, 6, color & 255);
-			}
+			const int y = (kGroundY << 15) + (polygonPoints[0].y << 1);
+			addParticleBlob(so, polygonPoints[0].x, y, polygonPoints[0].z, 5, 6, color & 255);
 			count = *polygonsData++;
 			continue;
 		}
@@ -3641,7 +3640,7 @@ void Game::drawParticles() {
 			color = clut[2];
 			clut[3] = _indirectPalette[kIndirectColorShadow][color];
 			color = clut[3];
-			if (0) {
+			if (1) {
 				uint8_t tmpTex[16 * 16];
 				for (int i = 0; i < 16 * 16; ++i) {
 					tmpTex[i] = clut[blobTex[i]];
