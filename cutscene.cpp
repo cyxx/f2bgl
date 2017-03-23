@@ -66,7 +66,7 @@ void Cutscene::updatePalette(int palType, int colorsCount, const uint8_t *p) {
 			}
 		}
 	}
-	_render->setPalette(_palette, 256, _game->_res._userConfig.lightCoef, _game->_res._userConfig.greyScale != 0);
+	_render->setPalette(_palette, 0, 256, _game->_res._userConfig.lightCoef, _game->_res._userConfig.greyScale != 0);
 }
 
 static int decodeHuffman(const uint8_t *src, int srcSize, uint8_t *dst) {

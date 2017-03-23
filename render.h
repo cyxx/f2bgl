@@ -70,7 +70,7 @@ struct Render {
 	void resizeOverlay(int w, int h, bool hflip = false);
 	void copyToOverlay(int x, int y, const uint8_t *data, int pitch, int w, int h, int transparentColor = -1);
 
-	void setPalette(const uint8_t *pal, int count, int rgbScale, bool greyScale);
+	void setPalette(const uint8_t *pal, int offset, int count, int rgbScale, bool greyScale);
 	void clearScreen();
 	void setupProjection(int mode = kProjGame);
 	void drawOverlay();

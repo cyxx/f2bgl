@@ -702,7 +702,12 @@ void Game::setPalette(int16_t key) {
 	}
 	const uint8_t *p = _res.getData(kResType_PAL, key, "PALDATA");
 	memcpy(_screenPalette, p, 256 * 3);
-	_render->setPalette(p, 256, _res._userConfig.lightCoef, _res._userConfig.greyScale != 0);
+	_render->setPalette(p, 0, 256, _res._userConfig.lightCoef, _res._userConfig.greyScale != 0);
+}
+
+void Game::setPaletteColor(int color, int r, int g, int b) {
+	const uint8_t p[] = { (uint8_t)r, (uint8_t)g, (uint8_t)b };
+	_render->setPalette(p, color, 1, _res._userConfig.lightCoef, _res._userConfig.greyScale != 0);
 }
 
 void Game::updatePalette() {
@@ -2639,7 +2644,7 @@ if (_mainLoopCurrentMode == 1) {
 		--_cut._numToPlayCounter;
 	}
 	if (_changeLevel) {
-//		setPaletteColor(1, 255, 255, 255);
+		setPaletteColor(1, 255, 255, 255);
 		if (getMessage(_objectsPtrTable[kObjPtrFadeToBlack]->objKey, 1, &_tmpMsg)) {
 			memset(&_drawCharBuf, 0, sizeof(_drawCharBuf));
 			int w, h;

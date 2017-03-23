@@ -503,7 +503,7 @@ void Render::resizeOverlay(int w, int h, bool hflip) {
 	_overlay.hflip = hflip;
 }
 
-void Render::setPalette(const uint8_t *pal, int count, int rgbScale, bool greyScale) {
+void Render::setPalette(const uint8_t *pal, int offset, int count, int rgbScale, bool greyScale) {
 	for (int i = 0; i < count; ++i) {
 		int r = pal[0];
 		int g = pal[1];
@@ -517,13 +517,14 @@ void Render::setPalette(const uint8_t *pal, int count, int rgbScale, bool greySc
 			g = (g * rgbScale) >> 8;
 			b = (b * rgbScale) >> 8;
 		}
-		_clut[3 * i] = r;
-		_clut[3 * i + 1] = g;
-		_clut[3 * i + 2] = b;
-		_pixelColorMap[0][i] = r / 255.;
-		_pixelColorMap[1][i] = g / 255.;
-		_pixelColorMap[2][i] = b / 255.;
-		_pixelColorMap[3][i] = (i == 0) ? 0. : 1.;
+		const int j = offset + i;
+		_clut[3 * j]     = r;
+		_clut[3 * j + 1] = g;
+		_clut[3 * j + 2] = b;
+		_pixelColorMap[0][j] = r / 255.;
+		_pixelColorMap[1][j] = g / 255.;
+		_pixelColorMap[2][j] = b / 255.;
+		_pixelColorMap[3][j] = (j == 0) ? 0. : 1.;
 		pal += 3;
 	}
 	_textureCache.setPalette(_clut);

@@ -565,6 +565,7 @@ struct Game {
 	void loadColorMark(int16_t key);
 	void setupIndirectColorPalette();
 	void setPalette(int16_t key);
+	void setPaletteColor(int color, int r, int g, int b);
 	void updatePalette();
 	void loadSceneMap(int16_t key);
 	bool updateSceneAnimationsKeyFrame(int rnd, int index, SceneAnimation *sa, SceneAnimationState *sas);
