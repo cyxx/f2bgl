@@ -3004,7 +3004,7 @@ void Game::drawSceneObject(SceneObject *so) {
 	const int flags = so->o->flags[1];
 	if (so->verticesCount != 0) {
 		assert(so->polygonsData != 0 && so->verticesData != 0);
-		if (so->polygonsData[0] & 0x80) {
+		if ((so->polygonsData[0] & 0x80) && (flags & 0x400) == 0) {
 			_render->beginObjectDraw(so->x, 0, so->z, so->pitch, kPosShift);
 			drawSceneObjectShadow(so);
 			_render->endObjectDraw();
