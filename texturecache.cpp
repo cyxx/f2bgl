@@ -113,6 +113,7 @@ Texture *TextureCache::getCachedTexture(int16_t key, const uint8_t *data, int w,
 		}
 		prev = t;
 	}
+	assert(data && w > 0 && h > 0);
 	Texture *t = createTexture(data, w, h, pal);
 	if (t) {
 		t->key = key;

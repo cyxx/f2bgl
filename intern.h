@@ -19,6 +19,11 @@ inline int sext32(int x, int bits) {
 	return (((int32_t)x) << shift) >> shift;
 }
 
+inline uint16_t READ_BE_UINT16(const void *ptr) {
+	const uint8_t *p = (const uint8_t *)ptr;
+	return p[1] | (p[0] << 8);
+}
+
 inline uint16_t READ_LE_UINT16(const void *ptr) {
 	const uint8_t *p = (const uint8_t *)ptr;
 	return p[0] | (p[1] << 8);

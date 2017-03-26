@@ -31,6 +31,7 @@ directory. The expected directory structure is :
 	DATA/
 	DATA/DRIVERS/
 	DATA/SOUND/
+	INSTDATA/    - optional
 	TEXT/        - not present with demo version
 	VOICE/       - not present with demo version
 

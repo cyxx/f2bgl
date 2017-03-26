@@ -9,5 +9,6 @@
 #include "util.h"
 
 void decodeLZSS(const uint8_t *src, uint8_t *dst, int decodedSize);
+void decodeRAC(const uint8_t *src, uint8_t *dst, int decodedSize);
 
 #endif // DECODER_H__

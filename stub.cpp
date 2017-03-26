@@ -95,6 +95,7 @@ struct GameStub_F2B : GameStub {
 		kStateInventory,
 		kStateBox,
 		kStateMenu,
+		kStateInstaller,
 	};
 
 	Render *_render;
@@ -136,6 +137,9 @@ struct GameStub_F2B : GameStub {
 		}
 		if (state == kStateMenu) {
 			_g->initMenu();
+		}
+		if (state == kStateInstaller) {
+			_g->initInstaller();
 		}
 		_state = state;
 	}
@@ -391,6 +395,10 @@ struct GameStub_F2B : GameStub {
 				_g->inp.escapeKey = false;
 				_nextState = kStateGame;
 			}
+			break;
+		case kStateInstaller:
+			_g->doInstaller();
+			// _nextState = kStateGame
 			break;
 		}
 	}

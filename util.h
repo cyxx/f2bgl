@@ -24,6 +24,7 @@ enum {
 	kDebug_SOUND    = 1 << 6,
 	kDebug_SAVELOAD = 1 << 7,
 	kDebug_XMIDI    = 1 << 8,
+	kDebug_INSTALL  = 1 << 9,
 };
 
 extern const char *g_caption;

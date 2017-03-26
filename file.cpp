@@ -151,7 +151,7 @@ const char *g_fileSavePath;
 static bool _exitOnError = true;
 
 static void fileMakeFilePath(const char *fileName, int fileType, int fileLang, char *filePath) {
-	static const char *dataDirsTable[] = { "DATA", "DATA/SOUND", "TEXT", "VOICE", "DATA/DRIVERS" };
+	static const char *dataDirsTable[] = { "DATA", "DATA/SOUND", "TEXT", "VOICE", "DATA/DRIVERS", "INSTDATA" };
 	static const char *langDirsTable[] = { "US", "FR", "GR", "SP", "IT" };
 
 	if (fileType == kFileType_RUNTIME) {

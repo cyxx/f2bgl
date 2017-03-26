@@ -697,6 +697,10 @@ struct Game {
 	bool testInputKeyMaskPrev(int num, int dir, int button, int index) const;
 	void updateInputKeyMask(int inputIndex);
 
+	// installer.cpp
+	void initInstaller();
+	void doInstaller();
+
 	// inventory.cpp
 	bool initInventory();
 	void loadInventoryObjectMesh(GameObject *o);

@@ -14,6 +14,7 @@ enum FileType {
 	kFileType_TEXT,
 	kFileType_VOICE,
 	kFileType_DRIVERS,
+	kFileType_INSTDATA,
 	kFileType_RUNTIME,
 	kFileType_LOAD,
 	kFileType_SAVE,

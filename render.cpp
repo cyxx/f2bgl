@@ -256,7 +256,6 @@ void Render::drawPolygonFlat(const Vertex *vertices, int verticesCount, int colo
 }
 
 void Render::drawPolygonTexture(const Vertex *vertices, int verticesCount, int primitive, const uint8_t *texData, int texW, int texH, int16_t texKey) {
-	assert(texData && texW > 0 && texH > 0);
 	assert(vertices && verticesCount >= 4);
 	glEnable(GL_TEXTURE_2D);
 	Texture *t = _textureCache.getCachedTexture(texKey, texData, texW, texH);
@@ -552,13 +551,23 @@ void Render::setupProjection(int mode) {
 	if (mode == kProjMenu) {
 		glMatrixMode(GL_PROJECTION);
 		glLoadIdentity();
-		glFrustum(-.5, .5, -aspect / 2, 0., 1., 512);
+		glFrustum(-.5, .5, -aspect / 2, 0., 1., 512.);
 		glTranslatef(0., 0., -20.);
 		glMatrixMode(GL_MODELVIEW);
 		glLoadIdentity();
 		glScalef(1., -.5, 1.);
 		glTranslatef(0., 16., 0.);
 		glTranslatef(0., 0., -72.);
+		return;
+	}
+	if (mode == kProjInstall) {
+		glMatrixMode(GL_PROJECTION);
+		glLoadIdentity();
+		glFrustum(-.5, .5, -aspect / 2, 0., 1., 4096.);
+		glTranslatef(0., 0., -64.);
+		glMatrixMode(GL_MODELVIEW);
+		glLoadIdentity();
+		glTranslatef(0, -1024., -3092.);
 		return;
 	}
 	clearScreen();
