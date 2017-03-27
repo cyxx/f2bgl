@@ -148,6 +148,7 @@ struct GameStub_F2B : GameStub {
 		GameParams params;
 		char *language = 0;
 		char *voice = 0;
+		_nextState = kStateCutscene;
 		while (1) {
 			static struct option options[] = {
 				{ "datapath", required_argument, 0, 1 },
@@ -161,6 +162,7 @@ struct GameStub_F2B : GameStub {
 				{ "xpos_conrad",    required_argument, 0, 100 },
 				{ "zpos_conrad",    required_argument, 0, 101 },
 				{ "skip_cutscenes", no_argument,       0, 102 },
+				{ "init_state",     required_argument, 0, 103 },
 #endif
 				{ 0, 0, 0, 0 }
 			};
@@ -199,7 +201,26 @@ struct GameStub_F2B : GameStub {
 				params.zPosConrad = atoi(optarg);
 				break;
 			case 102:
-				_skipCutscenes = true;
+				_skipCutscenes = 1;
+				_nextState = kStateGame;
+				break;
+			case 103: {
+					static struct {
+						const char *name;
+						int state;
+					} states[] = {
+						{ "game", kStateGame },
+						{ "installer", kStateInstaller },
+						{ "menu", kStateMenu },
+						{ 0, -1 },
+					};
+					for (int i = 0; states[i].name; ++i) {
+						if (strcasecmp(states[i].name, optarg) == 0) {
+							_nextState = states[i].state;
+							break;
+						}
+					}
+				}
 				break;
 #endif
 			default:
@@ -210,7 +231,6 @@ struct GameStub_F2B : GameStub {
 		g_utilDebugMask = kDebug_INFO;
 #ifdef F2B_DEBUG
 		g_utilDebugMask |= kDebug_GAME /* | kDebug_RESOURCE */ | kDebug_FILE | kDebug_CUTSCENE | kDebug_OPCODES | kDebug_SOUND;
-		_skipCutscenes = 1;
 #endif
 		FileLanguage fileLanguage = parseLanguage(language);
 		FileLanguage fileVoice = parseVoice(voice, fileLanguage);
@@ -227,7 +247,6 @@ struct GameStub_F2B : GameStub {
 		_g->init();
 		_g->_cut._numToPlay = 47;
 		_state = -1;
-		_nextState = _skipCutscenes ? kStateGame : kStateCutscene;
 		setState(_nextState);
 		_nextState = _state;
 		_dt = 0;
