@@ -1124,7 +1124,7 @@ void Game::init() {
 }
 
 void Game::initLevel() {
-	debug(kDebug_GAME, "Game::initLevel() %d\n", _level);
+	debug(kDebug_GAME, "Game::initLevel() %d", _level);
 
 	int32_t flag = -1;
 	op_clearTarget(1, &flag);
@@ -2447,7 +2447,7 @@ void Game::fixRoomDataHelper(int x, int z, uint8_t room) {
 			return;
 		}
 		if (cell->room2 == room) {
-			debug(kDebug_GAME, "Game::fixRoomDataHelper room %d room2 %d\n", cell->room, cell->room2);
+			debug(kDebug_GAME, "Game::fixRoomDataHelper room %d room2 %d", cell->room, cell->room2);
 			SWAP(cell->room, cell->room2);
 		}
 	}
