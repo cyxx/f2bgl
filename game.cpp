@@ -1710,7 +1710,12 @@ int Game::executeObjectScript(GameObject *o) {
 	if (o->msg) {
 		int messagesCount = o->scriptStateData[3];
 		if (messagesCount != 0) {
-			const uint8_t *msgList = _res.getMsgData(o->scriptStateData[2]);
+			const int num = o->scriptStateData[2];
+			if (num >= _res._msgOffsetsTableCount) {
+				warning("Game::executeObjectScript() '%s' msg index %d out of bounds (count %d)", o->name, num, _res._msgOffsetsTableCount);
+				return -1;
+			}
+			const uint8_t *msgList = _res.getMsgData(num);
 			for (int i = 0; i < messagesCount && runScript == 0; ++i) {
 				if (msgList[i] == 0) {
 					break;
@@ -3812,7 +3817,12 @@ bool Game::sendMessage(int msg, int16_t destObjKey) {
 			bool hasMsg = false;
 			int messagesCount = o->scriptStateData[3];
 			if (messagesCount != 0) {
-				const uint8_t *msgList = _res.getMsgData(o->scriptStateData[2]);
+				const int num = o->scriptStateData[2];
+				if (num >= _res._msgOffsetsTableCount) {
+					warning("Game::executeObjectScript() '%s' msg index %d out of bounds (count %d)", o->name, num, _res._msgOffsetsTableCount);
+					return -1;
+				}
+				const uint8_t *msgList = _res.getMsgData(num);
 				for (int i = 0; i < messagesCount; ++i) {
 					if (msgList[i] == msg) {
 						hasMsg = true;
