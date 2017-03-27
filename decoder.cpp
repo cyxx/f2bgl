@@ -13,12 +13,13 @@ void decodeLZSS(const uint8_t *src, uint8_t *dst, int decodedSize) {
 				*dst++ = *src++;
 				--decodedSize;
 			} else {
+				// LE16 - offset,count - bits == 4
 				const int offset = (src[1] << 4) | (src[0] >> 4);
-				int size = (src[0] & 15) + 2;
-				assert(decodedSize >= size);
+				int count = (src[0] & 15) + 2;
+				assert(decodedSize >= count);
 				src += 2;
-				decodedSize -= size;
-				while (size-- != 0) {
+				decodedSize -= count;
+				while (count-- != 0) {
 					*dst = *(dst - offset - 1);
 					++dst;
 				}
@@ -36,18 +37,19 @@ void decodeRAC(const uint8_t *src, uint8_t *dst, int decodedSize) {
 				*dst++ = *src++;
 				--decodedSize;
 			} else {
+				// LE16 - count,offset - bits == 10
 				int offset = READ_LE_UINT16(src); src += 2;
-				const int count = (offset >> bits) + 2;
+				int count = (offset >> bits) + 2;
 				offset &= (1 << bits) - 1;
 				if (offset == 0) {
 					return;
 				}
 				assert(decodedSize >= count);
-				for (int j = 0; j < count; ++j) {
-					dst[j] = dst[j - offset];
-				}
-				dst += count;
 				decodedSize -= count;
+				while (count-- != 0) {
+					*dst = *(dst - offset);
+					++dst;
+				}
 			}
 		}
 	}
