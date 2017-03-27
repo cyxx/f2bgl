@@ -243,6 +243,9 @@ void Render::drawPolygonFlat(const Vertex *vertices, int verticesCount, int colo
 	case kFlatColorLight:
 		glColor4f(1., 1., 1., .2);
 		break;
+	case kFlatColorLight9:
+		glColor4f(1., 1., 1., .5);
+		break;
 	default:
 		if (color >= 0 && color < 256) {
 			glColor4f(_pixelColorMap[0][color], _pixelColorMap[1][color], _pixelColorMap[2][color], _pixelColorMap[3][color]);
@@ -370,6 +373,9 @@ void Render::drawParticle(const Vertex *pos, int color) {
 		break;
 	case kFlatColorLight:
 		glColor4f(1., 1., 1., .2);
+		break;
+	case kFlatColorLight9:
+		glColor4f(1., 1., 1., .5);
 		break;
 	default:
 		if (color >= 0 && color < 256) {
