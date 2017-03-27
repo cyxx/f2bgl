@@ -3874,7 +3874,11 @@ bool Game::sendMessage(int msg, int16_t destObjKey) {
 								}
 							}
 						}
-						bool isConradShoot = (typeObj == 8 && (specObj & 0xDF0) != 0); /* NOTE: different from the original */
+						const bool isConradShoot = (typeObj == 8 && specObj != 0);
+						if (isConradShoot && (specObj & 0xDF0) != specObj) {
+							// flag should be set on (specObj & 0xDF0) but the original seems to set on (!= 0)
+							warning("Game::sendMessage() setting isConradShoot with specObj 0x%x", specObj);
+						}
 						switch (_skillLevel) {
 						case kSkillEasy:
 							if (o == _objectsPtrTable[kObjPtrConrad]) {
