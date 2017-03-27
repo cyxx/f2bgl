@@ -22,7 +22,6 @@ enum {
 	kProjGame = 0,
 	kProjMenu,
 	kProjInstall,
-	kProjDefault,
 	kProj2D
 };
 

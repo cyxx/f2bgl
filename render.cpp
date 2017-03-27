@@ -538,6 +538,10 @@ void Render::setPalette(const uint8_t *pal, int offset, int count, int rgbScale,
 void Render::clearScreen() {
 	glClearColor(0, 0, 0, 0);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+#ifdef USE_GLES
+	glEnableClientState(GL_VERTEX_ARRAY);
+	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+#endif
 }
 
 void Render::setupProjection(int mode) {
@@ -550,10 +554,6 @@ void Render::setupProjection(int mode) {
 		return;
 	}
 	const GLfloat aspect = 1.5;
-#ifdef USE_GLES
-	glEnableClientState(GL_VERTEX_ARRAY);
-	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-#endif
 	if (mode == kProjMenu) {
 		glMatrixMode(GL_PROJECTION);
 		glLoadIdentity();
@@ -576,15 +576,13 @@ void Render::setupProjection(int mode) {
 		glTranslatef(0, -1024., -3092.);
 		return;
 	}
+	assert(mode == kProjGame);
 	clearScreen();
 	if (_viewport.changed) {
 		_viewport.changed = false;
 		const int w = _w * _viewport.pw >> 8;
 		const int h = _h * _viewport.ph >> 8;
 		glViewport((_w - w) / 2, (_h - h) / 2, w, h);
-	}
-	if (mode == kProjDefault) {
-		return;
 	}
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
