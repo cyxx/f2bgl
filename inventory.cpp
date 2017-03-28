@@ -16,6 +16,7 @@ static GameObject *_inventoryCurrentObj;
 static int _inventoryCurrentNum;
 static int _inventoryCategoryNum;
 static int _inventoryFirstObjNum;
+static bool _inventoryVoicePlayed;
 
 static bool _3dObj;
 
@@ -132,8 +133,8 @@ void Game::updateInventoryInput() {
 			_snd.playSfx(_objectsPtrTable[kObjPtrWorld]->objKey, _res._sndKeysTable[5]);
 		}
 	}
-	if (inp.ctrlKey) {
-		inp.ctrlKey = 0;
+	if (inp.shiftKey) {
+		inp.shiftKey = 0;
 		if (_inventoryCurrentObj) {
 			_3dObj = !_3dObj;
 			if (_3dObj) {
@@ -141,6 +142,7 @@ void Game::updateInventoryInput() {
 				setPalette(_palKeysTable[_inventoryCurrentObj->pal]);
 			} else {
 				_snd.stopVoice(_inventoryCurrentObj->objKey);
+				_inventoryVoicePlayed = false;
 			}
 			_snd.playSfx(_objectsPtrTable[kObjPtrWorld]->objKey, _res._sndKeysTable[6]);
 		}
@@ -268,6 +270,7 @@ void Game::doInventory() {
 		} else {
 			drawSprite((kScreenWidth - kInventoryObjectWidth) / 2, 25 + kInventoryCategoryHeight + 14 + kInventoryObjectHeight + 5, _inventoryCursor[2]);
 		}
+		_inventoryVoicePlayed = false;
 	} else {
 
 		_render->drawOverlay();
@@ -314,10 +317,11 @@ void Game::doInventory() {
 		}
 		if (getMessage(_inventoryCurrentObj->objKey, 4, &_tmpMsg) && _tmpMsg.data) {
 			if (type == 32) {
-				if ((_tmpMsg.font & 0x80) != 0 && !_snd.isVoicePlaying(_inventoryCurrentObj->objKey)) {
+				if ((_tmpMsg.font & 0x80) != 0 && !_snd.isVoicePlaying(_inventoryCurrentObj->objKey) && !_inventoryVoicePlayed) {
 					char buf[32];
 					snprintf(buf, sizeof(buf), "%s_4", _inventoryCurrentObj->name);
 					_snd.playVoice(_inventoryCurrentObj->objKey, getStringHash(buf));
+					_inventoryVoicePlayed = true;
 				}
 				++_inventoryCurrentObj->specialData[1][9];
 				int32_t argv[] = { _objectsPtrTable[kObjPtrWorld]->objKey, 6 };
