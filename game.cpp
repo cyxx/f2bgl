@@ -109,6 +109,7 @@ void Game::clearLevelData() {
 	_x0PosViewpoint = _y0PosViewpoint = _z0PosViewpoint = 0;
 	_yRotViewpoint = 0;
 
+	_cameraDelta = 0;
 	_cameraDeltaRotY = 0;
 	_cameraDeltaRotYValue2 = 0;
 	_cameraDeltaRotYTicks = 3;
