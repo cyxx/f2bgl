@@ -2945,8 +2945,6 @@ void Game::drawSceneObjectMesh(SceneObject *so, int flags) {
 		if (flags & 0x40000) {
 			const int y = (kGroundY << 15) + (polygonPoints[0].y << 1);
 			addParticleBlob(so, polygonPoints[0].x, y, polygonPoints[0].z, 5, 6, color & 255);
-			count = *polygonsData++;
-			continue;
 		}
 		const int fill = (color >> 8) & 31;
 		if (fill == 8 || fill == 11 || fill == 12) {
