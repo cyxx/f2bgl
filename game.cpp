@@ -3168,17 +3168,50 @@ bool Game::redrawSceneGridCell(int x, int z, CellMap *cell) {
 		}
 	}
 	if (cell->type > 0) {
+		static const int kWallHeight = kGroundY * 4;
 		int dx = 0, dz = 0;
 		switch (cell->type) {
 		case 1:
 			initVerticesW(quad, x, z, 0, 0);
 			drawWall(quad, 4, cell->west);
+			if (x > 0 && (_sceneCellMap[x - 1][z].type == 0 || _sceneCellMap[x - 1][z].type == 32)) {
+				for (int y = 0; y < kWallHeight; y += kGroundY) {
+					for (int i = 0; i < 4; ++i) {
+						quad[i].y += kGroundY;
+					}
+					drawWall(quad, 4, cell->west);
+				}
+			}
 			initVerticesS(quad, x, z, 0, 0);
 			drawWall(quad, 4, cell->south);
+			if (z > 0 && (_sceneCellMap[x][z - 1].type == 0 || _sceneCellMap[x][z - 1].type == 32)) {
+				for (int y = 0; y < kWallHeight; y += kGroundY) {
+					for (int i = 0; i < 4; ++i) {
+						quad[i].y += kGroundY;
+					}
+					drawWall(quad, 4, cell->south);
+				}
+			}
 			initVerticesE(quad, x, z, 0, 0);
 			drawWall(quad, 4, cell->east);
+			if (x < kMapSizeX && (_sceneCellMap[x + 1][z].type == 0 || _sceneCellMap[x + 1][z].type == 32)) {
+				for (int y = 0; y < kWallHeight; y += kGroundY) {
+					for (int i = 0; i < 4; ++i) {
+						quad[i].y += kGroundY;
+					}
+					drawWall(quad, 4, cell->east);
+				}
+			}
 			initVerticesN(quad, x, z, 0, 0);
 			drawWall(quad, 4, cell->north);
+			if (z < kMapSizeZ && (_sceneCellMap[x][z + 1].type == 0 || _sceneCellMap[x][z + 1].type == 32)) {
+				for (int y = 0; y < kWallHeight; y += kGroundY) {
+					for (int i = 0; i < 4; ++i) {
+						quad[i].y += kGroundY;
+					}
+					drawWall(quad, 4, cell->north);
+				}
+			}
 			break;
 		case 3:
 			initVerticesS(quad, x, z, 0, 0);
