@@ -719,6 +719,9 @@ int Game::rayCast(GameObject *o, int xStartRay, RayCastCallbackType callback, in
 			CellMap *cellMap = getCellMap(rayxex, rayxez);
 			if (type == kRayCastWall) {
 				cellMap->visible = true;
+				if (cellMap->type == 20) {
+					_decorTexture = cellMap->texture[0];
+				}
 			}
 			if (cellMap->type > 0) {
 				if (cellMap->type == 1) {
@@ -781,6 +784,9 @@ int Game::rayCast(GameObject *o, int xStartRay, RayCastCallbackType callback, in
 			CellMap *cellMap = getCellMap(rayzex, rayzez);
 			if (type == kRayCastWall) {
 				cellMap->visible = true;
+				if (cellMap->type == 20) {
+					_decorTexture = cellMap->texture[0];
+				}
 			}
 			if (cellMap->type > 0) {
 				if (cellMap->type == 1) {

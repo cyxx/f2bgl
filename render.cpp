@@ -390,13 +390,36 @@ void Render::drawParticle(const Vertex *pos, int color) {
 	glColor4f(1., 1., 1., 1.);
 }
 
-void Render::drawSprite(int x, int y, const uint8_t *texData, int texW, int texH, int16_t texKey) {
+void Render::drawSprite(int x, int y, const uint8_t *texData, int texW, int texH, int primitive, int16_t texKey) {
 	glDisable(GL_DEPTH_TEST);
 	glEnable(GL_TEXTURE_2D);
 	Texture *t = _textureCache.getCachedTexture(texKey, texData, texW, texH);
 	glBindTexture(GL_TEXTURE_2D, t->id);
-	GLfloat uv[] = { 0., 0., t->u, 0., t->u, t->v, 0., t->v };
-	emitQuadTex2i(x, y, texW, texH, uv);
+	switch (primitive) {
+	case 0:
+		// 1:::2
+		// :   :
+		// 4:::3
+		{
+			GLfloat uv[] = { 0., 0., t->u, 0., t->u, t->v, 0., t->v };
+			emitQuadTex2i(x, y, texW, texH, uv);
+		}
+		break;
+	case 9:
+		//
+		// 2:::3
+		// :   :
+		// 1:::4
+		//
+		{
+			GLfloat uv[] = { 0., 0., 0., t->v, t->u, t->v, t->u, 0. };
+			emitQuadTex2i(x, y, texW, texH, uv);
+		}
+		break;
+	default:
+		warning("Render::drawSprite() unhandled primitive %d", primitive);
+		break;
+	}
 	glDisable(GL_TEXTURE_2D);
 	glEnable(GL_DEPTH_TEST);
 }
@@ -577,7 +600,6 @@ void Render::setupProjection(int mode) {
 		return;
 	}
 	assert(mode == kProjGame);
-	clearScreen();
 	if (_viewport.changed) {
 		_viewport.changed = false;
 		const int w = _w * _viewport.pw >> 8;

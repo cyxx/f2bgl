@@ -459,6 +459,7 @@ struct Game {
 	uint8_t _screenPalette[256 * 3];
 	uint8_t _indirectPalette[kIndirectColorTableSize][256];
 	uint32_t _mrkBuffer[260];
+	int _decorTexture;
 
 	int _particleDx, _particleDy, _particleDz, _particleRnd, _particleSpd;
 	int _particlesCount;

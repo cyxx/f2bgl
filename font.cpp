@@ -68,7 +68,7 @@ void Game::drawChar(int x, int y, SpriteImage *spr, int color) {
 			}
 		}
 	} else {
-		_render->drawSprite(x, y, spr->data, spr->w, spr->h, spr->key);
+		_render->drawSprite(x, y, spr->data, spr->w, spr->h, 0, spr->key);
 	}
 }
 

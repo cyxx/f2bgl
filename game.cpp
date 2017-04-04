@@ -3263,10 +3263,9 @@ bool Game::redrawSceneGridCell(int x, int z, CellMap *cell) {
                         initVerticesS(quad, x, z, 0,  (16 - kWallThick) / 2);
                         drawWall(quad, 4, cell->texture[1]);
 			break;
-		case 20:
-			warning("Game::redrawScene() texture1 %d texture2 %d (room %d x %d z %d)", cell->texture[0], cell->texture[1], cell->room, x, z);
+		case 20: // decor
 			break;
-		case 32:
+		case 32: // hole
 			break;
 		default:
 			warning("Game::redrawScene() unhandled type %d (room %d x %d z %d)", cell->type, cell->room, x, z);
@@ -3277,13 +3276,31 @@ bool Game::redrawSceneGridCell(int x, int z, CellMap *cell) {
 }
 
 void Game::redrawSceneGroundWalls() {
+	_decorTexture = 0;
 	for (int x = 0; x < kMapSizeX; ++x) {
 		for (int z = 0; z < kMapSizeZ; ++z) {
 			_sceneCellMap[x][z].visible = false;
 		}
 	}
 	rayCastWall(_xPosObserver << 1, _zPosObserver << 1);
-	_render->setupProjection();
+	_render->clearScreen();
+	if (_decorTexture != 0) {
+		SpriteImage *spr = &_sceneAnimationsTextureTable[_decorTexture];
+		const int sprKey = spr->key;
+		debug(kDebug_GAME, "decorTexture %d w %d h %d (_decorTexture %d) rotY %d", spr->key, spr->w, spr->h, _decorTexture, _yRotObserver);
+
+		const uint8_t *p_btm = _res.getData(kResType_SPR, sprKey, "BTMDESC");
+		const int w = READ_LE_UINT16(p_btm);
+		const int h = READ_LE_UINT16(p_btm + 2);
+
+		const uint8_t *p_spr = _res.getData(kResType_SPR, sprKey, "SPRDATA");
+		const uint8_t *texData = _spriteCache.getData(sprKey, p_spr);
+
+		_render->setupProjection(kProj2D);
+		_render->drawSprite(0, 0, texData, w, h, 9, sprKey);
+		_render->drawSprite(w, 0, texData, w, h, 9, sprKey);
+	}
+	_render->setupProjection(kProjGame);
 	for (int x = 0; x < kMapSizeX; ++x) {
 		for (int z = 0; z < kMapSizeZ; ++z) {
 			CellMap *cell = &_sceneCellMap[x][z];
@@ -3292,6 +3309,7 @@ void Game::redrawSceneGroundWalls() {
 			}
 		}
 	}
+
 }
 
 bool Game::findRoom(const CollisionSlot *colSlot, int room1, int room2) {
@@ -4051,7 +4069,7 @@ void Game::initViewport() {
 void Game::drawInfoPanel() {
 	const int xPos = _res._userConfig.iconLrInvX;
 	const int yPos = _res._userConfig.iconLrInvY;
-	_render->drawSprite(xPos, yPos, _infoPanelSpr.data, _infoPanelSpr.w, _infoPanelSpr.h, _infoPanelSpr.key);
+	_render->drawSprite(xPos, yPos, _infoPanelSpr.data, _infoPanelSpr.w, _infoPanelSpr.h, 0, _infoPanelSpr.key);
 	const uint8_t color = _indirectPalette[kIndirectColorYellow][1];
 	const int life = 48 * _objectsPtrTable[kObjPtrConrad]->specialData[1][18] / _varsTable[kVarConradLife];
 	_render->drawRectangle(xPos + 1, yPos + 1 + 48 - life, 2, life, color);
@@ -4275,7 +4293,7 @@ void Game::displayTarget(int cx, int cy) {
 			const uint8_t *p_spr0 = _res.getData(kResType_SPR, _spritesTable[0], "SPRDATA");
 			p_spr0 = _spriteCache.getData(_spritesTable[0], p_spr0);
 			if (p_spr0) {
-				_render->drawSprite(cx - spr0_w / 2, cy - spr0_h / 2, p_spr0, spr0_w, spr0_h, _spritesTable[0]);
+				_render->drawSprite(cx - spr0_w / 2, cy - spr0_h / 2, p_spr0, spr0_w, spr0_h, 0, _spritesTable[0]);
 			}
 			const int r = spr0_w / 2;
 			int a = getAngleFromPos(xPosTarget - _xPosObserver, zPosTarget - _zPosObserver);
@@ -4290,7 +4308,7 @@ void Game::displayTarget(int cx, int cy) {
 			const uint8_t *p_spr1 = _res.getData(kResType_SPR, _spritesTable[1], "SPRDATA");
 			p_spr1 = _spriteCache.getData(_spritesTable[1], p_spr1);
 			if (p_spr1) {
-				_render->drawSprite(cx + tx - spr1_w / 2, cy + ty - spr1_h / 2, p_spr1, spr1_w, spr1_h, _spritesTable[1]);
+				_render->drawSprite(cx + tx - spr1_w / 2, cy + ty - spr1_h / 2, p_spr1, spr1_w, spr1_h, 0, _spritesTable[1]);
 			}
 			--_varsTable[13];
 			if (_varsTable[13] <= 0) {

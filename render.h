@@ -57,7 +57,7 @@ struct Render {
 	void drawPolygonFlat(const Vertex *vertices, int verticesCount, int color);
 	void drawPolygonTexture(const Vertex *vertices, int verticesCount, int primitive, const uint8_t *texData, int texW, int texH, int16_t texKey);
 	void drawParticle(const Vertex *pos, int color);
-	void drawSprite(int x, int y, const uint8_t *texData, int texW, int texH, int16_t texKey);
+	void drawSprite(int x, int y, const uint8_t *texData, int texW, int texH, int primitive, int16_t texKey);
 	void drawRectangle(int x, int y, int w, int h, int color);
 
 	void beginObjectDraw(int x, int y, int z, int ry, int shift = 0);
@@ -72,7 +72,7 @@ struct Render {
 
 	void setPalette(const uint8_t *pal, int offset, int count, int rgbScale, bool greyScale);
 	void clearScreen();
-	void setupProjection(int mode = kProjGame);
+	void setupProjection(int mode);
 	void drawOverlay();
 	void resizeScreen(int w, int h);
 
