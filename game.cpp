@@ -1472,7 +1472,6 @@ int32_t Game::getObjectData(GameObject *o, int param) {
 	} else if (param >= 128) {
 		error("Game::getObjectData() invalid access to _varsTable");
 	} else if (param >= 96) {
-		param -= 96;
 		value = getObjectFlag(o, param);
 	} else {
 		value = o->getData(param);
@@ -1524,7 +1523,6 @@ int32_t Game::getObjectScriptParam(GameObject *o, int param) {
 		param -= 128;
 		value = _varsTable[param];
 	} else if (param >= 96) {
-		param -= 96;
 		value = getObjectFlag(o, param);
 	} else {
 		value = o->getData(param);
