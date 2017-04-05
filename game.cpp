@@ -3152,7 +3152,7 @@ bool Game::redrawSceneGridCell(int x, int z, CellMap *cell) {
 	if (!_render->isQuadInFrustrum(quad, 4)) {
 		return false;
 	}
-	if (cell->type != 32) {
+	if (cell->type != 20 && cell->type != 32) {
 		const int index = _sceneGroundMap[x][z];
 		if (index >= 0 && index < 512) {
 			_sceneAnimationsTable[index].type |= 0x10;
