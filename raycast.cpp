@@ -752,7 +752,6 @@ int Game::rayCast(GameObject *o, int xStartRay, RayCastCallbackType callback, in
 					if (type == kRayCastWall) {
 						switch (cellMap->type) {
 						case 0:
-						case -2:
 						case -3:
 							addObjectToDrawList(cellMap);
 							break;
@@ -817,7 +816,6 @@ int Game::rayCast(GameObject *o, int xStartRay, RayCastCallbackType callback, in
 					if (type == kRayCastWall) {
 						switch (cellMap->type) {
 						case 0:
-						case -2:
 						case -3:
 							addObjectToDrawList(cellMap);
 							break;
@@ -907,7 +905,6 @@ void Game::rayCastWall(int x, int y) {
 		if (cellMap->colSlot && cellMap->rayCastCounter != _rayCastCounter) {
 			switch (cellMap->type) {
 			case 0:
-			case -2:
 			case -3:
 				addObjectToDrawList(cellMap);
 				break;
