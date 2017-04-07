@@ -3217,20 +3217,21 @@ bool Game::redrawSceneGridCell(int x, int z, CellMap *cell) {
 			initVerticesS(quad, x, z, 0, -kWallThick);
 			drawWall(quad, 4, cell->texture[0]);
 			break;
+
 		case 4: // door s-n
 		case 16:
 			dz = -(63 - cell->data[1]) / 4;
-			initVerticesE(quad, x, z, 0, dz);
+			initVerticesE(quad, x, z, -kWallThick / 2, dz);
 			drawWall(quad, 4, cell->texture[1]);
-			initVerticesE(quad, x, z, -kWallThick, dz);
+			initVerticesE(quad, x, z, -kWallThick * 2, dz);
 			drawWall(quad, 4, cell->texture[0]);
 			break;
 		case 5: // door n-s
 		case 17:
 			dz = (63 - cell->data[1]) / 4;
-			initVerticesE(quad, x, z, 0, dz);
+			initVerticesE(quad, x, z, -kWallThick / 2, dz);
 			drawWall(quad, 4, cell->texture[1]);
-			initVerticesE(quad, x, z, -kWallThick, dz);
+			initVerticesE(quad, x, z, -kWallThick * 2, dz);
 			drawWall(quad, 4, cell->texture[0]);
 			break;
 		case 6: // door w-e
