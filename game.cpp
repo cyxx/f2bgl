@@ -4158,7 +4158,7 @@ void Game::playDeathCutscene(int objKey) {
 	if (o->specialData[1][21] == 0x40000) {
 		_cut._numToPlayCounter = 0;
 		_cut._numToPlay = 48;
-		_level = -14;
+		_level = kLevelGameOver;
 	} else if (_level == 6) {
 		_cut._numToPlayCounter = 0;
 		_cut._numToPlay = 9;

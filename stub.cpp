@@ -67,18 +67,23 @@ static FileLanguage parseVoice(const char *voice, FileLanguage lang) {
 	}
 }
 
-static int getNextIntroCutsceneNum(int num) {
+static int getNextCutsceneNum(int num) {
 	switch (num) {
-	case 47:
+	case 47: // logo ea
 		return 39;
-	case 39:
+	case 39: // logo dsi
 		return 13;
-	case 13:
+	case 13: // intro
 		return 37;
-	case 37:
+	case 37: // opening credits
 		return 53;
-	case 53:
+	case 53: // start
 		return 29;
+	// game completed
+	case 48: // outro
+		return 44;
+	case 44: // title
+		return 13;
 	}
 	return -1;
 }
@@ -358,13 +363,17 @@ struct GameStub_F2B : GameStub {
 				_g->_cut.unload();
 				if (!_g->_cut.isInterrupted()) {
 					do {
-						_g->_cut._numToPlay = getNextIntroCutsceneNum(_g->_cut._numToPlay);
+						_g->_cut._numToPlay = getNextCutsceneNum(_g->_cut._numToPlay);
 					} while (_g->_cut._numToPlay >= 0 && !_g->_cut.load(_g->_cut._numToPlay));
 				} else {
 					_g->_cut._numToPlay = -1;
 				}
 				if (_g->_cut._numToPlay < 0) {
 					_nextState = kStateGame;
+					if (_g->_level == kLevelGameOver) {
+						// restart
+						_g->init();
+					}
 				}
 			}
 			break;

@@ -73,7 +73,8 @@ enum {
 	kRayCastedObjectsTableSize = 32,
 	kFollowingObjectPointsTableSize = 30,
 	kViewportMax = 20,
-	kTickDurationMs = 40
+	kTickDurationMs = 40,
+	kLevelGameOver = 14
 };
 
 enum {
