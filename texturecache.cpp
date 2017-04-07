@@ -236,15 +236,18 @@ void TextureCache::updateTexture(Texture *t, const uint8_t *data, int w, int h) 
 }
 
 void TextureCache::convertPalette(const uint8_t *src, uint16_t *dst) {
-	for (int i = 0; i < 256; ++i, src += 3) {
-		const int r = src[0];
-		const int g = src[1];
-		const int b = src[2];
-		if (r == 0 && g == 0 && b == 0) {
-			dst[i] = 0;
-		} else {
-			dst[i] = _formats[_fmt].convertColor(r, g, b);
-		}
+	const int r = *src++;
+	const int g = *src++;
+	const int b = *src++;
+	if (r != 0 || g != 0 || b != 0) {
+		warning("Unexpected palette color for index 0, r %d g %d b %d", r, g, b);
+		dst[0] = _formats[_fmt].convertColor(r, g, b);
+	} else {
+		// first palette entry is used for transparency
+		dst[0] = 0;
+	}
+	for (int i = 1; i < 256; ++i, src += 3) {
+		dst[i] = _formats[_fmt].convertColor(src[0], src[1], src[2]);
 	}
 }
 
