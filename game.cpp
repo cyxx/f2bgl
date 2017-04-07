@@ -3211,13 +3211,13 @@ bool Game::redrawSceneGridCell(int x, int z, CellMap *cell) {
 				}
 			}
 			break;
-		case 3:
+		case 3: // w-e
 			initVerticesS(quad, x, z, 0, 0);
 			drawWall(quad, 4, cell->texture[1]);
 			initVerticesS(quad, x, z, 0, -kWallThick);
 			drawWall(quad, 4, cell->texture[0]);
 			break;
-		case 4:
+		case 4: // door s-n
 		case 16:
 			dz = -(63 - cell->data[1]) / 4;
 			initVerticesE(quad, x, z, 0, dz);
@@ -3225,7 +3225,7 @@ bool Game::redrawSceneGridCell(int x, int z, CellMap *cell) {
 			initVerticesE(quad, x, z, -kWallThick, dz);
 			drawWall(quad, 4, cell->texture[0]);
 			break;
-		case 5:
+		case 5: // door n-s
 		case 17:
 			dz = (63 - cell->data[1]) / 4;
 			initVerticesE(quad, x, z, 0, dz);
@@ -3233,34 +3233,36 @@ bool Game::redrawSceneGridCell(int x, int z, CellMap *cell) {
 			initVerticesE(quad, x, z, -kWallThick, dz);
 			drawWall(quad, 4, cell->texture[0]);
 			break;
-		case 6:
+		case 6: // door w-e
 		case 18:
 			dx = -(63 - cell->data[1]) / 4;
-			initVerticesN(quad, x, z, dx, -(16 - kWallThick) / 2);
+			initVerticesS(quad, x, z, dx, (16 - kWallThick) / 2);
 			drawWall(quad, 4, cell->texture[0]);
-			initVerticesS(quad, x, z, dx,  (16 - kWallThick) / 2);
+			initVerticesS(quad, x, z, dx, 16 - (16 - kWallThick) / 2);
 			drawWall(quad, 4, cell->texture[1]);
 			break;
-		case 7:
+		case 7: // door e-w
 		case 19:
 			dx = (63 - cell->data[1]) / 4;
-			initVerticesN(quad, x, z, dx, -(16 - kWallThick) / 2);
+			initVerticesS(quad, x, z, dx, (16 - kWallThick) / 2);
 			drawWall(quad, 4, cell->texture[0]);
-			initVerticesS(quad, x, z, dx,  (16 - kWallThick) / 2);
+			initVerticesS(quad, x, z, dx, 16 - (16 - kWallThick) / 2);
 			drawWall(quad, 4, cell->texture[1]);
 			break;
-		case 10:
-                        initVerticesE(quad, x, z,  kWallThick/2, 0);
+#if 0
+		case 10: // grid n-s
+                        initVerticesE(quad, x, z,  kWallThick / 2, 0);
                         drawWall(quad, 4, cell->texture[1]);
-                        initVerticesE(quad, x, z, -kWallThick/2, 0);
+                        initVerticesE(quad, x, z, -kWallThick / 2, 0);
                         drawWall(quad, 4, cell->texture[0]);
 			break;
-		case 11:
+		case 11: // grid w-e
                         initVerticesN(quad, x, z, 0, -(16 - kWallThick) / 2);
                         drawWall(quad, 4, cell->texture[0]);
                         initVerticesS(quad, x, z, 0,  (16 - kWallThick) / 2);
                         drawWall(quad, 4, cell->texture[1]);
 			break;
+#endif
 		case 20: // decor
 			break;
 		case 32: // hole
