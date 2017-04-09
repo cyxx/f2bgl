@@ -1972,7 +1972,7 @@ int Game::op_drawNumber(int argc, int32_t *argv) {
 		}
 		_drawNumber.value = value;
 	}
-	return 0;
+	return -1;
 }
 
 int Game::op_isObjectOnMap(int argc, int32_t *argv) {
