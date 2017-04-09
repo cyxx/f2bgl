@@ -70,3 +70,61 @@ void saveBMP(const char *filepath, const uint8_t *rgb, int w, int h) {
 		free(buffer);
 	}
 }
+
+#define kTgaImageTypeUncompressedTrueColor 2
+#define kTgaImageTypeRunLengthEncodedTrueColor 10
+
+void saveTGA(const char *filepath, const uint8_t *rgb, int w, int h) {
+	static const uint8_t kImageType = kTgaImageTypeRunLengthEncodedTrueColor;
+	static const int HEADER_SIZE = 18;
+	uint8_t buffer[HEADER_SIZE];
+	buffer[0]            = 0; // ID Length
+	buffer[1]            = 0; // ColorMap Type
+	buffer[2]            = kImageType;
+	TO_LE16(buffer +  3,   0); // ColorMap Start
+	TO_LE16(buffer +  5,   0); // ColorMap Length
+	buffer[7]            = 0; // ColorMap Bits
+	TO_LE16(buffer +  8,   0); // X-origin
+	TO_LE16(buffer + 10,   0); // Y-origin
+	TO_LE16(buffer + 12,   w); // Image Width
+	TO_LE16(buffer + 14,   h); // Image Height
+	buffer[16]           = 24; // Pixel Depth
+	buffer[17]           = 0; // Descriptor
+
+	File *f = fileOpen(filepath, 0, kFileType_SCREENSHOT);
+	if (f) {
+		fileWrite(f, buffer, sizeof(buffer));
+		if (kImageType == kTgaImageTypeUncompressedTrueColor) {
+			for (int i = 0; i < w * h; ++i) {
+				fileWriteByte(f, rgb[2]);
+				fileWriteByte(f, rgb[1]);
+				fileWriteByte(f, rgb[0]);
+				rgb += 3;
+			}
+		} else {
+			assert(kImageType == kTgaImageTypeRunLengthEncodedTrueColor);
+			int prevColor = rgb[0] + (rgb[1] << 8) + (rgb[2] << 16); rgb += 3;
+			int count = 0;
+			for (int i = 1; i < w * h; ++i) {
+				int color = rgb[0] + (rgb[1] << 8) + (rgb[2] << 16); rgb += 3;
+				if (prevColor == color && count < 127) {
+					++count;
+					continue;
+				}
+				fileWriteByte(f, count | 0x80);
+				fileWriteByte(f, (prevColor >> 16) & 255);
+				fileWriteByte(f, (prevColor >>  8) & 255);
+				fileWriteByte(f,  prevColor        & 255);
+				count = 0;
+				prevColor = color;
+			}
+			if (count != 0) {
+				fileWriteByte(f, count | 0x80);
+				fileWriteByte(f, (prevColor >> 16) & 255);
+				fileWriteByte(f, (prevColor >>  8) & 255);
+				fileWriteByte(f,  prevColor        & 255);
+			}
+		}
+		fileClose(f);
+	}
+}

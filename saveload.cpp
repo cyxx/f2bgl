@@ -541,7 +541,9 @@ void Game::saveScreenshot(int num) {
 	const uint8_t *p = _render->captureScreen(&w, &h);
 	if (p) {
 		char filename[32];
-		snprintf(filename, sizeof(filename), kFn, _level + 1, num, "bmp");
-		saveBMP(filename, p, w, h);
+//		snprintf(filename, sizeof(filename), kFn, _level + 1, num, "bmp");
+//		saveBMP(filename, p, w, h);
+		snprintf(filename, sizeof(filename), kFn, _level + 1, num, "tga");
+		saveTGA(filename, p, w, h);
 	}
 }
