@@ -532,6 +532,7 @@ void Game::loadGameState(int num) {
 			initLevel();
 		}
 		persistGameState<kModeLoad>(fp, *this);
+		_updatePalette = true;
 	}
 	fileClose(fp);
 }
