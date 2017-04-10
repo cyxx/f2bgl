@@ -80,9 +80,13 @@ static int getNextCutsceneNum(int num) {
 	case 53: // start
 		return 29;
 	// game completed
-	case 48: // outro
+	case 52:
+		return 32;
+	case 32:
+		return 48;
+	case 48: // closing credits
 		return 44;
-	case 44: // title
+	case 44: // fade to black
 		return 13;
 	}
 	return -1;
@@ -372,7 +376,9 @@ struct GameStub_F2B : GameStub {
 					_nextState = kStateGame;
 					if (_g->_level == kLevelGameOver) {
 						// restart
-						_g->init();
+						_g->_changeLevel = false;
+						_g->_level = 0;
+						_g->initLevel();
 					}
 				}
 			}
@@ -396,6 +402,24 @@ struct GameStub_F2B : GameStub {
 //				_g->inp.escapeKey = false;
 //				_nextState = kStateMenu;
 			} else if (_g->_cut._numToPlay >= 0 && _g->_cut._numToPlayCounter == 0) {
+				if (_g->_level == kLevelGameOver) {
+
+					// the original game engine did not queue the cutscenes
+					// for playback but played them directly
+					//
+					//   SCRIPT 674 OFFSET 0xF488
+					//   STATEMENTS SEQUENCE
+					//     cine ( 52 )
+					//     cine ( 32 )
+					//     change_level (  )
+					//
+					// we workaround this here as it appears to be the only
+					// occurrence
+
+					if (_g->_cut._numToPlay == 48) {
+						_g->_cut._numToPlay = 52;
+					}
+				}
 				_nextState = kStateCutscene;
 			} else if (_g->_boxItemCount != 0) {
 				_nextState = kStateBox;
