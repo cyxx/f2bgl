@@ -577,7 +577,7 @@ struct Game {
 	void updateSceneTextures();
 	void initScene();
 	void init();
-	void initLevel();
+	void initLevel(bool keepInventoryObjects = false);
 	void setupConradObject();
 	void changeRoom(int room);
 	void playMusic(int num);
@@ -626,6 +626,9 @@ struct Game {
 	bool testObjectsRoom(int16_t obj1Key, int16_t obj2Key);
 	void readInputEvents();
 	void setupInventoryObjects();
+	void saveInventoryObjects();
+	void loadInventoryObjects();
+	GameObject *findObjectByName(GameObject *o, const char *name);
 	void addParticle(int xPos, int yPos, int zPos, int rnd, int dx, int dy, int dz, int count, int ticks, int fl, int speed);
 	void addParticleBlob(SceneObject *so, int xPos, int yPos, int zPos, int rnd, int ticks, int fl);
 	void updateParticles();

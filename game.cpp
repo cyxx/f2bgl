@@ -1124,13 +1124,17 @@ void Game::init() {
 	initLevel();
 }
 
-void Game::initLevel() {
-	debug(kDebug_GAME, "Game::initLevel() %d", _level);
+void Game::initLevel(bool keepInventoryObjects) {
+	debug(kDebug_GAME, "Game::initLevel() level %d keepInventory %d", _level, keepInventoryObjects);
 
 	int32_t flag = -1;
 	op_clearTarget(1, &flag);
 	int32_t argv[] = { -1, -1 };
 	op_removeObjectMessage(2, argv);
+
+	if (keepInventoryObjects) {
+		saveInventoryObjects();
+	}
 
 	clearLevelData();
 
@@ -1174,6 +1178,9 @@ void Game::initLevel() {
 		_res._sndKeysTable[i] = _res.getKeyFromPath(_res._soundKeyPathsTable[i]);
 	}
 	setupObjects();
+	if (keepInventoryObjects) {
+		loadInventoryObjects();
+	}
 	initFonts();
 	setupInventoryObjects();
 	initSprites();
@@ -3592,6 +3599,123 @@ void Game::setupInventoryObjects() {
 			drawString(8, y[i], (const char *)_tmpMsg.data, _tmpMsg.font, 0);
 		}
 	}
+}
+
+struct SavedInventoryObject {
+	char *name;
+	char *parentName;
+	uint8_t customData[12];
+	SavedInventoryObject *next;
+};
+
+static SavedInventoryObject *_savedInventoryObjects;
+
+static SavedInventoryObject *saveInventoryObject(GameObject *o) {
+	SavedInventoryObject *sio = (SavedInventoryObject *)calloc(1, sizeof(SavedInventoryObject));
+	if (sio) {
+		if (_savedInventoryObjects) {
+			_savedInventoryObjects->next = sio;
+		}
+		_savedInventoryObjects = sio;
+		sio->name = strdup(o->name);
+		sio->parentName = strdup(o->o_parent->name);
+		memcpy(sio->customData, o->customData, 12 * sizeof(uint8_t));
+		if (o->o_child) {
+			saveInventoryObject(o->o_child);
+		}
+		if (o->o_next) {
+			saveInventoryObject(o->o_next);
+		}
+	}
+	return sio;
+}
+
+void Game::saveInventoryObjects() {
+	_savedInventoryObjects = 0;
+	_savedInventoryObjects = saveInventoryObject(_objectsPtrTable[kObjPtrInventaire]->o_child);
+}
+
+void Game::loadInventoryObjects() {
+	for (SavedInventoryObject *sio = _savedInventoryObjects; sio; sio = sio->next) {
+		GameObject *o = findObjectByName(_objectsPtrTable[kObjPtrWorld], sio->name);
+		if (!o) {
+			warning("Game::loadInventoryObjects() dropping '%s' when loading level %d", sio->name, _level);
+			continue;
+		}
+		if ((o->flags[1] & 1) == 0 && o->specialData[1][21] == 128) {
+			for (int i = 0; i < 12; ++i) {
+				switch (o->specialData[1][22]) {
+				case 64:
+				case 128:
+				case 256:
+				case 512:
+				case 1024:
+				case 2048:
+				case 4096:
+					if (i < 3) {
+						o->customData[i] = sio->customData[i];
+					}
+					break;
+				case 8192:
+				case 16384:
+				case 32768:
+				case 65536:
+					if (i == 0) {
+						o->customData[i] = sio->customData[i];
+					}
+					break;
+				}
+			}
+		}
+	}
+
+	GameObject *o;
+	if ((o = findObjectByName(_objectsPtrTable[kObjPtrWorld], "bouclier_normal"))) {
+		setObjectParent(o, _objectsPtrTable[kObjPtrWorld]);
+	}
+	if ((o = findObjectByName(_objectsPtrTable[kObjPtrWorld], "scanner_carte"))) {
+		setObjectParent(o, _objectsPtrTable[kObjPtrWorld]);
+	}
+	if ((o = findObjectByName(_objectsPtrTable[kObjPtrWorld], "tir_normal"))) {
+		setObjectParent(o, _objectsPtrTable[kObjPtrWorld]);
+	}
+	if ((o = findObjectByName(_objectsPtrTable[kObjPtrWorld], "mains_vides"))) {
+		setObjectParent(o, _objectsPtrTable[kObjPtrWorld]);
+	}
+
+	SavedInventoryObject *sio = _savedInventoryObjects;
+	while (sio) {
+		GameObject *o = findObjectByName(_objectsPtrTable[kObjPtrWorld], sio->name);
+		GameObject *o_parent = findObjectByName(_objectsPtrTable[kObjPtrWorld], sio->parentName);
+		if (o && o_parent) {
+			setObjectParent(o, o_parent);
+		}
+		SavedInventoryObject *next = sio->next;
+		free(sio->name);
+		free(sio->parentName);
+		free(sio);
+		sio = next;
+	}
+	_savedInventoryObjects = 0;
+}
+
+GameObject *Game::findObjectByName(GameObject *o, const char *name) {
+	if (strcmp(o->name, name) == 0) {
+		return o;
+	}
+	if (o->o_child) {
+		GameObject *o_tmp = findObjectByName(o->o_child, name);
+		if (o_tmp) {
+			return o_tmp;
+		}
+	}
+	if (o->o_next) {
+		GameObject *o_tmp = findObjectByName(o->o_next, name);
+		if (o_tmp) {
+			return o_tmp;
+		}
+	}
+	return 0;
 }
 
 void Game::addParticle(int xPos, int yPos, int zPos, int rnd, int dx, int dy, int dz, int count, int ticks, int fl, int speed) {

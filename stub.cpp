@@ -381,7 +381,7 @@ struct GameStub_F2B : GameStub {
 			if (_g->_changeLevel) {
 				_g->_changeLevel = false;
 				warning("_changeLevel flag set, starting level %d", _g->_level);
-				_g->initLevel();
+				_g->initLevel(true);
 			} else if (_g->_endGame) {
 				_g->_endGame = false;
 				warning("_endGame flag set, starting level %d", _g->_level);
