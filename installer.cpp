@@ -90,6 +90,7 @@ struct Installer {
 				assert(w == kFlagWidth && h == kFlagHeight && c == 256);
 				_render->prepareTexture(bitmapBuf + kHeaderSize + 256 * 3, w, h, bitmapBuf + kHeaderSize, kTexKeyFlag + i);
 			}
+			free(bitmapBuf);
 		}
 	}
 
@@ -223,8 +224,6 @@ struct Installer {
 			drawInstallMeshF3D(&_meshesTable[kInstallMesh_ECRAN], kTexKeyFlag + i);
 			_render->endObjectDraw();
 		}
-
-		// TODO: set language based on current flag
 
 		_logoPitch += 16;
 		_logoPitch &= 1023;
