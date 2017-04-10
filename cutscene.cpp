@@ -17,6 +17,10 @@ Cutscene::Cutscene(Render *render, Game *g, Sound *snd)
 	_numToPlayCounter = -1;
 	_numToPlay = -1;
 	_interrupted = false;
+	for (int i = 0; i < kCutscenePlaybackQueueSize; ++i) {
+		_playQueue[i] = -1;
+	}
+	_playQueueSize = 0;
 }
 
 Cutscene::~Cutscene() {
@@ -464,4 +468,36 @@ void Cutscene::unload() {
 
 bool Cutscene::isInterrupted() const {
 	return _interrupted;
+}
+
+void Cutscene::queue(int num, int counter) {
+	debug(kDebug_CUTSCENE, "Cutscene::queue() num %d counter %d", num, counter);
+	if (_numToPlay < 0) {
+		_numToPlay = num;
+		_numToPlayCounter = counter;
+	} else {
+		if (_playQueueSize < kCutscenePlaybackQueueSize) {
+			_playQueue[_playQueueSize] = num;
+			++_playQueueSize;
+			if (counter != 0) {
+				warning("Cutscene::queue() ignoring cutscene %d delay %d", num, counter);
+			}
+		} else {
+			warning("Cutscene::queue() queue size %d, skipping cutscene %d", _playQueueSize, num);
+		}
+	}
+}
+
+int Cutscene::dequeue() {
+	debug(kDebug_CUTSCENE, "Cutscene::dequeue() _playQueueSize %d", _playQueueSize);
+	if (_playQueueSize > 0) {
+		const int num = _playQueue[0];
+		--_playQueueSize;
+		for (int i = 0; i < _playQueueSize; ++i) {
+			_playQueue[i] = _playQueue[i + 1];
+		}
+		_playQueue[_playQueueSize] = -1;
+		return num;
+	}
+	return -1;
 }

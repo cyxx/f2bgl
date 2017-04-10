@@ -33,6 +33,7 @@ enum {
 	kCutsceneScenesCount = 54,
 	kFrameBuffersCount = 3,
 	kSubtitleMessagesCount = 16,
+	kCutscenePlaybackQueueSize = 4,
 	kCutsceneFrameDelay = 1000 / 12
 };
 
@@ -64,6 +65,8 @@ struct Cutscene {
 		int duration;
 	} _msgs[kSubtitleMessagesCount];
 	int _msgsCount;
+	int _playQueue[kCutscenePlaybackQueueSize];
+	int _playQueueSize;
 
 	Cutscene(Render *render, Game *g, Sound *snd);
 	~Cutscene();
@@ -78,6 +81,8 @@ struct Cutscene {
 	void unload();
 	bool play();
 	bool isInterrupted() const;
+	void queue(int num, int counter = 0);
+	int dequeue();
 };
 
 #endif // CUTSCENE_H__

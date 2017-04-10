@@ -73,20 +73,16 @@ static int getNextCutsceneNum(int num) {
 		return 39;
 	case 39: // logo dsi
 		return 13;
-	case 13: // intro
+	case 13: // 'intro'
 		return 37;
-	case 37: // opening credits
+	case 37: // opening credits - 'title'
 		return 53;
-	case 53: // start
+	case 53: // 'gendeb'
 		return 29;
 	// game completed
-	case 52:
-		return 32;
-	case 32:
-		return 48;
-	case 48: // closing credits
+	case 48: // closing credits - 'mgm'
 		return 44;
-	case 44: // fade to black
+	case 44: // fade to black - 'fade1'
 		return 13;
 	}
 	return -1;
@@ -367,7 +363,11 @@ struct GameStub_F2B : GameStub {
 				_g->_cut.unload();
 				if (!_g->_cut.isInterrupted()) {
 					do {
-						_g->_cut._numToPlay = getNextCutsceneNum(_g->_cut._numToPlay);
+						int num = _g->_cut.dequeue();
+						if (num < 0) {
+							num = getNextCutsceneNum(_g->_cut._numToPlay);
+						}
+						_g->_cut._numToPlay = num;
 					} while (_g->_cut._numToPlay >= 0 && !_g->_cut.load(_g->_cut._numToPlay));
 				} else {
 					_g->_cut._numToPlay = -1;
@@ -402,24 +402,6 @@ struct GameStub_F2B : GameStub {
 //				_g->inp.escapeKey = false;
 //				_nextState = kStateMenu;
 			} else if (_g->_cut._numToPlay >= 0 && _g->_cut._numToPlayCounter == 0) {
-				if (_g->_level == kLevelGameOver) {
-
-					// the original game engine did not queue the cutscenes
-					// for playback but played them directly
-					//
-					//   SCRIPT 674 OFFSET 0xF488
-					//   STATEMENTS SEQUENCE
-					//     cine ( 52 )
-					//     cine ( 32 )
-					//     change_level (  )
-					//
-					// we workaround this here as it appears to be the only
-					// occurrence
-
-					if (_g->_cut._numToPlay == 48) {
-						_g->_cut._numToPlay = 52;
-					}
-				}
 				_nextState = kStateCutscene;
 			} else if (_g->_boxItemCount != 0) {
 				_nextState = kStateBox;

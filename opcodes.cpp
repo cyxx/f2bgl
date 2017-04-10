@@ -1309,12 +1309,7 @@ int Game::op_clearTarget(int argc, int32_t *argv) {
 int Game::op_playCutscene(int argc, int32_t *argv) {
 	assert(argc == 1);
 	debug(kDebug_OPCODES, "Game::op_playCutscene() [%d]", argv[0]);
-	debug(kDebug_GAME, "Game::op_playCutscene() queue playback num %d", argv[0]);
-	if (_cut._numToPlay != -1) {
-		warning("Game::op_playCutscene() skipping playback num %d", _cut._numToPlay);
-	}
-	_cut._numToPlayCounter = 0;
-	_cut._numToPlay = argv[0];
+	_cut.queue(argv[0]);
 	return -1;
 }
 

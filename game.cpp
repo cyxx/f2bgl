@@ -4284,115 +4284,87 @@ void Game::getCutsceneMessages(int num) {
 void Game::playDeathCutscene(int objKey) {
 	GameObject *o = getObjectByKey(objKey);
 	if (o->specialData[1][21] == 0x40000) {
-		_cut._numToPlayCounter = 0;
-		_cut._numToPlay = 48;
+		_cut.queue(48);
 		_level = kLevelGameOver;
 	} else if (_level == 6) {
-		_cut._numToPlayCounter = 0;
-		_cut._numToPlay = 9;
+		_cut.queue(9);
 	} else if (_level == 12) {
-		_cut._numToPlayCounter = 0;
-		_cut._numToPlay = 33;
+		_cut.queue(33);
 	} else if (o->specialData[1][21] == 0x1000000) {
-		_cut._numToPlayCounter = 4;
-		_cut._numToPlay = 1;
+		_cut.queue(1, 4);
 	} else if (o->specialData[1][21] == 8) {
 		switch (o->specialData[1][22]) {
 		case 0x1:
-			_cut._numToPlayCounter = 4;
 			o = getObjectByKey(o->specialData[1][9]);
 			if (o->specialData[1][22] != 0x4000) {
-				_cut._numToPlay = 1;
+				_cut.queue(1, 4);
 			} else {
-				_cut._numToPlay = 6;
+				_cut.queue(6, 4);
 			}
 			break;
 		case 0x2:
 		case 0x4000:
-			_cut._numToPlayCounter = 4;
-			_cut._numToPlay = 2;
+			_cut.queue(2, 4);
 			break;
 		case 0x200:
-			_cut._numToPlayCounter = 0;
-			_cut._numToPlay = 4;
+			_cut.queue(4);
 			break;
 		default:
-			_cut._numToPlayCounter = 0;
-			_cut._numToPlay = 12;
+			_cut.queue(12);
 			break;
 		}
 	} else if (o->specialData[1][21] == 16) {
 		switch (o->specialData[1][22]) {
 		case 0x4:
-			_cut._numToPlayCounter = 0;
-			_cut._numToPlay = 0;
+			_cut.queue(0);
 			break;
 		case 0x20:
-			_cut._numToPlayCounter = 0;
-			_cut._numToPlay = 3;
+			_cut.queue(3);
 			break;
 		case 0x80000:
-			_cut._numToPlayCounter = 0;
-			_cut._numToPlay = 2;
+			_cut.queue(2);
 			break;
 		case 0x100000:
-			_cut._numToPlayCounter = 0;
-			_cut._numToPlay = 17;
+			_cut.queue(17);
 			break;
 		case 0x200000:
-			_cut._numToPlayCounter = 0;
-			_cut._numToPlay = 7;
+			_cut.queue(7);
 			break;
 		case 0x1000000:
-			_cut._numToPlayCounter = 0;
-			_cut._numToPlay = 40;
+			_cut.queue(40);
 			break;
 		case 0x4000000:
-			_cut._numToPlayCounter = 0;
-			_cut._numToPlay = 11;
+			_cut.queue(11);
 			break;
 		case 0x800000:
-			_cut._numToPlayCounter = 0;
-			_cut._numToPlay = 42;
+			_cut.queue(42);
 			break;
 		default:
-			_cut._numToPlayCounter = 0;
-			_cut._numToPlay = 12;
+			_cut.queue(12);
 			break;
 		}
 	} else if (o->specialData[1][21] == 0x20000) {
-		_cut._numToPlayCounter = 4;
-		_cut._numToPlay = 2;
+		_cut.queue(2, 4);
 	} else if (o->specialData[1][21] == 0x200000) {
-		_cut._numToPlayCounter = 0;
-		_cut._numToPlay = 41;
+		_cut.queue(41);
 	} else if (o->specialData[1][21] == 0x10000) {
-		_cut._numToPlayCounter = 0;
-		_cut._numToPlay = 10;
+		_cut.queue(10);
 	} else if (o->specialData[1][21] == 0x100) {
-		_cut._numToPlayCounter = 0;
-		_cut._numToPlay = 5;
+		_cut.queue(5);
 	} else if (o->specialData[1][21] == 0x800) {
-		_cut._numToPlayCounter = 0;
-		_cut._numToPlay = 17;
+		_cut.queue(17);
 	} else if (o->specialData[1][21] == 0x800000) {
-		_cut._numToPlayCounter = 0;
-		_cut._numToPlay = 49;
+		_cut.queue(49);
 	} else if (o->specialData[1][21] == 0x100000) {
-		_cut._numToPlayCounter = 0;
-		_cut._numToPlay = 34;
+		_cut.queue(34);
 	} else if (o->specialData[1][21] == 0x8000) {
-		_cut._numToPlayCounter = 4;
-		_cut._numToPlay = 8;
+		_cut.queue(8, 4);
 	} else if (o->specialData[1][21] == 0x80000) {
-		_cut._numToPlayCounter = 4;
-		_cut._numToPlay = 38;
+		_cut.queue(38, 4);
 	} else if (o->specialData[1][21] == 0x2000000) {
-		_cut._numToPlayCounter = 0;
-		_cut._numToPlay = 3;
+		_cut.queue(3);
 	} else {
-		_cut._numToPlayCounter = 0;
-		_cut._numToPlay = 12;
+		_cut.queue(12);
 	}
 	debug(kDebug_GAME, "Game::playDeathCutscene() queue playback num %d counter %d", _cut._numToPlay, _cut._numToPlayCounter);
 }
