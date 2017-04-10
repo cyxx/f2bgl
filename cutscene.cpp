@@ -391,7 +391,7 @@ bool Cutscene::load(int num) {
 		fileClose(_fp); _fp = 0;
 		return false;
 	}
-	if (!g_isDemo && (_fileHdr.soundStereo != 0 || _fileHdr.soundBits != 16 || _fileHdr.soundFreq != 22050)) {
+	if (!g_isDemo && _fileHdr.soundFrameSize != 0 && (_fileHdr.soundStereo != 0 || _fileHdr.soundBits != 16 || _fileHdr.soundFreq != 22050)) {
 		warning("Cutscene::load() Unsupported sound format %d/%d/%d", _fileHdr.soundStereo, _fileHdr.soundBits, _fileHdr.soundFreq);
 		fileClose(_fp); _fp = 0;
 		return false;
@@ -428,7 +428,7 @@ bool Cutscene::play() {
 		const int palSize = (palType + 3) * _frameHdr.palColorsCount;
 		assert(palSize + _frameHdr.videoFrameSize < _fileHdr.videoFrameSize + 1024);
 		fileRead(_fp, _frameReadBuffer, palSize + _frameHdr.videoFrameSize);
-		if (!g_isDemo) {
+		if (!g_isDemo && _frameHdr.soundFrameSize != 0) {
 			_soundReadBuffer = (uint8_t *)realloc(_soundReadBuffer, _frameHdr.soundFrameSize);
 			if (_soundReadBuffer) {
 				fileRead(_fp, _soundReadBuffer, _frameHdr.soundFrameSize);
