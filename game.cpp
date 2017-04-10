@@ -165,6 +165,10 @@ void Game::countObjects(int16_t parentKey) {
 int Game::gotoStartScriptAnim() {
 	GameObject *o = _currentObject;
 	GameObjectAnimation *anim = &o->anim;
+	if (o->scriptCondData == 0) {
+		warning("Game::gotoStartScriptAnim() object '%s' has no condition data", o->name);
+		return 1;
+	}
 	anim->animKey = READ_LE_UINT16(o->scriptCondData + 2);
 	anim->aniheadData = _res.getData(kResType_ANI, anim->animKey, "ANIHEAD");
 	if (READ_LE_UINT16(anim->aniheadData + 6) != 0) {
