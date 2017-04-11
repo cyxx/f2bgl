@@ -90,7 +90,6 @@ static int getNextCutsceneNum(int num) {
 
 static char *_dataPath;
 static char *_savePath;
-static bool _skipCutscenes;
 
 struct GameStub_F2B : GameStub {
 
@@ -119,11 +118,6 @@ struct GameStub_F2B : GameStub {
 		}
 		// init
 		if (state == kStateCutscene) {
-			if (_skipCutscenes) {
-				warning("Skipping cutscene %d playback", _g->_cut._numToPlay);
-				_g->_cut._numToPlay = -1;
-				return;
-			}
 			_g->_cut.load(_g->_cut._numToPlay);
 		}
 		if (state == kStateGame) {
@@ -154,19 +148,20 @@ struct GameStub_F2B : GameStub {
 		char *language = 0;
 		char *voice = 0;
 		_nextState = kStateCutscene;
+		g_utilDebugMask = kDebug_INFO;
 		while (1) {
 			static struct option options[] = {
-				{ "datapath", required_argument, 0, 1 },
-				{ "language", required_argument, 0, 2 },
-				{ "playdemo", no_argument,       0, 3 },
-				{ "level",    required_argument, 0, 4 },
-				{ "voice",    required_argument, 0, 5 },
+				{ "datapath",  required_argument, 0, 1 },
+				{ "language",  required_argument, 0, 2 },
+				{ "playdemo",  no_argument,       0, 3 },
+				{ "level",     required_argument, 0, 4 },
+				{ "voice",     required_argument, 0, 5 },
 				{ "subtitles", no_argument,      0, 6 },
-				{ "savepath", required_argument, 0, 7 },
+				{ "savepath",  required_argument, 0, 7 },
+				{ "debug",     required_argument, 0, 8 },
 #ifdef F2B_DEBUG
 				{ "xpos_conrad",    required_argument, 0, 100 },
 				{ "zpos_conrad",    required_argument, 0, 101 },
-				{ "skip_cutscenes", no_argument,       0, 102 },
 				{ "init_state",     required_argument, 0, 103 },
 #endif
 				{ 0, 0, 0, 0 }
@@ -198,6 +193,9 @@ struct GameStub_F2B : GameStub {
 			case 7:
 				_savePath = strdup(optarg);
 				break;
+			case 8:
+				g_utilDebugMask |= atoi(optarg);
+				break;
 #ifdef F2B_DEBUG
 			case 100:
 				params.xPosConrad = atoi(optarg);
@@ -205,11 +203,7 @@ struct GameStub_F2B : GameStub {
 			case 101:
 				params.zPosConrad = atoi(optarg);
 				break;
-			case 102:
-				_skipCutscenes = 1;
-				_nextState = kStateGame;
-				break;
-			case 103: {
+			case 102: {
 					static struct {
 						const char *name;
 						int state;
@@ -233,10 +227,6 @@ struct GameStub_F2B : GameStub {
 				return -1;
 			}
 		}
-		g_utilDebugMask = kDebug_INFO;
-#ifdef F2B_DEBUG
-		g_utilDebugMask |= kDebug_GAME /* | kDebug_RESOURCE */ | kDebug_FILE | kDebug_CUTSCENE | kDebug_OPCODES | kDebug_SOUND;
-#endif
 		FileLanguage fileLanguage = parseLanguage(language);
 		FileLanguage fileVoice = parseVoice(voice, fileLanguage);
 		free(language);
