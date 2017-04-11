@@ -1862,7 +1862,7 @@ int Game::executeObjectScript(GameObject *o) {
 void Game::runObject(GameObject *o) {
 	int x, y, z, ry;
 	do {
-//printf("runobject name '%s' state %d pos %d,%d %d %d decor %d\n", o->name, o->state, o->xPos >> 19, o->yPos >> 19, o->zPos >> 19, o->pitch, (o->flags[1] & 0x100) ? 1 : 0);
+		debug(kDebug_GAME, "Game::runObject name '%s' state %d pos %d,%d,%d flags 0x%x", o->name, o->state, o->xPos, o->yPos, o->zPos, o->flags[1]);
 		if (o->state == 1 && (o->flags[1] & 0x4000) == 0) {
 			o->xPosParentPrev = o->xPosParent;
 			o->yPosParentPrev = o->yPosParent;
@@ -3647,28 +3647,22 @@ void Game::loadInventoryObjects() {
 			continue;
 		}
 		if ((o->flags[1] & 1) == 0 && o->specialData[1][21] == 128) {
-			for (int i = 0; i < 12; ++i) {
-				switch (o->specialData[1][22]) {
-				case 64:
-				case 128:
-				case 256:
-				case 512:
-				case 1024:
-				case 2048:
-				case 4096:
-					if (i < 3) {
-						o->customData[i] = sio->customData[i];
-					}
-					break;
-				case 8192:
-				case 16384:
-				case 32768:
-				case 65536:
-					if (i == 0) {
-						o->customData[i] = sio->customData[i];
-					}
-					break;
-				}
+			switch (o->specialData[1][22]) {
+			case 64:
+			case 128:
+			case 256:
+			case 512:
+			case 1024:
+			case 2048:
+			case 4096:
+				memcpy(o->customData, sio->customData, 3 * sizeof(uint8_t));
+				break;
+			case 8192:
+			case 16384:
+			case 32768:
+			case 65536:
+				o->customData[0] = sio->customData[0];
+				break;
 			}
 		}
 	}

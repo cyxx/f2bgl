@@ -313,7 +313,6 @@ void Game::addObjectToDrawList(CellMap *cell) {
 			continue;
 		}
 		o->inSceneList = 1;
-//if (strncmp(o->name, "tir", 3) == 0) printf("Game::addObjectToDrawList '%s' flags %X state %d\n", o->name, o->flags[1], o->state);
 		if (o->flags[1] & 8) {
 			GameObject *o_tmp = o;
 			if (o->flags[1] & 0x100) {
