@@ -10,7 +10,8 @@ static int kHeaderSize = 96;
 
 // 21 - first version
 // 22 - persists GameObject.text
-static int kSaveVersion = 22;
+// 23 - remove Game._sceneCameraPosTable (read-only data)
+static int kSaveVersion = 23;
 
 enum {
 	kModeSave,
@@ -360,15 +361,6 @@ static void persistGameInput(File *fp, GameInput &i) {
 }
 
 template <int M>
-static void persistCameraPosMap(File *fp, CameraPosMap &m) {
-	persist<M>(fp, m.x);
-	persist<M>(fp, m.z);
-	persist<M>(fp, m.ry);
-	persist<M>(fp, m.l_ry);
-	persist<M>(fp, m.r_ry);
-}
-
-template <int M>
 static void persistCamera(File *fp, Game &g) {
 	persist<M>(fp, g._cameraViewKey);
 	persist<M>(fp, g._cameraViewObj);
@@ -410,9 +402,10 @@ static void persistCamera(File *fp, Game &g) {
 	pad<M>(fp, sizeof(uint32_t));
 	pad<M>(fp, sizeof(uint32_t));
 	pad<M>(fp, sizeof(uint32_t));
-	persist<M>(fp, g._sceneCamerasCount);
-	for (int i = 0; i < g._sceneCamerasCount; ++i) {
-		persistCameraPosMap<M>(fp, g._sceneCameraPosTable[i]);
+	if (_saveVersion <= 22 && M == kModeLoad) {
+		int count = 0;
+		persist<kModeLoad>(fp, count);
+		pad<kModeLoad>(fp, count * 5 * sizeof(uint32_t)); // sizeof(CameraPosMap)
 	}
 	pad<M>(fp, sizeof(uint32_t));
 	persist<M>(fp, g._focalDistance);
@@ -505,6 +498,7 @@ void Game::saveGameState(int num) {
 		return;
 	}
 	char header[kHeaderSize];
+	memset(header, 0, sizeof(header));
 	snprintf(header, sizeof(header), "PC__%4d : %s", kSaveVersion, kSaveText);
 	fileWrite(fp, header, sizeof(header));
 	_saveVersion = kSaveVersion;

@@ -82,7 +82,7 @@ void Game::setCameraPos(int xPos, int zPos) {
 	} else {
 		_currentCamera = (_currentCamera == 255) ? 0 : _currentCamera;
 	}
-	CameraPosMap *camera = &_sceneCameraPosTable[_currentCamera];
+	const CameraPosMap *camera = &_sceneCameraPosTable[_currentCamera];
 	_xPosObserver = camera->x;
 	_zPosObserver = camera->z;
 	if (fl == 1) {
