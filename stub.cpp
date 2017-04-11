@@ -181,8 +181,19 @@ struct GameStub_F2B : GameStub {
 			case 3:
 				params.playDemo = true;
 				break;
-			case 4:
-				params.levelNum = atoi(optarg);
+			case 4: {
+					int levelNum = -1;
+					static const char *levels[] = {
+						"1", "2a", "2b", "2c", "3", "4a", "4b", "4c", "5a", "5b", "5c", "6a", "6b", 0
+					};
+					for (int i = 0; levels[i]; ++i) {
+						if (strcasecmp(levels[i], optarg) == 0) {
+							levelNum = i;
+							break;
+						}
+					}
+					params.levelNum = (levelNum < 0) ? atoi(optarg) : levelNum;
+				}
 				break;
 			case 5:
 				voice = strdup(optarg);

@@ -3,10 +3,13 @@
 #include "game.h"
 #include "render.h"
 
-static const char *kFn = "f2bgl-level%d-%02d.%s";
+static const char *kFn_d = "f2bgl-level%d-%02d.%s";
+static const char *kFn_s = "f2bgl-level%s-%02d.%s";
 
 static const char *kSaveText = "1.00 Aug 25 1995  09:11:45 (c) 1995 Delphine Software, France";
 static int kHeaderSize = 96;
+
+static const char *kLevels[] = { "1", "2a", "2b", "2c", "3", "4a", "4b", "4c", "5a", "5b", "5c", "6a", "6b" };
 
 // 21 - first version
 // 22 - persists GameObject.text
@@ -492,7 +495,7 @@ static void persistGameState(File *fp, Game &g) {
 
 void Game::saveGameState(int num) {
 	char filename[32];
-	snprintf(filename, sizeof(filename), kFn, _level + 1, num, "sav");
+	snprintf(filename, sizeof(filename), kFn_s, kLevels[_level], num, "sav");
 	File *fp = fileOpen(filename, 0, kFileType_SAVE, false);
 	if (!fp) {
 		return;
@@ -510,10 +513,14 @@ void Game::saveGameState(int num) {
 
 void Game::loadGameState(int num) {
 	char filename[32];
-	snprintf(filename, sizeof(filename), kFn, _level + 1, num, "sav");
+	snprintf(filename, sizeof(filename), kFn_s, kLevels[_level], num, "sav");
 	File *fp = fileOpen(filename, 0, kFileType_LOAD, false);
 	if (!fp) {
-		return;
+		snprintf(filename, sizeof(filename), kFn_d, _level + 1, num, "sav");
+		fp = fileOpen(filename, 0, kFileType_LOAD, false);
+		if (!fp) {
+			return;
+		}
 	}
 	char header[kHeaderSize];
 	fileRead(fp, header, sizeof(header));
@@ -536,9 +543,7 @@ void Game::saveScreenshot(int num) {
 	const uint8_t *p = _render->captureScreen(&w, &h);
 	if (p) {
 		char filename[32];
-//		snprintf(filename, sizeof(filename), kFn, _level + 1, num, "bmp");
-//		saveBMP(filename, p, w, h);
-		snprintf(filename, sizeof(filename), kFn, _level + 1, num, "tga");
+		snprintf(filename, sizeof(filename), kFn_s, kLevels[_level], num, "tga");
 		saveTGA(filename, p, w, h);
 	}
 }
