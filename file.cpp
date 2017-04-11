@@ -3,6 +3,7 @@
  * Copyright (C) 2006-2012 Gregory Montoir (cyx@users.sourceforge.net)
  */
 
+#include <dirent.h>
 #include <sys/param.h>
 #include <sys/stat.h>
 #include <zlib.h>
@@ -73,18 +74,6 @@ struct StdioFile: File {
 		}
 		return 0;
 	}
-	static File *openIfExists(const char *path) {
-		File *f = 0;
-		struct stat st;
-		if (stat(path, &st) == 0 && S_ISREG(st.st_mode)) {
-			f = new StdioFile;
-			if (!f->open(path, "rb")) {
-				delete f;
-				f = 0;
-			}
-		}
-		return f;
-	}
 };
 
 struct GzipFile: File {
@@ -143,22 +132,78 @@ struct GzipFile: File {
 	}
 };
 
+struct FileSystem {
+	char **_fileList;
+	int _fileCount;
+	int _filePathSkipLen;
+
+	FileSystem() :
+		_fileList(0), _fileCount(0), _filePathSkipLen(0) {
+	}
+	~FileSystem() {
+		for (int i = 0; i < _fileCount; ++i) {
+			free(_fileList[i]);
+		}
+		free(_fileList);
+	}
+	void buildFileListFromDirectory(const char *dir) {
+		DIR *d = opendir(dir);
+		if (d) {
+			dirent *de;
+			while ((de = readdir(d)) != NULL) {
+				if (de->d_name[0] == '.') {
+					continue;
+				}
+				char filePath[MAXPATHLEN];
+				snprintf(filePath, sizeof(filePath), "%s/%s", dir, de->d_name);
+				struct stat st;
+				if (stat(filePath, &st) == 0) {
+					if (S_ISDIR(st.st_mode)) {
+						buildFileListFromDirectory(filePath);
+					} else {
+						_fileList = (char **)realloc(_fileList, (_fileCount + 1) * sizeof(char *));
+						if (_fileList) {
+							_fileList[_fileCount] = strdup(filePath + _filePathSkipLen);
+							++_fileCount;
+						}
+					}
+				}
+			}
+			closedir(d);
+		}
+	}
+	void setDataDirectory(const char *dir) {
+		_filePathSkipLen = strlen(dir) + 1;
+		buildFileListFromDirectory(dir);
+		debug(kDebug_FILE, "FileSystem::setDataDirectory('%s') %d files", dir, _fileCount);
+	}
+	const char *findPath(const char *file) const {
+		for (int i = 0; i < _fileCount; ++i) {
+			if (strcasecmp(_fileList[i], file) == 0) {
+				return _fileList[i];
+			}
+		}
+		return 0;
+	}
+};
+
 bool g_isDemo = false;
 static int _fileLanguage;
 static int _fileVoice;
 const char *g_fileDataPath;
 const char *g_fileSavePath;
 static bool _exitOnError = true;
+static FileSystem *_fileSystem;
 
 static void fileMakeFilePath(const char *fileName, int fileType, int fileLang, char *filePath) {
 	static const char *dataDirsTable[] = { "DATA", "DATA/SOUND", "TEXT", "VOICE", "DATA/DRIVERS", "INSTDATA" };
 	static const char *langDirsTable[] = { "US", "FR", "GR", "SP", "IT" };
 
 	if (fileType == kFileType_RUNTIME) {
-		sprintf(filePath, "%s/", g_fileDataPath);
+		filePath[0] = 0;
 	} else {
 		assert(fileType >= 0 && fileType < ARRAYSIZE(dataDirsTable));
-		sprintf(filePath, "%s/%s/", g_fileDataPath, dataDirsTable[fileType]);
+		sprintf(filePath, "%s/", dataDirsTable[fileType]);
 	}
 	switch (fileLang) {
 	case kFileLanguage_SP:
@@ -182,22 +227,21 @@ static void fileMakeFilePath(const char *fileName, int fileType, int fileLang, c
 static File *fileOpenIntern(const char *fileName, int fileType) {
 	char filePath[MAXPATHLEN];
 	fileMakeFilePath(fileName, fileType, _fileLanguage, filePath);
-	char *p = strrchr(filePath, '/');
-	if (p) {
-		++p;
-	} else {
-		p = filePath;
+	debug(kDebug_FILE, "fileOpenIntern() path '%s'", filePath);
+	const char *path = _fileSystem->findPath(filePath);
+	if (path) {
+		snprintf(filePath, sizeof(filePath), "%s/%s", g_fileDataPath, path);
+		File *fp = new StdioFile;
+		if (!fp->open(filePath, "rb")) {
+			delete fp;
+			fp = 0;
+		}
+		return fp;
 	}
-	stringToUpperCase(p);
-	File *fp = StdioFile::openIfExists(filePath);
-	if (!fp) {
-		stringToLowerCase(p);
-		fp = StdioFile::openIfExists(filePath);
+	if (fileType == kFileType_TEXT) {
+		return fileOpenIntern(fileName, kFileType_DATA);
 	}
-	if (!fp && fileType == kFileType_TEXT) {
-		fp = fileOpenIntern(fileName, kFileType_DATA);
-	}
-	return fp;
+	return 0;
 }
 
 bool fileExists(const char *fileName, int fileType) {
@@ -222,6 +266,8 @@ bool fileInit(int language, int voice, const char *dataPath, const char *savePat
 	_fileVoice = voice;
 	g_fileDataPath = dataPath;
 	g_fileSavePath = savePath;
+	_fileSystem = new FileSystem;
+	_fileSystem->setDataDirectory(dataPath);
 	bool ret = fileExists("player.ini", kFileType_DATA);
 	if (ret) {
 		g_isDemo = fileExists("ddtitle.cin", kFileType_DATA);

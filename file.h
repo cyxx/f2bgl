@@ -59,4 +59,4 @@ void fileWriteUint16LE(File *fp, uint16_t value);
 void fileWriteUint32LE(File *fp, uint32_t value);
 void fileWriteLine(File *fp, const char *s, ...);
 
-#endif // __File_H__
+#endif // FILE_H__
