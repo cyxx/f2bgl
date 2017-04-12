@@ -1437,7 +1437,7 @@ int Game::op_setCamera(int argc, int32_t *argv) {
 				_focalDistance = value;
 				break;
 			default:
-				error("op_setCameraParams() unhandled param %d", param);
+				error("op_setCamera() unhandled param %d", param);
 				break;
 			}
 		} else {
@@ -1446,7 +1446,7 @@ int Game::op_setCamera(int argc, int32_t *argv) {
 			case 7:
 				break;
 			default:
-				error("op_setCameraParams() unhandled param %d (_cameraViewKey %d)", param, _cameraViewKey);
+				error("op_setCamera() unhandled param %d (_cameraViewKey %d)", param, _cameraViewKey);
 				break;
 			}
 		}
@@ -2239,9 +2239,16 @@ int Game::op_setCameraObject(int argc, int32_t *argv) {
 int Game::op_setCameraParams(int argc, int32_t *argv) {
 	assert(argc == 4);
 	debug(kDebug_OPCODES, "Game::op_setCameraParams() [%d, %d, %d, %d]", argv[0], argv[1], argv[2], argv[3]);
-	warning("Game::op_setCameraParams() unimplemented");
-	// TODO
-	return 0;
+	int32_t objKey = argv[0];
+	GameObject *o = (objKey == 0) ? _currentObject : getObjectByKey(objKey);
+	if (!o) {
+		return 0;
+	}
+	if (_cameraState != 8) {
+		warning("Game::op_setCameraParams() unimplemented %d %d %d obj '%s'", argv[1], argv[2], argv[3], o->name);
+		return 0;
+	}
+	return -1;
 }
 
 int Game::op_setPlayerObject(int argc, int32_t *argv) {
@@ -2258,7 +2265,7 @@ int Game::op_setPlayerObject(int argc, int32_t *argv) {
 	if ((o->flags[1] & 0x80) != 0 || (o->flags[1] & 0x4) != 0 || (o->flags[1] & 0x10000) == 0) {
 		return 0;
 	}
-	warning("Game::op_setPlayerObject() unimplemented");
+	_newPlayerObject = o->objKey;
 	return -1;
 }
 

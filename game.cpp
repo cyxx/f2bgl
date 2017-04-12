@@ -1944,7 +1944,7 @@ void Game::setplayerRoomObjectsData(int fl) {
 }
 
 void Game::setPlayerObject(int16_t objKey) {
-	GameObject *o = (objKey == 0) ? _currentObject : _objectsPtrTable[objKey];
+	GameObject *o = (objKey == 0) ? _currentObject : getObjectByKey(objKey);
 	assert(o);
 	assert((o->flags[1] & 0x80) == 0 && (o->flags[1] & 4) == 0 && (o->flags[1] & 0x10000) != 0);
 	assert(o->state == 1);
