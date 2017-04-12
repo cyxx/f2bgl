@@ -199,11 +199,10 @@ static void fileMakeFilePath(const char *fileName, int fileType, int fileLang, c
 	static const char *dataDirsTable[] = { "DATA", "DATA/SOUND", "TEXT", "VOICE", "DATA/DRIVERS", "INSTDATA" };
 	static const char *langDirsTable[] = { "US", "FR", "GR", "SP", "IT" };
 
-	if (fileType == kFileType_RUNTIME) {
-		filePath[0] = 0;
-	} else {
+	if (fileType != kFileType_RUNTIME) {
 		assert(fileType >= 0 && fileType < ARRAYSIZE(dataDirsTable));
-		sprintf(filePath, "%s/", dataDirsTable[fileType]);
+		strcat(filePath, dataDirsTable[fileType]);
+		strcat(filePath, "/");
 	}
 	switch (fileLang) {
 	case kFileLanguage_SP:
@@ -224,8 +223,9 @@ static void fileMakeFilePath(const char *fileName, int fileType, int fileLang, c
 	strcat(filePath, fileName);
 }
 
-static File *fileOpenIntern(const char *fileName, int fileType) {
+static File *fileOpenIntern(const char *fileName, int fileType, const char *prefixPath = "") {
 	char filePath[MAXPATHLEN];
+	strcpy(filePath, prefixPath);
 	fileMakeFilePath(fileName, fileType, _fileLanguage, filePath);
 	debug(kDebug_FILE, "fileOpenIntern() path '%s'", filePath);
 	const char *path = _fileSystem->findPath(filePath);
@@ -238,8 +238,10 @@ static File *fileOpenIntern(const char *fileName, int fileType) {
 		}
 		return fp;
 	}
-	if (fileType == kFileType_TEXT) {
-		return fileOpenIntern(fileName, kFileType_DATA);
+	// on the original CD-ROM, the TEXT/ and VOICE/ directories are under DATA/.
+	// the original installer would copy them at the same level as DATA/.
+	if (fileType == kFileType_TEXT || fileType == kFileType_VOICE) {
+		return fileOpenIntern(fileName, fileType, "DATA/");
 	}
 	return 0;
 }
