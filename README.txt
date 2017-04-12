@@ -11,13 +11,6 @@ f2bgl is a re-implementation of the engine used in the game Fade To Black
 made by Delphine Software and released in 1995.
 
 
-Compiling:
-----------
-
-Update the defines in the Makefile if needed. The SDL and OpenGL libraries
-are required.
-
-
 Running:
 --------
 
@@ -49,25 +42,19 @@ Defaults can be changed using command line switches :
 In-game hotkeys :
 
     Arrow Keys     move Conrad
-    Alt            use gun
+    Alt / V        use gun
     Shift          walk
-    Ctrl           shoot
+    Ctrl / B       shoot
     Enter          recharge
-    Space          use / open
+    Space          open
     Tab            skip cutscene
-    Escape         options menu (disabled)
     I              inventory menu
-    H / K          change camera position
     J              jump
     U              use
     1 .. 5         use item #
     S              save game state
     L              load game state
     + and -        change game state slot
-
-Debug hotkeys :
-
-    Ctrl I          Conrad 'infinite' life
 
 
 Credits:
