@@ -180,6 +180,7 @@ struct FileSystem {
 	const char *findPath(const char *file) const {
 		for (int i = 0; i < _fileCount; ++i) {
 			if (strcasecmp(_fileList[i], file) == 0) {
+				debug(kDebug_FILE, "FileSystem::findPath() '%s'", file);
 				return _fileList[i];
 			}
 		}
@@ -240,7 +241,7 @@ static File *fileOpenIntern(const char *fileName, int fileType, const char *pref
 	}
 	// on the original CD-ROM, the TEXT/ and VOICE/ directories are under DATA/.
 	// the original installer would copy them at the same level as DATA/.
-	if (fileType == kFileType_TEXT || fileType == kFileType_VOICE) {
+	if ((fileType == kFileType_TEXT || fileType == kFileType_VOICE) && !prefixPath[0]) {
 		return fileOpenIntern(fileName, fileType, "DATA/");
 	}
 	return 0;
