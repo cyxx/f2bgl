@@ -38,6 +38,8 @@ Defaults can be changed using command line switches :
     --voice=EN|FR|GR            Voice files (default 'EN')
     --subtitles                 Display cutscene subtitles
     --savepath=PATH             Path to save files (default '.')
+    --fullscreen                Fullscreen display (stretched)
+    --fullscreen-ar             Fullscreen display (4:3 aspect ratio)
 
 In-game hotkeys :
 

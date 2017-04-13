@@ -20,7 +20,10 @@ static const char *USAGE =
 	"  --level=NUM                 Start at level NUM\n"
 	"  --voice=EN|FR|GR            Voice files (default 'EN')\n"
 	"  --subtitles                 Display cutscene subtitles\n"
-	"  --savepath=PATH             Path to save files (default '.')\n";
+	"  --savepath=PATH             Path to save files (default '.')\n"
+	"  --fullscreen                Fullscreen display (stretched)\n"
+	"  --fullscreen-ar             Fullscreen display (4:3 aspect ratio)\n"
+;
 
 static const struct {
 	FileLanguage lang;
@@ -104,11 +107,20 @@ struct GameStub_F2B : GameStub {
 
 	Render *_render;
 	Game *_g;
+	GameParams _params;
+	FileLanguage  _fileLanguage, _fileVoice;
+	int _displayMode;
 	int _state, _nextState;
 	int _dt;
 	bool _skip;
 	int _slotState;
 	bool _loadState, _saveState;
+
+	GameStub_F2B()
+		: _render(0), _g(0),
+		_fileLanguage(kFileLanguage_EN), _fileVoice(kFileLanguage_EN), _displayMode(kDisplayModeWindowed) {
+		memset(&_params, 0, sizeof(_params));
+	}
 
 	void setState(int state) {
 		debug(kDebug_INFO, "stub.state %d", state);
@@ -143,8 +155,7 @@ struct GameStub_F2B : GameStub {
 		_state = state;
 	}
 
-	virtual int init(int argc, char *argv[]) {
-		GameParams params;
+	virtual int setArgs(int argc, char *argv[]) {
 		char *language = 0;
 		char *voice = 0;
 		_nextState = kStateCutscene;
@@ -159,6 +170,8 @@ struct GameStub_F2B : GameStub {
 				{ "subtitles", no_argument,      0, 6 },
 				{ "savepath",  required_argument, 0, 7 },
 				{ "debug",     required_argument, 0, 8 },
+				{ "fullscreen",    no_argument,   0,  9 },
+				{ "fullscreen-ar", no_argument,   0, 10 },
 #ifdef F2B_DEBUG
 				{ "xpos_conrad",    required_argument, 0, 100 },
 				{ "zpos_conrad",    required_argument, 0, 101 },
@@ -179,7 +192,7 @@ struct GameStub_F2B : GameStub {
 				language = strdup(optarg);
 				break;
 			case 3:
-				params.playDemo = true;
+				_params.playDemo = true;
 				break;
 			case 4: {
 					int levelNum = -1;
@@ -192,14 +205,14 @@ struct GameStub_F2B : GameStub {
 							break;
 						}
 					}
-					params.levelNum = (levelNum < 0) ? atoi(optarg) : levelNum;
+					_params.levelNum = (levelNum < 0) ? atoi(optarg) : levelNum;
 				}
 				break;
 			case 5:
 				voice = strdup(optarg);
 				break;
 			case 6:
-				params.subtitles = true;
+				_params.subtitles = true;
 				break;
 			case 7:
 				_savePath = strdup(optarg);
@@ -207,12 +220,18 @@ struct GameStub_F2B : GameStub {
 			case 8:
 				g_utilDebugMask |= atoi(optarg);
 				break;
+			case 9:
+				_displayMode = kDisplayModeFullscreenStretch;
+				break;
+			case 10:
+				_displayMode = kDisplayModeFullscreenAr;
+				break;
 #ifdef F2B_DEBUG
 			case 100:
-				params.xPosConrad = atoi(optarg);
+				_params.xPosConrad = atoi(optarg);
 				break;
 			case 101:
-				params.zPosConrad = atoi(optarg);
+				_params.zPosConrad = atoi(optarg);
 				break;
 			case 102: {
 					static struct {
@@ -238,18 +257,24 @@ struct GameStub_F2B : GameStub {
 				return -1;
 			}
 		}
-		FileLanguage fileLanguage = parseLanguage(language);
-		FileLanguage fileVoice = parseVoice(voice, fileLanguage);
+		_fileLanguage = parseLanguage(language);
+		_fileVoice = parseVoice(voice, _fileLanguage);
 		free(language);
 		language = 0;
 		free(voice);
 		voice = 0;
-		if (!fileInit(fileLanguage, fileVoice, _dataPath ? _dataPath : ".", _savePath ? _savePath : ".")) {
+		return 0;
+	}
+	virtual int getDisplayMode() {
+		return _displayMode;
+	}
+	virtual int init() {
+		if (!fileInit(_fileLanguage, _fileVoice, _dataPath ? _dataPath : ".", _savePath ? _savePath : ".")) {
 			warning("Unable to find datafiles");
 			return -2;
 		}
 		_render = new Render;
-		_g = new Game(_render, &params);
+		_g = new Game(_render, &_params);
 		_g->init();
 		_g->_cut._numToPlay = 47;
 		_state = -1;
@@ -437,8 +462,8 @@ struct GameStub_F2B : GameStub {
 			break;
 		}
 	}
-	virtual void initGL(int w, int h) {
-		_render->resizeScreen(w, h);
+	virtual void initGL(int w, int h, float *ar) {
+		_render->resizeScreen(w, h, ar);
 	}
 	virtual void drawGL() {
 		_render->drawOverlay();

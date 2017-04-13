@@ -194,7 +194,7 @@ void Render::flushCachedTextures() {
 	_overlay.tex = 0;
 }
 
-void Render::resizeScreen(int w, int h) {
+void Render::resizeScreen(int w, int h, float *p) {
 	glDisable(GL_LIGHTING);
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -203,9 +203,13 @@ void Render::resizeScreen(int w, int h) {
 	glAlphaFunc(GL_NOTEQUAL, 0.);
 	_w = w;
 	_h = h;
+	_viewport.x = int(w * p[0]);
+	_viewport.y = int(h * p[1]);
+	_viewport.w = int(w * p[2]);
+	_viewport.h = int(h * p[3]);
+	_viewport.changed = true;
 	free(_screenshotBuf);
 	_screenshotBuf = 0;
-	_viewport.changed = true;
 }
 
 void Render::setCameraPos(int x, int y, int z, int shift) {
@@ -565,6 +569,14 @@ void Render::clearScreen() {
 	glEnableClientState(GL_VERTEX_ARRAY);
 	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
 #endif
+	if (_viewport.changed) {
+		_viewport.changed = false;
+		const int vw = _viewport.w * _viewport.pw >> 8;
+		const int vh = _viewport.h * _viewport.ph >> 8;
+		const int vx = _viewport.x + (_viewport.w - vw) / 2;
+		const int vy = _viewport.y + (_viewport.h - vh) / 2;
+		glViewport(vx, vy, vw, vh);
+	}
 }
 
 void Render::setupProjection(int mode) {
@@ -600,12 +612,6 @@ void Render::setupProjection(int mode) {
 		return;
 	}
 	assert(mode == kProjGame);
-	if (_viewport.changed) {
-		_viewport.changed = false;
-		const int w = _w * _viewport.pw >> 8;
-		const int h = _h * _viewport.ph >> 8;
-		glViewport((_w - w) / 2, (_h - h) / 2, w, h);
-	}
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
 	glFrustum(-.5, .5, -aspect / 2, 0., 1., 512);

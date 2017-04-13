@@ -40,8 +40,9 @@ struct Render {
 	} _overlay;
 	struct {
 		bool changed;
-		int pw;
-		int ph;
+		int pw, ph;
+		int x, y;
+		int w, h;
 	} _viewport;
 
 	Render();
@@ -74,7 +75,7 @@ struct Render {
 	void clearScreen();
 	void setupProjection(int mode);
 	void drawOverlay();
-	void resizeScreen(int w, int h);
+	void resizeScreen(int w, int h, float *p);
 
 	const uint8_t *captureScreen(int *w, int *h);
 };

@@ -9,11 +9,15 @@
 
 const char *g_caption = "Fade2Black/OpenGL";
 
+static const float kAspectRatio = 4 / 3.;
+
 static const int kDefaultW = 640;
-static const int kDefaultH = kDefaultW * 3 / 4;
+static const int kDefaultH = kDefaultW / kAspectRatio;
 
 static int gWindowW = kDefaultW;
 static int gWindowH = kDefaultH;
+
+static float _aspectRatio[4];
 
 static int gScale = 2;
 static int gSaveSlot = 1;
@@ -111,6 +115,28 @@ static void setupAudio(GameStub *stub) {
 	}
 }
 
+static void setAspectRatio(int w, int h) {
+	const float currentAspectRatio = w / (float)h;
+	// pillar box
+	if (currentAspectRatio > kAspectRatio) {
+		const float inset = 1. - kAspectRatio / currentAspectRatio;
+		_aspectRatio[0] = inset / 2;
+		_aspectRatio[1] = 0.;
+		_aspectRatio[2] = 1. - inset;
+		_aspectRatio[3] = 1.;
+		return;
+	}
+	// letter box
+	if (currentAspectRatio < kAspectRatio) {
+		const float inset = 1. - currentAspectRatio / kAspectRatio;
+		_aspectRatio[0] = 0.;
+		_aspectRatio[1] = inset / 2;
+		_aspectRatio[2] = 1.;
+		_aspectRatio[3] = 1. - inset;
+		return;
+	}
+}
+
 struct GetStub_impl {
 	GameStub *getGameStub() {
 		return GameStub_create();
@@ -123,15 +149,31 @@ int main(int argc, char *argv[]) {
 	if (!stub) {
 		return -1;
 	}
+	int ret = stub->setArgs(argc, argv);
+	if (ret != 0) {
+		return ret;
+	}
+	const int displayMode = stub->getDisplayMode();
 	SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_JOYSTICK | SDL_INIT_GAMECONTROLLER);
 	SDL_ShowCursor(SDL_DISABLE);
-	SDL_Window *window = SDL_CreateWindow(g_caption, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, gWindowW, gWindowH, SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE);
+	int flags = SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE;
+	if (displayMode != kDisplayModeWindowed) {
+		flags |= SDL_WINDOW_FULLSCREEN_DESKTOP;
+	}
+	SDL_Window *window = SDL_CreateWindow(g_caption, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, gWindowW, gWindowH, flags);
 	if (!window) {
 		return -1;
 	}
 	SDL_GetWindowSize(window, &gWindowW, &gWindowH);
+	_aspectRatio[0] = 0.;
+	_aspectRatio[1] = 0.;
+	_aspectRatio[2] = 1.;
+	_aspectRatio[3] = 1.;
+	if (displayMode == kDisplayModeFullscreenAr) {
+		setAspectRatio(gWindowW, gWindowH);
+	}
 	SDL_GLContext glcontext = SDL_GL_CreateContext(window);
-	const int ret = stub->init(argc, argv);
+	ret = stub->init();
 	if (ret != 0) {
 		return ret;
 	}
@@ -148,7 +190,7 @@ int main(int argc, char *argv[]) {
 			joystick = SDL_JoystickOpen(kJoystickIndex);
 		}
 	}
-	stub->initGL(gWindowW, gWindowH);
+	stub->initGL(gWindowW, gWindowH, _aspectRatio);
 	bool quitGame = false;
 	bool paused = false;
 	while (1) {
@@ -214,6 +256,9 @@ int main(int argc, char *argv[]) {
 						if (gSaveSlot > 1) {
 							--gSaveSlot;
 						}
+						break;
+					case SDLK_q:
+						quitGame = true;
 						break;
 					}
 				}
@@ -290,7 +335,7 @@ int main(int argc, char *argv[]) {
 			gWindowW = w;
 			gWindowH = h;
 			SDL_SetWindowSize(window, gWindowW, gWindowH);
-			stub->initGL(gWindowW, gWindowH);
+			stub->initGL(gWindowW, gWindowH, _aspectRatio);
 		}
 		if (!paused) {
 			const unsigned int ticks = SDL_GetTicks();

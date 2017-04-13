@@ -35,13 +35,21 @@ enum {
 	kKeyCodeCheatLifeCounter,
 };
 
+enum {
+	kDisplayModeWindowed,
+	kDisplayModeFullscreenStretch,
+	kDisplayModeFullscreenAr
+};
+
 struct GameStub {
-	virtual int init(int argc, char *argv[]) = 0;
+	virtual int setArgs(int argc, char *argv[]) = 0;
+	virtual int getDisplayMode() = 0;
+	virtual int init() = 0;
 	virtual void quit() = 0;
 	virtual StubMixProc getMixProc(int rate, int fmt, void (*lock)(int)) = 0;
 	virtual void queueKeyInput(int keycode, int pressed) = 0;
 	virtual void doTick(unsigned int ticks) = 0;
-	virtual void initGL(int w, int h) = 0;
+	virtual void initGL(int w, int h, float *ar) = 0;
 	virtual void drawGL() = 0;
 	virtual void loadState(int slot) = 0;
 	virtual void saveState(int slot) = 0;
