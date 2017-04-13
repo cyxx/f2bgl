@@ -91,23 +91,24 @@ void Game::rayCastInit(int sx) {
 	}
 }
 
-static int get2dIntersection(int data, int ex, int ez, int stepx, int stepz, int *x, int *z) {
+static bool get2dIntersection(int data, int ex, int ez, int stepx, int stepz, int *x, int *z) {
 	int cx = *x;
 	int cz = *z;
-	const int delta = (ex << kRayShift) + (data << (kRayShift - 6));
-	const int tmp = (stepx > 0) ? stepz : -stepz;
-	cz += fixedMul(tmp, (delta - cx), kRayShift);
-	if (cz >> kRayShift == ez) {
-		*x = delta;
+	const int dx = (ex << kRayShift) + (data << (kRayShift - 6));
+	const int dz = (stepx > 0) ? stepz : -stepz;
+	cz += fixedMul(dz, (dx - cx), kRayShift);
+	if ((cz >> kRayShift) == ez) {
+		*x = dx;
 		*z = cz;
-		return 1;
+		return true;
 	}
-	return 0;
+	return false;
 }
 
-static int getRayIntersection(int xRef, int zRef, int x1, int z1, int x2, int z2, int *ptrx, int *ptrz) {
-	int intersects = 0;
-	int nearestx = 0, nearestz = 0;
+static bool getRayIntersection(int xRef, int zRef, int x1, int z1, int x2, int z2, int *dstX, int *dstZ) {
+	bool intersects = false;
+	int nearestX = 0;
+	int nearestZ = 0;
 	if (_zRayStepX > 0) {
 		if (_zRayStepZ > 0) {
 			intersects = (x2 > xRef) && (z2 > zRef);
@@ -123,18 +124,18 @@ static int getRayIntersection(int xRef, int zRef, int x1, int z1, int x2, int z2
 	}
 	int ix, iz;
 	if (intersects) {
-		intersects = 0;
-		int mindist2 = 0x7FFFFFFF;
+		intersects = false;
+		int minDist = 0x7FFFFFFF;
 		iz = z1;
 		ix = (_xRayStepX >> (kRayShift - 15)) * (iz >> 15);
 		if (_xRayStepZ < 0) {
 			ix = -ix;
 		}
 		if (ix >= x1 && ix <= x2) {
-			intersects = 1;
-			nearestx = ix;
-			nearestz = iz;
-			mindist2 = ((ix - xRef) >> 15) * ((ix - xRef) >> 15) + ((iz - zRef) >> 15) * ((iz - zRef) >> 15);
+			intersects = true;
+			nearestX = ix;
+			nearestZ = iz;
+			minDist = ((ix - xRef) >> 15) * ((ix - xRef) >> 15) + ((iz - zRef) >> 15) * ((iz - zRef) >> 15);
 		}
 		iz = z2;
 		ix = (_xRayStepX >> (kRayShift - 15)) * (iz >> 15);
@@ -142,12 +143,12 @@ static int getRayIntersection(int xRef, int zRef, int x1, int z1, int x2, int z2
 			ix = -ix;
 		}
 		if (ix >= x1 && ix <= x2) {
-			intersects = 1;
-			int dist2 = ((ix - xRef) >> 15) * ((ix - xRef) >> 15) + ((iz - zRef) >> 15) * ((iz - zRef) >> 15);
-			if (dist2 < mindist2) {
-				mindist2 = dist2;
-				nearestx = ix;
-				nearestz = iz;
+			intersects = true;
+			const int squareDist = ((ix - xRef) >> 15) * ((ix - xRef) >> 15) + ((iz - zRef) >> 15) * ((iz - zRef) >> 15);
+			if (squareDist < minDist) {
+				minDist = squareDist;
+				nearestX = ix;
+				nearestZ = iz;
 			}
 		}
 		ix = x1;
@@ -156,12 +157,12 @@ static int getRayIntersection(int xRef, int zRef, int x1, int z1, int x2, int z2
 			iz = -iz;
 		}
 		if (iz >= z1 && iz <= z2) {
-			intersects = 1;
-			int dist2 = ((ix - xRef) >> 15) * ((ix - xRef) >> 15) + ((iz - zRef) >> 15) * ((iz - zRef) >> 15);
-			if (dist2 < mindist2) {
-				mindist2 = dist2;
-				nearestx = ix;
-				nearestz = iz;
+			intersects = true;
+			const int squareDist = ((ix - xRef) >> 15) * ((ix - xRef) >> 15) + ((iz - zRef) >> 15) * ((iz - zRef) >> 15);
+			if (squareDist < minDist) {
+				minDist = squareDist;
+				nearestX = ix;
+				nearestZ = iz;
 			}
 		}
 		ix = x2;
@@ -170,17 +171,17 @@ static int getRayIntersection(int xRef, int zRef, int x1, int z1, int x2, int z2
 			iz = -iz;
 		}
 		if (iz >= z1 && iz <= z2) {
-			intersects = 1;
-			const int dist2 = ((ix - xRef) >> 15) * ((ix - xRef) >> 15) + ((iz - zRef) >> 15) * ((iz - zRef) >> 15);
-			if (dist2 < mindist2) {
-				mindist2 = dist2;
-				nearestx = ix;
-				nearestz = iz;
+			intersects = true;
+			const int squareDist = ((ix - xRef) >> 15) * ((ix - xRef) >> 15) + ((iz - zRef) >> 15) * ((iz - zRef) >> 15);
+			if (squareDist < minDist) {
+				minDist = squareDist;
+				nearestX = ix;
+				nearestZ = iz;
 			}
 		}
 	}
-	*ptrx = nearestx;
-	*ptrz = nearestz;
+	*dstX = nearestX;
+	*dstZ = nearestZ;
 	return intersects;
 }
 
@@ -296,16 +297,16 @@ int Game::rayCastCameraCb2(GameObject * o, CellMap * cell, int ox, int oz) {
 	if (cell->type == -3) {
 		return 0;
 	}
-	int objincase = 0;
+	bool foundObject = false;
 	CollisionSlot *slot = cell->colSlot;
 	while (slot != 0) {
 		if (slot->o == getObjectByKey(_cameraViewKey)) {
-			objincase = 1;
+			foundObject = true;
 			break;
 		}
 		slot = slot->next;
 	}
-	if (objincase) {
+	if (foundObject) {
 		slot = cell->colSlot;
 		while (slot != 0) {
 			GameObject *obj = slot->o;
@@ -642,8 +643,8 @@ int Game::rayCastHelper(GameObject *o, int sx, RayCastCallbackType callback, int
 	_xPosRay = (o->xPos + o->xPosParent) << (kRayShift - 19);
 	_zPosRay = (o->zPos + o->zPosParent) << (kRayShift - 19);
 
-	unsigned int rayxex = _xPosRay >> 22;
-	unsigned int rayxez = _zPosRay >> 22;
+	const uint32_t rayxex = _xPosRay >> 22;
+	const uint32_t rayxez = _zPosRay >> 22;
 
 	if (!INRANGE<int>(rayxex, 0, kMapSizeX) || !INRANGE<int>(rayxez, 0, kMapSizeZ)) {
 		return 0;
@@ -665,13 +666,15 @@ int Game::rayCast(GameObject *o, int xStartRay, RayCastCallbackType callback, in
 
 	rayCastInit(xStartRay);
 
-	unsigned int rayxex = _xPosRay >> 22;
-	unsigned int rayxez = _zPosRay >> 22;
-	unsigned int rayzex;
-	unsigned int rayzez;
+	static const uint32_t kResRayMask = 0xFFFFFFFF << kRayShift;
+
+	uint32_t rayxex = _xPosRay >> 22;
+	uint32_t rayxez = _zPosRay >> 22;
+	uint32_t rayzex;
+	uint32_t rayzez;
+
 	int zDelta;
-	_resXRayZ = _xPosRay;
-	_resXRayZ &= 0xFFFFFFFF << kRayShift;
+	_resXRayZ = _xPosRay & kResRayMask;
 	if (_zRayStepX > 0) {
 		_resXRayZ += (1 << kRayShift);
 		rayzex = _resXRayZ >> kRayShift;
@@ -687,8 +690,7 @@ int Game::rayCast(GameObject *o, int xStartRay, RayCastCallbackType callback, in
 	_resZRayZ = _zPosRay + zDelta;
 
 	int xDelta;
-	_resZRayX = _zPosRay;
-	_resZRayX &= 0xFFFFFFFF << kRayShift;
+	_resZRayX = _zPosRay & kResRayMask;
 	if (_xRayStepZ > 0) {
 		_resZRayX += 1 << kRayShift;
 		rayxez = _resZRayX >> kRayShift;
