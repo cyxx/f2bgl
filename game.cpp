@@ -142,6 +142,17 @@ void Game::clearLevelData() {
 			o->msg = 0;
 		}
 	}
+	for (int x = 0; x < kMapSizeX; ++x) {
+		for (int z = 0; z < kMapSizeZ; ++z) {
+			CollisionSlot *slot = _sceneCellMap[x][z].colSlot;
+			while (slot) {
+				CollisionSlot *next = slot->next;
+				free(slot);
+				slot = next;
+			}
+		}
+	}
+	memset(_sceneCellMap, 0, sizeof(_sceneCellMap));
 }
 
 void Game::countObjects(int16_t parentKey) {
@@ -740,8 +751,8 @@ void Game::loadSceneMap(int16_t key) {
 	uint32_t dataOffset = READ_LE_UINT32(p);
 	uint8_t *q = _res.getData(kResType_MAP, key, "MAPDATA");
 	assert(q == p + dataOffset);
-	for (int x = 0; x < 64; ++x) {
-		for (int z = 0; z < 64; ++z) {
+	for (int x = 0; x < kMapSizeX; ++x) {
+		for (int z = 0; z < kMapSizeZ; ++z) {
 			CellMap *cell = &_sceneCellMap[x][z];
 			cell->texture[0] = READ_LE_UINT16(q + 2);
 			cell->texture[1] = READ_LE_UINT16(q + 4);
@@ -777,8 +788,8 @@ void Game::loadSceneMap(int16_t key) {
 	dataOffset = READ_LE_UINT32(p + 4);
 	q = _res.getData(kResType_MAP, key, "GDATA");
 	assert(q == p + dataOffset);
-	for (int x = 0; x < 64; ++x) {
-		for (int z = 0; z < 64; ++z) {
+	for (int x = 0; x < kMapSizeX; ++x) {
+		for (int z = 0; z < kMapSizeZ; ++z) {
 			_sceneGroundMap[x][z] = READ_LE_UINT32(q);
 			q += 4;
 		}
@@ -2471,7 +2482,7 @@ void Game::fixRoomDataHelper(int x, int z, uint8_t room) {
 	for (int i = 0; i < 8; ++i) {
 		int cx = x + dxCell[i];
 		int cz = z + dzCell[i];
-		assert(cx >= 0 && cx < 64 && cz >= 0 && cz < 64);
+		assert(cx >= 0 && cx < kMapSizeX && cz >= 0 && cz < kMapSizeZ);
 		if (!_sceneCellMap[cx][cz].fixed) {
 			fixRoomDataHelper(cx, cz, room);
 		}

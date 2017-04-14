@@ -19,7 +19,7 @@ CollisionSlot *Game::createCollisionSlot(CollisionSlot *prev, CollisionSlot *nex
 }
 
 void Game::destroyCollisionSlot(CellMap *cell) {
-	CollisionSlot *colSlotPrev = 0, *colSlot = cell->colSlot;
+	CollisionSlot *colSlot = cell->colSlot;
 	while (colSlot) {
 		if (colSlot->o == _currentObject) {
 			if (!colSlot->prev && !colSlot->next) {
@@ -35,14 +35,10 @@ void Game::destroyCollisionSlot(CellMap *cell) {
 					colSlot->next->prev = colSlot->prev;
 				}
 			}
-			colSlotPrev = colSlot->next;
-			colSlot->o = 0;
-			colSlot->next = colSlot->prev = 0;
+			CollisionSlot *next = colSlot->next;
 			free(colSlot);
-			colSlot = 0;
-		}
-		if (!colSlot) {
-			colSlot = colSlotPrev;
+			_currentObject->colSlot = 0;
+			colSlot = next;
 		} else {
 			colSlot = colSlot->next;
 		}
@@ -150,13 +146,9 @@ void Game::resetCollisionSlot(GameObject *o) {
 				colSlot->next->prev = colSlot->prev;
 			}
 		}
-		CollisionSlot *colSlotTmp = colSlot->list;
-		colSlot->o = 0;
-		colSlot->next = 0;
-		colSlot->prev = 0;
-		colSlot->list = 0;
+		CollisionSlot *next = colSlot->list;
 		free(colSlot);
-		colSlot = colSlotTmp;
+		colSlot = next;
 	}
 	o->colSlot = 0;
 }
