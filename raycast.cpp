@@ -646,7 +646,7 @@ int Game::rayCastHelper(GameObject *o, int sx, RayCastCallbackType callback, int
 	const uint32_t rayxex = _xPosRay >> 22;
 	const uint32_t rayxez = _zPosRay >> 22;
 
-	if (!INRANGE<int>(rayxex, 0, kMapSizeX) || !INRANGE<int>(rayxez, 0, kMapSizeZ)) {
+	if (rayxex >= kMapSizeX || rayxez >= kMapSizeZ) {
 		return 0;
 	}
 	if (rayxex < kMapSizeX - 1 && rayxez < kMapSizeZ - 1) {
@@ -710,7 +710,7 @@ int Game::rayCast(GameObject *o, int xStartRay, RayCastCallbackType callback, in
 	while (1) {
 		if (xRayDistance < zRayDistance) {
 			rayxex = _resXRayX >> kRayShift;
-			if (rayxex >= (kMapSizeX - 1) || rayxez >= (kMapSizeZ - 1)) {
+			if (rayxex >= kMapSizeX || rayxez >= kMapSizeZ) {
 				xray = 0;
 				xRayDistance = 0x7FFFFFFF;
 				if (zray != 0) {
@@ -771,10 +771,9 @@ int Game::rayCast(GameObject *o, int xStartRay, RayCastCallbackType callback, in
 			_resZRayX += _xRayStepZ;
 			rayxez += _dzRay;
 			xRayDistance += _xStepDistance;
-			continue;
 		} else {
 			rayzez = _resZRayZ >> kRayShift;
-			if (rayzex > kMapSizeX - 1 || rayzez > kMapSizeZ - 1) {
+			if (rayzex >= kMapSizeX || rayzez >= kMapSizeZ) {
 				zray = 0;
 				zRayDistance = 0x7FFFFFFF;
 				if (xray != 0) {
@@ -835,7 +834,6 @@ int Game::rayCast(GameObject *o, int xStartRay, RayCastCallbackType callback, in
 			_resXRayZ += _zRayStepX;
 			_resZRayZ += _zRayStepZ;
 			zRayDistance += _zStepDistance;
-			continue;
 		}
 	}
 	if (type == kRayCastWall) {
@@ -887,23 +885,24 @@ int Game::rayCastCamera(GameObject *o, int sx, CellMap *cm, RayCastCallbackType 
 	return objKey;
 }
 
-void Game::rayCastWall(int x, int y) {
+void Game::rayCastWall(int x, int z) {
 	++_rayCastCounter;
 
 	_xPosRay = x << 2;
-	_zPosRay = y << 2;
+	_zPosRay = z << 2;
 
 	_xPosRay += _ySinObserver << 6;
 	_zPosRay -= _yCosObserver << 6;
 
-	const int rayxex = _xPosRay >> 22;
-	const int rayxez = _zPosRay >> 22;
+	const uint32_t rayxex = _xPosRay >> 22;
+	const uint32_t rayxez = _zPosRay >> 22;
 
-	if (!INRANGE<int>(rayxex, 0, kMapSizeX) || !INRANGE<int>(rayxez, 0, kMapSizeZ)) {
+	if (rayxex >= kMapSizeX || rayxez >= kMapSizeZ) {
 		return;
 	}
-	if (rayxex < kMapSizeX - 1 && rayxez < kMapSizeZ - 1) {
+	if (rayxex < kMapSizeX && rayxez < kMapSizeZ) {
 		CellMap *cellMap = getCellMap(rayxex, rayxez);
+		cellMap->visible = true;
 		if (cellMap->colSlot && cellMap->rayCastCounter != _rayCastCounter) {
 			switch (cellMap->type) {
 			case 0:
