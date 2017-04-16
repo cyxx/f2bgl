@@ -44,6 +44,8 @@ struct Render {
 		int x, y;
 		int w, h;
 	} _viewport;
+	bool _paletteGreyScale;
+	int _paletteRgbScale;
 
 	Render();
 	~Render();
@@ -71,7 +73,8 @@ struct Render {
 	void resizeOverlay(int w, int h, bool hflip = false);
 	void copyToOverlay(int x, int y, const uint8_t *data, int pitch, int w, int h, int transparentColor = -1);
 
-	void setPalette(const uint8_t *pal, int offset, int count, int rgbScale, bool greyScale);
+	void setPaletteScale(bool greyScale, int rgbScale);
+	void setPalette(const uint8_t *pal, int offset, int count);
 	void clearScreen();
 	void setupProjection(int mode);
 	void drawOverlay();

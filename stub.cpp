@@ -126,7 +126,7 @@ struct GameStub_F2B : GameStub {
 		debug(kDebug_INFO, "stub.state %d", state);
 		// release
 		if (_state == kStateCutscene) {
-			_render->setPalette(_g->_screenPalette, 0, 256, _g->_res._userConfig.lightCoef, _g->_res._userConfig.greyScale != 0);
+			_render->setPalette(_g->_screenPalette, 0, 256);
 		}
 		// init
 		if (state == kStateCutscene) {

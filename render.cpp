@@ -182,6 +182,8 @@ Render::Render() {
 	_viewport.pw = 256;
 	_viewport.ph = 256;
 	_textureCache.init();
+	_paletteGreyScale = false;
+	_paletteRgbScale = 256;
 }
 
 Render::~Render() {
@@ -535,19 +537,24 @@ void Render::resizeOverlay(int w, int h, bool hflip) {
 	_overlay.hflip = hflip;
 }
 
-void Render::setPalette(const uint8_t *pal, int offset, int count, int rgbScale, bool greyScale) {
+void Render::setPaletteScale(bool greyScale, int rgbScale) {
+	_paletteGreyScale = greyScale;
+	_paletteRgbScale = rgbScale;
+}
+
+void Render::setPalette(const uint8_t *pal, int offset, int count) {
 	for (int i = 0; i < count; ++i) {
 		int r = pal[0];
 		int g = pal[1];
 		int b = pal[2];
-		if (greyScale) {
+		if (_paletteGreyScale) {
 			const int grey = (r * 30 + g * 59 + b * 11) / 100;
 			r = g = b = grey;
 		}
-		if (rgbScale != 256) {
-			r = (r * rgbScale) >> 8;
-			g = (g * rgbScale) >> 8;
-			b = (b * rgbScale) >> 8;
+		if (_paletteRgbScale != 256) {
+			r = (r * _paletteRgbScale) >> 8;
+			g = (g * _paletteRgbScale) >> 8;
+			b = (b * _paletteRgbScale) >> 8;
 		}
 		const int j = offset + i;
 		_clut[3 * j]     = r;

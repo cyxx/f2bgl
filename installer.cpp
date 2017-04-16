@@ -73,7 +73,7 @@ struct Installer {
 
 		uint8_t palBuf[256 * 3 + kHeaderSize + 1];
 		readInstallData(kInstallFileType_GFX, "PALETTE.RAC", palBuf);
-		_render->setPalette(palBuf + kHeaderSize, 0, 256, 255, 0);
+		_render->setPalette(palBuf + kHeaderSize, 0, 256);
 
 		readInstallMeshF3D("LOGO.F3D", &_meshesTable[kInstallMesh_LOGO]);
 		readInstallMeshF3D("ECRAN.F3D", &_meshesTable[kInstallMesh_ECRAN]);

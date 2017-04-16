@@ -718,12 +718,12 @@ void Game::setPalette(int16_t key) {
 	}
 	const uint8_t *p = _res.getData(kResType_PAL, key, "PALDATA");
 	memcpy(_screenPalette, p, 256 * 3);
-	_render->setPalette(p, 0, 256, _res._userConfig.lightCoef, _res._userConfig.greyScale != 0);
+	_render->setPalette(p, 0, 256);
 }
 
 void Game::setPaletteColor(int color, int r, int g, int b) {
 	const uint8_t p[] = { (uint8_t)r, (uint8_t)g, (uint8_t)b };
-	_render->setPalette(p, color, 1, _res._userConfig.lightCoef, _res._userConfig.greyScale != 0);
+	_render->setPalette(p, color, 1);
 }
 
 void Game::updatePalette() {
@@ -1121,6 +1121,7 @@ void Game::init() {
 	if (!_params.subtitles) { // ignore value if set on the command line
 		_params.subtitles = _res._userConfig.subtitles;
 	}
+	_render->setPaletteScale(_res._userConfig.greyScale != 0, _res._userConfig.lightCoef);
 
 	int dataSize;
 	File *fp = fileOpen("PLAYER.INI", &dataSize, kFileType_DATA);
