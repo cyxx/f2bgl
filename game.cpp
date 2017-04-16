@@ -1767,12 +1767,17 @@ int Game::executeObjectScript(GameObject *o) {
 			if (READ_LE_UINT16(o->anim.aniheadData + 4) != 0) {
 				const int rotationStep = 16 + _varsTable[26] / 2;
 				int objectRy = 0;
-				if (_inputDirKeyPressed[inputKey0] & 2) {
-					objectRy = -rotationStep;
-				} else if (_inputDirKeyPressed[inputKey0] & 1) {
-					objectRy = rotationStep;
+				if (_inputDirKeyPressed[inputKey0] != 0) {
+					if (_inputDirKeyPressed[inputKey0] & 2) {
+						objectRy = -rotationStep;
+					} else if (_inputDirKeyPressed[inputKey0] & 1) {
+						objectRy = rotationStep;
+					} else {
+						_varsTable[26] = 0;
+					}
+				} else {
+					_varsTable[26] = 0;
 				}
-				_varsTable[26] = 0;
 				if (objectRy != 0) {
 					o->pitch += objectRy;
 					o->pitch &= 1023;

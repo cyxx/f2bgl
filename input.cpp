@@ -75,7 +75,6 @@ void Game::updateInput() {
 		if (_level != 12) {
 			_inputDirKeyPressed[inputKey1] |= 1;
 		}
-		inp.lookAtDir &= ~kInputDirRight;
 	} else {
 		_inputDirKeyPressed[inputKey1] &= ~1;
 		// _inputDirKeyReleased[inputKey1]
@@ -84,13 +83,11 @@ void Game::updateInput() {
 		if (_level != 12) {
 			_inputDirKeyPressed[inputKey1] |= 2;
 		}
-		inp.lookAtDir &= ~kInputDirLeft;
 	}
 	if (inp.lookAtDir & kInputDirDown) {
 		if (_level != 12) {
 			_inputDirKeyPressed[inputKey1] |= 4;
 		}
-		inp.lookAtDir &= ~kInputDirDown;
 	} else {
 		_inputDirKeyPressed[inputKey1] &= ~4;
 		// _inputDirKeyReleased[inputKey1]
@@ -99,7 +96,6 @@ void Game::updateInput() {
 		if (_level != 12) {
 			_inputDirKeyPressed[inputKey1] |= 8;
 		}
-		inp.lookAtDir &= ~kInputDirDown;
 	} else {
 		_inputDirKeyPressed[inputKey1] &= ~8;
 		// _inputDirKeyReleased[inputKey1]
