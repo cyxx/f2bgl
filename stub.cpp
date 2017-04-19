@@ -172,6 +172,7 @@ struct GameStub_F2B : GameStub {
 				{ "debug",     required_argument, 0, 8 },
 				{ "fullscreen",    no_argument,   0,  9 },
 				{ "fullscreen-ar", no_argument,   0, 10 },
+				{ "alt-level", required_argument, 0, 11 },
 #ifdef F2B_DEBUG
 				{ "xpos_conrad",    required_argument, 0, 100 },
 				{ "zpos_conrad",    required_argument, 0, 101 },
@@ -194,19 +195,8 @@ struct GameStub_F2B : GameStub {
 			case 3:
 				_params.playDemo = true;
 				break;
-			case 4: {
-					int levelNum = -1;
-					static const char *levels[] = {
-						"1", "2a", "2b", "2c", "3", "4a", "4b", "4c", "5a", "5b", "5c", "6a", "6b", 0
-					};
-					for (int i = 0; levels[i]; ++i) {
-						if (strcasecmp(levels[i], optarg) == 0) {
-							levelNum = i;
-							break;
-						}
-					}
-					_params.levelNum = (levelNum < 0) ? atoi(optarg) : levelNum;
-				}
+			case 4:
+				_params.levelNum = atoi(optarg);
 				break;
 			case 5:
 				voice = strdup(optarg);
@@ -225,6 +215,18 @@ struct GameStub_F2B : GameStub {
 				break;
 			case 10:
 				_displayMode = kDisplayModeFullscreenAr;
+				break;
+			case 11: {
+					static const char *levels[] = {
+						"1", "2a", "2b", "2c", "3", "4a", "4b", "4c", "5a", "5b", "5c", "6a", "6b", 0
+					};
+					for (int i = 0; levels[i]; ++i) {
+						if (strcasecmp(levels[i], optarg) == 0) {
+							_params.levelNum = i;
+							break;
+						}
+					}
+				}
 				break;
 #ifdef F2B_DEBUG
 			case 100:
