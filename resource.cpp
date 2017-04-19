@@ -629,6 +629,13 @@ void Resource::loadDEM(File *fp, int dataSize) {
 	}
 }
 
+static int convertParameterYesNo(const char *value) {
+	if (strncmp(value, "YES", 3) == 0) {
+		return 1;
+	}
+	return 0;
+}
+
 static int convertParameterOnOff(const char *value) {
 	if (strncmp(value, "ON", 2) == 0) {
 		return 1;
@@ -660,9 +667,9 @@ void Resource::loadDelphineINI() {
 		int *p;
 		int (*convert)(const char *);
 	} parameters[] = {
-		{ "GREY_SCALE", &_userConfig.greyScale, convertParameterOnOff },
+		{ "GREY_SCALE", &_userConfig.greyScale, convertParameterYesNo },
 		{ "LIGHT_COEF", &_userConfig.lightCoef, 0 },
-		{ "SUB_TITLES", &_userConfig.subtitles, convertParameterOnOff },
+		{ "SUB_TITLES", &_userConfig.subtitles, convertParameterYesNo },
 		{ "ICON_LR_INV_X", &_userConfig.iconLrInvX, 0 },
 		{ "ICON_LR_INV_Y", &_userConfig.iconLrInvY, 0 },
 		{ "PLAY_LEVEL", &_userConfig.skillLevel, convertParameterPlayLevel },
