@@ -1159,9 +1159,14 @@ void Game::initLevel(bool keepInventoryObjects) {
 		char name[16];
 		snprintf(name, sizeof(name), "LEVEL%d.DEM", _level);
 		File *fp = fileOpen(name, &dataSize, kFileType_DATA, false);
+		if (!fp) {
+			snprintf(name, sizeof(name), "LEVEL%d.DE_", _level);
+			fp = fileOpen(name, &dataSize, kFileType_DATA, false);
+		}
 		if (fp) {
 			_res.loadDEM(fp, dataSize);
 			fileClose(fp);
+			_skillLevel = kSkillEasy;
 		}
 	}
 	_demoInput = 0;

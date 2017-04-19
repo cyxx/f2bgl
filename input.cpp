@@ -133,6 +133,12 @@ void Game::updateGameInput() {
 			case 7:
 				// escape
 				break;
+			case 22:
+				inp.numKeys[4] = true;
+				break;
+			case 23:
+				inp.numKeys[5] = true;
+				break;
 			case 51:
 				inp.enterKey = input->pressed;
 				break;
@@ -144,6 +150,7 @@ void Game::updateGameInput() {
 				}
 				break;
 			case 70:
+			case 75:
 				if (input->pressed) {
 					inp.lookAtDir |= kInputDirRight;
 				} else {
