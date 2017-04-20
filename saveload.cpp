@@ -3,7 +3,6 @@
 #include "game.h"
 #include "render.h"
 
-static const char *kFn_d = "f2bgl-level%d-%02d.%s";
 static const char *kFn_s = "f2bgl-level%s-%02d.%s";
 
 static const char *kSaveText = "1.00 Aug 25 1995  09:11:45 (c) 1995 Delphine Software, France";
@@ -516,11 +515,7 @@ void Game::loadGameState(int num) {
 	snprintf(filename, sizeof(filename), kFn_s, kLevels[_level], num, "sav");
 	File *fp = fileOpen(filename, 0, kFileType_LOAD, false);
 	if (!fp) {
-		snprintf(filename, sizeof(filename), kFn_d, _level + 1, num, "sav");
-		fp = fileOpen(filename, 0, kFileType_LOAD, false);
-		if (!fp) {
-			return;
-		}
+		return;
 	}
 	char header[kHeaderSize];
 	fileRead(fp, header, sizeof(header));
