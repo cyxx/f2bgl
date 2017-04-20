@@ -2805,7 +2805,6 @@ bool Game::addSceneObjectToList(int xPos, int yPos, int zPos, GameObject *o) {
 		so->x = xPos;
 		so->y = yPos;
 		so->z = zPos;
-		so->zBuf = 0;
 	} else {
 		assert(p_anifram[2] == 1);
 		initSprite(kResType_SPR, READ_LE_UINT16(p_anifram), &so->spr);
@@ -2832,7 +2831,6 @@ bool Game::addSceneObjectToList(int xPos, int yPos, int zPos, GameObject *o) {
 			so->y = yPos;
 			so->z = zPos;
 		}
-		so->zBuf = -16;
 	}
 	so->o = o;
 	if (o->inSceneList) {
@@ -2841,7 +2839,6 @@ bool Game::addSceneObjectToList(int xPos, int yPos, int zPos, GameObject *o) {
 			_cameraViewObj = _sceneObjectsCount;
 		}
 		++_sceneObjectsCount;
-		drawSceneObject(so);
 		return true;
 	}
 	if (o->objKey == _cameraViewKey) {
@@ -2887,6 +2884,51 @@ void Game::addObjectsToScene() {
 		GameObject *o = getObjectByKey(_cameraViewKey);
 		addSceneObjectToList(o->xPosWorld, o->yPosWorld, o->zPosWorld, o);
 	}
+	bool translucent[kSceneObjectsTableSize];
+	// draw opaque objects
+	for (int i = 0; i < _sceneObjectsCount; ++i) {
+		SceneObject *so = &_sceneObjectsTable[i];
+		translucent[i] = isTranslucentSceneObject(so);
+		if (!translucent[i]) {
+			const int flags = so->o->flags[1];
+			if (so->verticesCount != 0) {
+				_render->beginObjectDraw(so->x, so->y, so->z, so->pitch, kPosShift);
+				drawSceneObjectMesh(so, flags);
+				_render->endObjectDraw();
+			} else {
+				SpriteImage *spr = &so->spr;
+				const uint8_t *texData = _spriteCache.getData(spr->key, spr->data);
+				const int scale = (flags & 0x20000) != 0 ? 2 : 1;
+				const int x0 = -scale * spr->w / 2;
+				const int y0 = -scale * spr->h / 2;
+				const int x1 = x0 + scale * spr->w;
+				const int y1 = y0 + scale * spr->h;
+				Vertex v[4];
+				v[0].x = x0; v[0].y = y0; v[0].z = 0;
+				v[1].x = x1; v[1].y = y0; v[1].z = 0;
+				v[2].x = x1; v[2].y = y1; v[2].z = 0;
+				v[3].x = x0; v[3].y = y1; v[3].z = 0;
+				_render->beginObjectDraw(so->x, (kGroundY << kPosShift) + so->y, so->z, _yInvRotObserver, kPosShift);
+				_render->drawPolygonTexture(v, 4, 0, texData, spr->w, spr->h, spr->key);
+				_render->endObjectDraw();
+			}
+		}
+	}
+	// draw shadow and transparent objects
+	for (int i = 0; i < _sceneObjectsCount; ++i) {
+		SceneObject *so = &_sceneObjectsTable[i];
+		const int flags = so->o->flags[1];
+		if ((so->polygonsData[0] & 0x80) && (flags & 0x400) == 0) {
+			_render->beginObjectDraw(so->x, 0, so->z, so->pitch, kPosShift);
+			drawSceneObjectShadow(so);
+			_render->endObjectDraw();
+		}
+		if (translucent[i]) {
+			_render->beginObjectDraw(so->x, so->y, so->z, so->pitch, kPosShift);
+			drawSceneObjectMesh(so, flags);
+			_render->endObjectDraw();
+		}
+	}
 }
 
 void Game::clearKeyboardInput() {
@@ -2919,6 +2961,29 @@ bool Game::getMessage(int16_t key, uint32_t value, ResMessageDescription *desc) 
 	clearMessage(desc);
 	const int offset = _res.getOffsetForObjectKey(key);
 	return offset != -1 && _res.getMessageDescription(desc, value, offset);
+}
+
+bool Game::isTranslucentSceneObject(const SceneObject *so) const {
+	if (so->verticesCount == 0) { // sprite
+		return false;
+	}
+	const uint8_t *polygonsData = so->polygonsData;
+	if (polygonsData[0] & 0x80) {
+		const int shadowPolySize = -(int8_t)polygonsData[0];
+		polygonsData += shadowPolySize;
+	}
+	int count = *polygonsData++;
+	while (count != 0) {
+		int color = READ_LE_UINT16(polygonsData); polygonsData += 2;
+		int vertexSize = (count & 0x40) != 0 ? 1 : 2;
+		polygonsData += ((count & 15) + 1) * vertexSize;
+		color >>= 8;
+		if (color >= 2 && color <= 9) {
+			return true;
+		}
+		count = *polygonsData++;
+	}
+	return false;
 }
 
 void Game::drawSceneObjectShadow(SceneObject *so) {
@@ -3032,37 +3097,6 @@ void Game::drawSceneObjectMesh(SceneObject *so, int flags) {
 			}
 		}
 		count = *polygonsData++;
-	}
-}
-
-void Game::drawSceneObject(SceneObject *so) {
-	const int flags = so->o->flags[1];
-	if (so->verticesCount != 0) {
-		assert(so->polygonsData != 0 && so->verticesData != 0);
-		if ((so->polygonsData[0] & 0x80) && (flags & 0x400) == 0) {
-			_render->beginObjectDraw(so->x, 0, so->z, so->pitch, kPosShift);
-			drawSceneObjectShadow(so);
-			_render->endObjectDraw();
-		}
-		_render->beginObjectDraw(so->x, so->y, so->z, so->pitch, kPosShift);
-		drawSceneObjectMesh(so, flags);
-		_render->endObjectDraw();
-	} else {
-		SpriteImage *spr = &so->spr;
-		const uint8_t *texData = _spriteCache.getData(spr->key, spr->data);
-		const int scale = (flags & 0x20000) != 0 ? 2 : 1;
-		const int x0 = -scale * spr->w / 2;
-		const int y0 = -scale * spr->h / 2;
-		const int x1 = x0 + scale * spr->w;
-		const int y1 = y0 + scale * spr->h;
-		Vertex v[4];
-		v[0].x = x0; v[0].y = y0; v[0].z = 0;
-		v[1].x = x1; v[1].y = y0; v[1].z = 0;
-		v[2].x = x1; v[2].y = y1; v[2].z = 0;
-		v[3].x = x0; v[3].y = y1; v[3].z = 0;
-		_render->beginObjectDraw(so->x, (kGroundY << kPosShift) + so->y, so->z, _yInvRotObserver, kPosShift);
-		_render->drawPolygonTexture(v, 4, 0, texData, spr->w, spr->h, spr->key);
-		_render->endObjectDraw();
 	}
 }
 
