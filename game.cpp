@@ -2918,7 +2918,7 @@ void Game::addObjectsToScene() {
 	for (int i = 0; i < _sceneObjectsCount; ++i) {
 		SceneObject *so = &_sceneObjectsTable[i];
 		const int flags = so->o->flags[1];
-		if ((so->polygonsData[0] & 0x80) && (flags & 0x400) == 0) {
+		if (so->polygonsData && (so->polygonsData[0] & 0x80) && (flags & 0x400) == 0) {
 			_render->beginObjectDraw(so->x, 0, so->z, so->pitch, kPosShift);
 			drawSceneObjectShadow(so);
 			_render->endObjectDraw();
