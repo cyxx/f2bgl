@@ -130,8 +130,7 @@ void Game::updateGameInput() {
 			case 5:
 				inp.shiftKey = input->pressed;
 				break;
-			case 7:
-				// escape
+			case 7: // escape
 				break;
 			case 22:
 				inp.numKeys[4] = true;
@@ -139,8 +138,16 @@ void Game::updateGameInput() {
 			case 23:
 				inp.numKeys[5] = true;
 				break;
+			case 33:
+				_inputKeyUse = true;
+				break;
+			case 34:
+				_inputKeyJump = true;
+				break;
 			case 51:
 				inp.enterKey = input->pressed;
+				break;
+			case 62: // del
 				break;
 			case 64:
 				if (input->pressed) {
@@ -193,6 +200,15 @@ void Game::updateGameInput() {
 				break;
 			case 145:
 				inp.ctrlKey = input->pressed;
+				break;
+			case 154:
+				inp.farNear = true;
+				break;
+			case 163:
+				inp.footStepKey = true;
+				break;
+			case 164:
+				inp.backStepKey = true;
 				break;
 			default:
 				warning("Game::updateGameInput() unhandled demo input key %d", input->key);
@@ -264,7 +280,7 @@ void Game::updateInputKeyMask(int inputIndex) {
 	if (testInputKeyMask(num0, 0, 2, inputIndex)) {
 		keymask |= 0x20000000;
 	}
-	if (0) { // kInputPageUp) {
+	if (inp.footStepKey) {
 		keymask |= 1;
 	}
 	if (testInputKeyMaskEq(num0, 8, 2, inputIndex) || testInputKeyMaskEq(num0, 8 | 2, 2, inputIndex) || testInputKeyMaskEq(num0, 8 | 1, 2, inputIndex)) {
@@ -288,7 +304,7 @@ void Game::updateInputKeyMask(int inputIndex) {
 	if (testInputKeyMask(num0, 4, 2, inputIndex)) {
 		keymask |= 0x800000;
 	}
-	if (0) { // kInputPageDown) {
+	if (inp.backStepKey) {
 		keymask |= 0x400;
 	}
 	if (!testInputKeyMaskPrev(num0, 0, 8, inputIndex) && testInputKeyMask(num0, 0, 8, inputIndex)) {

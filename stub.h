@@ -31,6 +31,8 @@ enum {
 	kKeyCode3,       // item #3
 	kKeyCode4,       // item #4
 	kKeyCode5,       // item #5
+	kKeyCodePageUp,   // foot step
+	kKeyCodePageDown, // back foot step
 	kKeyCodeFarNear,
 	kKeyCodeCheatLifeCounter,
 };
