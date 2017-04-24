@@ -129,28 +129,30 @@ struct GameStub_F2B : GameStub {
 			_render->setPalette(_g->_screenPalette, 0, 256);
 		}
 		// init
-		if (state == kStateCutscene) {
+		switch (state) {
+		case kStateCutscene:
 			_g->_cut.load(_g->_cut._numToPlay);
-		}
-		if (state == kStateGame) {
+			break;
+		case kStateGame:
 			_render->resizeOverlay(0, 0);
 			_g->updatePalette();
-		}
-		if (state == kStateInventory) {
+			break;
+		case kStateInventory:
 			_render->resizeOverlay(kScreenWidth, kScreenHeight);
 			if (!_g->initInventory()) {
 				return;
 			}
-		}
-		if (state == kStateBox) {
+			break;
+		case kStateBox:
 			_render->resizeOverlay(kScreenWidth, kScreenHeight);
 			_g->initBox();
-		}
-		if (state == kStateMenu) {
+			break;
+		case kStateMenu:
 			_g->initMenu();
-		}
-		if (state == kStateInstaller) {
+			break;
+		case kStateInstaller:
 			_g->initInstaller();
+			break;
 		}
 		_state = state;
 	}
@@ -292,6 +294,7 @@ struct GameStub_F2B : GameStub {
 		delete _g;
 		delete _render;
 		free(_dataPath);
+		free(_savePath);
 		_dataPath = 0;
 	}
 	virtual StubMixProc getMixProc(int rate, int fmt, void (*lock)(int)) {
