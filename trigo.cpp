@@ -20,23 +20,20 @@ void Vec_xz::rotate(int angle, int shift, int dist) {
 }
 
 int getAngleDiff(int angle1, int angle2) {
+	static const int kPi = 512;
 	if (angle1 != angle2) {
-		int mul = 1;
-		if (angle1 < angle2) {
-			SWAP(angle1, angle2);
-			mul = -1;
+		const int sign = (angle1 < angle2) ? -1 : 1;
+		const int diff = ABS(angle1 - angle2);
+		if (diff > kPi) {
+			return -sign * (2 * kPi - diff);
+		} else {
+			return sign * diff;
 		}
-		int ret = angle1 - angle2;
-		if (ret > 512) {
-			ret = 1024 - ret;
-			mul = -mul;
-		}
-		return mul * ret;
 	}
 	return 0;
 }
 
-int fixedSqrt(int x, int shift) {
+int fixedSqrt(int x) {
 	assert(x >= 0);
 	return (int)(sqrt(x) + .5);
 }
@@ -47,48 +44,54 @@ int getSquareDistance(int x1, int z1, int x2, int z2, int shift) {
 	return dx * dx + dz * dz;
 }
 
-int getAngleFromPos(int X, int Z) {
-	static const int maxRy = 256;
-	int A;
-
-	if (X == 0) {
-		if (Z > 0) {
-			A = 0;
+int getAngleFromPos(int x, int z) {
+	if (0) { // use pre-computed table
+		const int angle = (int)(atan2(x, z) * 512 / M_PI);
+		if (angle < 0) {
+			return angle + 1024;
 		} else {
-			A = 512;
-		}
-	} else if (X > 0) {
-		if (Z > X) {
-			A = 1 + g_atan[fixedMul(X, maxRy << 15, 15) / Z];
-		} else if (Z == X) {
-			A = 128;
-		} else if (Z > 0) {
-			A = 256 - 1 - g_atan[fixedMul(Z, maxRy << 15, 15) / X];
-		} else if (Z == 0) {
-			A = 256;
-		} else if (Z > -X) {
-			A = 256 + 1 + g_atan[-fixedMul(Z, maxRy << 15, 15) / X];
-		} else if (Z == -X) {
-			A = 384;
-		} else {
-			A = 512 - 1 - g_atan[-fixedMul(X, maxRy << 15, 15) / Z];
-		}
-	} else {
-		if (Z < X) {
-			A = 512 + 1 + g_atan[fixedMul(X, maxRy << 15, 15) / Z];
-		} else if (Z == X) {
-			A = 640;
-		} else if (Z < 0) {
-			A = 768 - 1 - g_atan[fixedMul(Z, maxRy << 15, 15) / X];
-		} else if (Z == 0) {
-			A = 768;
-		} else if (Z < -X) {
-			A = 768 + 1 + g_atan[-fixedMul(Z, maxRy << 15, 15) / X];
-		} else if (Z == -X) {
-			A = 896;
-		} else {
-			A = 1024 - 1 - g_atan[-fixedMul(X, maxRy << 15, 15) / Z];
+			return angle;
 		}
 	}
-	return A;
+	static const int kTangent = 256;
+
+	if (x == 0) {
+		if (z > 0) {
+			return 0;
+		} else {
+			return 512;
+		}
+	} else if (x > 0) {
+		if (z > x) {
+			return 1 + g_atan[x * kTangent / z];
+		} else if (z == x) {
+			return 128;
+		} else if (z > 0) {
+			return 256 - 1 - g_atan[z * kTangent / x];
+		} else if (z == 0) {
+			return 256;
+		} else if (z > -x) {
+			return 256 + 1 + g_atan[-z * kTangent / x];
+		} else if (z == -x) {
+			return 384;
+		} else {
+			return 512 - 1 - g_atan[-x * kTangent/ z];
+		}
+	} else {
+		if (z < x) {
+			return 512 + 1 + g_atan[x * kTangent/ z];
+		} else if (z == x) {
+			return 640;
+		} else if (z < 0) {
+			return 768 - 1 - g_atan[z * kTangent / x];
+		} else if (z == 0) {
+			return 768;
+		} else if (z < -x) {
+			return 768 + 1 + g_atan[-z * kTangent / x];
+		} else if (z == -x) {
+			return 896;
+		} else {
+			return 1024 - 1 - g_atan[-x * kTangent / z];
+		}
+	}
 }

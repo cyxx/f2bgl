@@ -15,9 +15,13 @@ struct Vec_xz {
 };
 
 int getAngleDiff(int angle1, int angle2);
-int fixedSqrt(int x, int shift = 0);
+int fixedSqrt(int x);
 int getSquareDistance(int x1, int z1, int x2, int z2, int shift = 0);
 int getAngleFromPos(int x, int z);
+
+static inline int fixedInt(int a, int b) {
+	return a << b;
+}
 
 static inline int fixedMul(int a, int b, int c) {
 	int64_t r = a;

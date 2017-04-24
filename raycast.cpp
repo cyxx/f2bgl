@@ -26,8 +26,8 @@ void Game::rayCastInit(int sx) {
 	const int rzb = (_ySinObserver * xb) + (_yCosObserver * zb);
 	int dx = (rxb - rxa) >> 2;
 	int dz = (rzb - rza) >> 2;
-	static const int kMin = (1 << kFracShift);
-	static const int kMax = (1024 << kFracShift) - 1;
+	static const int kMin = fixedInt(1, kFracShift);
+	static const int kMax = fixedInt(1024, kFracShift) - 1;
 	if (dx > 0) {
 		if (dx < kMin) {
 			dx = kMin;
@@ -55,7 +55,7 @@ void Game::rayCastInit(int sx) {
 		}
 	}
 
-	_zRayStepX = 1 << kRayShift;
+	_zRayStepX = fixedInt(1, kRayShift);
 	_zRayStepZ = fixedDiv(dz, kRayShift, dx);
 	if (dx < 0) {
 		_zRayStepX = -_zRayStepX;
@@ -67,7 +67,7 @@ void Game::rayCastInit(int sx) {
 		_zRayMask = 0;
 	}
 
-	_xRayStepZ = 1 << kRayShift;
+	_xRayStepZ = fixedInt(1, kRayShift);
 	_xRayStepX = fixedDiv(dx, kRayShift, dz);
 	if (dz < 0) {
 		_xRayStepZ = -_xRayStepZ;
@@ -676,7 +676,7 @@ int Game::rayCast(GameObject *o, int xStartRay, RayCastCallbackType callback, in
 	int zDelta;
 	_resXRayZ = _xPosRay & kResRayMask;
 	if (_zRayStepX > 0) {
-		_resXRayZ += (1 << kRayShift);
+		_resXRayZ += fixedInt(1, kRayShift);
 		rayzex = _resXRayZ >> kRayShift;
 		_dxRay = 1;
 		zDelta = _resXRayZ - _xPosRay;
@@ -692,7 +692,7 @@ int Game::rayCast(GameObject *o, int xStartRay, RayCastCallbackType callback, in
 	int xDelta;
 	_resZRayX = _zPosRay & kResRayMask;
 	if (_xRayStepZ > 0) {
-		_resZRayX += 1 << kRayShift;
+		_resZRayX += fixedInt(1, kRayShift);
 		rayxez = _resZRayX >> kRayShift;
 		_dzRay = 1;
 		xDelta = _resZRayX - _zPosRay;
@@ -847,7 +847,7 @@ int Game::rayCast(GameObject *o, int xStartRay, RayCastCallbackType callback, in
 		const int x = _resXRayX - _xPosRay;
 		rrzx = fixedMul(_yInvSinObserver, x, kFracShift) + fixedMul(_yInvCosObserver, z, kFracShift);
 	} else {
-		rrzx = xRayDistance - (1 << kRayShift);
+		rrzx = xRayDistance - fixedInt(1, kRayShift);
 	}
 	int rrzz;
 	if (zray <= 0) {
@@ -857,7 +857,7 @@ int Game::rayCast(GameObject *o, int xStartRay, RayCastCallbackType callback, in
 		const int x = _resXRayZ - _xPosRay;
 		rrzz = fixedMul(_yInvSinObserver, x, kFracShift) + fixedMul(_yInvCosObserver, z, kFracShift);
 	} else {
-		rrzz = zRayDistance - (1 << kRayShift);
+		rrzz = zRayDistance - fixedInt(1, kRayShift);
 	}
 	if (rrzx < rrzz) {
 		o->xPos = _resXRayX >> (kRayShift - 19);
