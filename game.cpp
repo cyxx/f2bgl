@@ -265,7 +265,6 @@ int Game::gotoNextScriptAnim() {
 	}
 	if (nextKey != 0 && (o->flags[1] & 0x8) != 0) {
 		int16_t anikeyf_x0 = READ_LE_UINT16(p_anikeyf + 2);
-//		int16_t anikeyf_y0 = READ_LE_UINT16(p_anikeyf + 4);
 		int16_t anikeyf_z0 = READ_LE_UINT16(p_anikeyf + 6);
 		int16_t anikeyf_dx = READ_LE_UINT16(p_anikeyf + 8);
 		int16_t anikeyf_dy = READ_LE_UINT16(p_anikeyf + 10);
@@ -2206,7 +2205,7 @@ bool Game::updateGlobalPos(int dx, int dy, int dz, int dx0, int dz0, int flag) {
 		}
 	} else if (o->specialData[1][23] == 57) {
 		o->xPos = x;
-		o->yPos = y - (((int16_t)o->anim.anikeyfData[4]) << 11);
+		o->yPos = y - (((int16_t)READ_LE_UINT16(o->anim.anikeyfData + 4)) << 11);
 		o->zPos = z;
 		x = o->xPosParent + o->xPos;
 		z = o->zPosParent + o->zPos;
