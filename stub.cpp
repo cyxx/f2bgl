@@ -303,6 +303,8 @@ struct GameStub_F2B : GameStub {
 		mix.data = &_g->_snd._mix;
 		_g->_snd._mix.setFormat(rate, fmt);
 		_g->_snd._mix._lock = lock;
+		_g->_snd._musicKey = 0;
+		_g->playMusic(1);
 		return mix;
 	}
 	virtual void queueKeyInput(int keycode, int pressed) {

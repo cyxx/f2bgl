@@ -529,6 +529,7 @@ void Game::loadGameState(int num) {
 		}
 		persistGameState<kModeLoad>(fp, *this);
 		_updatePalette = true;
+		playMusic(_snd._musicMode);
 	}
 	fileClose(fp);
 }

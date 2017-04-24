@@ -1244,6 +1244,7 @@ void Game::changeRoom(int room) {
 }
 
 void Game::playMusic(int mode) {
+	debug(kDebug_GAME, "Game::playMusic() mode %d musicKey %d", mode, _snd._musicKey);
 	if (_objectsPtrTable[kObjPtrConrad]->room <= 0) {
 		return;
 	}
