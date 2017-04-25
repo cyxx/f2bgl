@@ -2858,6 +2858,15 @@ void Game::clearObjectsDrawList() {
 	_objectsDrawCount = 0;
 }
 
+static int compareSceneObjectBackToFront(const void *p1, const void *p2, void *arg) {
+	const SceneObject *o1 = *(const SceneObject **)p1;
+	const SceneObject *o2 = *(const SceneObject **)p2;
+	const Game *g = (const Game *)arg;
+	const int dist1 = getSquareDistance(o1->x, o1->z, g->_xPosObserver, g->_zPosObserver, kPosShift);
+	const int dist2 = getSquareDistance(o2->x, o2->z, g->_xPosObserver, g->_zPosObserver, kPosShift);
+	return dist2 - dist1;
+}
+
 void Game::addObjectsToScene() {
 	_sceneObjectsCount = 0;
 	bool cameraInList = false;
@@ -2884,12 +2893,15 @@ void Game::addObjectsToScene() {
 		GameObject *o = getObjectByKey(_cameraViewKey);
 		addSceneObjectToList(o->xPosWorld, o->yPosWorld, o->zPosWorld, o);
 	}
-	bool translucent[kSceneObjectsTableSize];
+	SceneObject *translucentObjects[kSceneObjectsTableSize];
+	int translucentObjectsCount = 0;
 	// draw opaque objects
 	for (int i = 0; i < _sceneObjectsCount; ++i) {
 		SceneObject *so = &_sceneObjectsTable[i];
-		translucent[i] = isTranslucentSceneObject(so);
-		if (!translucent[i]) {
+		if (isTranslucentSceneObject(so)) {
+			translucentObjects[translucentObjectsCount] = so;
+			++translucentObjectsCount;
+		} else {
 			const int flags = so->o->flags[1];
 			if (so->verticesCount != 0) {
 				_render->beginObjectDraw(so->x, so->y, so->z, so->pitch, kPosShift);
@@ -2914,7 +2926,7 @@ void Game::addObjectsToScene() {
 			}
 		}
 	}
-	// draw shadow and transparent objects
+	// draw shadows
 	for (int i = 0; i < _sceneObjectsCount; ++i) {
 		SceneObject *so = &_sceneObjectsTable[i];
 		const int flags = so->o->flags[1];
@@ -2923,11 +2935,15 @@ void Game::addObjectsToScene() {
 			drawSceneObjectShadow(so);
 			_render->endObjectDraw();
 		}
-		if (translucent[i]) {
-			_render->beginObjectDraw(so->x, so->y, so->z, so->pitch, kPosShift);
-			drawSceneObjectMesh(so, flags);
-			_render->endObjectDraw();
-		}
+	}
+	qsort_r(translucentObjects, translucentObjectsCount, sizeof(SceneObject *), compareSceneObjectBackToFront, this);
+	// draw transparent
+	for (int i = 0; i < translucentObjectsCount; ++i) {
+		SceneObject *so = translucentObjects[i];
+		const int flags = so->o->flags[1];
+		_render->beginObjectDraw(so->x, so->y, so->z, so->pitch, kPosShift);
+		drawSceneObjectMesh(so, flags);
+		_render->endObjectDraw();
 	}
 }
 
@@ -4227,7 +4243,7 @@ int Game::getCollidingHorizontalMask(int yPos, int upDir, int downDir) {
 }
 
 void Game::sendShootMessageHelper(GameObject *o, int xPos, int zPos, int radius, int num) {
-	int dist = getSquareDistance(o->xPos, xPos, o->zPos, zPos, kPosShift);
+	const int dist = getSquareDistance(o->xPos, o->zPos, xPos, zPos, kPosShift);
 	if (dist <= radius) {
 		_currentObject->specialData[1][18] = num;
 		int type = _currentObject->specialData[1][21];
