@@ -592,7 +592,7 @@ struct Game {
 	uint8_t *getNextScriptAnim();
 	int executeObjectScript(GameObject *o);
 	void runObject(GameObject *o);
-	void setplayerRoomObjectsData(int fl);
+	void setPlayerRoomObjectsData(int fl);
 	void setPlayerObject(int16_t objKey);
 	void updatePlayerObject();
 	void addToChangedObjects(GameObject *o);

@@ -1944,7 +1944,7 @@ void Game::runObject(GameObject *o) {
 	} while ((o = o->o_next) != 0 && (o->flags[1] & 0x100) == 0);
 }
 
-void Game::setplayerRoomObjectsData(int fl) {
+void Game::setPlayerRoomObjectsData(int fl) {
 	GameObject *o_player = getObjectByKey(_varsTable[kVarPlayerObject]);
 	int xPos = o_player->xPos + o_player->xPosParent;
 	int zPos = o_player->zPos + o_player->zPosParent;
@@ -1970,10 +1970,10 @@ void Game::setPlayerObject(int16_t objKey) {
 	assert(o);
 	assert((o->flags[1] & 0x80) == 0 && (o->flags[1] & 4) == 0 && (o->flags[1] & 0x10000) != 0);
 	assert(o->state == 1);
-	setplayerRoomObjectsData(0);
+	setPlayerRoomObjectsData(0);
 	_varsTable[kVarPlayerObject] = o->objKey;
 	debug(kDebug_GAME, "Game::setPlayerObject() _varsTable[kVarPlayerObject] %d", _varsTable[kVarPlayerObject]);
-	setplayerRoomObjectsData(1);
+	setPlayerRoomObjectsData(1);
 	setCameraObject(o, &_cameraViewObj);
 	for (int i = 0; i < _inputsCount; ++i) {
 		GameInput *inp = &_inputsTable[i];
@@ -2801,7 +2801,7 @@ bool Game::addSceneObjectToList(int xPos, int yPos, int zPos, GameObject *o) {
 		so->zmin = READ_LE_UINT32(p_form3d + 4);
 		so->xmax = READ_LE_UINT32(p_form3d + 8);
 		so->zmax = READ_LE_UINT32(p_form3d + 12);
-		so->pitch = (o->pitch + (p_anifram[3] << 4)) & 1023;
+		so->pitch = (o->pitch + ((int8_t)p_anifram[3] * 16)) & 1023;
 		so->x = xPos;
 		so->y = yPos;
 		so->z = zPos;
@@ -4499,14 +4499,14 @@ int Game::getShootPos(int16_t objKey, int *x, int *y, int *z) {
 		return 0;
 	}
 	p_anikeyf = _res.getData(kResType_ANI, anim->currentAnimKey, "ANIKEYF");
-	const int xb = ((p_anikeyf[16] << 3) + READ_LE_UINT16(p_anikeyf + 2)) << 10;
-	const int zb = ((p_anikeyf[17] << 3) + READ_LE_UINT16(p_anikeyf + 6)) << 10;
+	const int xb = ((((int8_t)p_anikeyf[16]) * 8) + (int16_t)READ_LE_UINT16(p_anikeyf + 2)) << 10;
+	const int zb = ((((int8_t)p_anikeyf[17]) * 8) + (int16_t)READ_LE_UINT16(p_anikeyf + 6)) << 10;
 	int cosy =  g_cos[o->pitch & 1023];
 	int siny = -g_sin[o->pitch & 1023];
 	const int rx = fixedMul(cosy, xb, 15) - fixedMul(siny, zb, 15);
 	const int rz = fixedMul(siny, xb, 15) + fixedMul(cosy, zb, 15);
 	*x = o->xPosParent + o->xPos + rx;
-	*y = o->yPosParent + o->yPos + (READ_LE_UINT16(p_anikeyf + 14) << 11);
+	*y = o->yPosParent + o->yPos + (((int16_t)READ_LE_UINT16(p_anikeyf + 14)) << 11);
 	*z = o->zPosParent + o->zPos + rz;
 	return -1;
 }

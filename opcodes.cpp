@@ -694,16 +694,11 @@ int Game::op_updateTarget(int argc, int32_t *argv) {
 	debug(kDebug_OPCODES, "Game::op_updateTarget() [%d, %d, %d, %d, %d, %d]", argv[0], argv[1], argv[2], argv[3], argv[4], argv[5]);
 	GameObject *o = 0;
 	int32_t objKey = argv[0];
-	for (int i = 0; i < 6; ++i) {
-		if (argv[i] >= 64) {
-			argv[i] -= 64;
-		}
-	}
-	int32_t paramDist = argv[1];
-	int32_t paramAngle = argv[2];
-	int32_t paramX = argv[3];
-	int32_t paramY = argv[4];
-	int32_t paramZ = argv[5];
+	int32_t paramDist  = (argv[1] > 64) ? (argv[1] - 64) : argv[1];
+	int32_t paramAngle = (argv[2] > 64) ? (argv[2] - 64) : argv[2];
+	int32_t paramX     = (argv[3] > 64) ? (argv[3] - 64) : argv[3];
+	int32_t paramY     = (argv[4] > 64) ? (argv[4] - 64) : argv[4];
+	int32_t paramZ     = (argv[5] > 64) ? (argv[5] - 64) : argv[5];
 	if (objKey == 0) {
 		_currentObject->specialData[1][paramY] = 0;
 	} else if ((o = getObjectByKey(objKey)) == 0) {
@@ -746,7 +741,7 @@ int Game::op_updateTarget(int argc, int32_t *argv) {
 					dyt_o = fixedMul(yz, dzt_o, 15);
 				} else if (yz < -1747) {
 					yz = -1747;
-					dyt_o = fixedMul (yz, dzt_o, 15);
+					dyt_o = fixedMul(yz, dzt_o, 15);
 				}
 				const int dy = fixedMul(dist << 15, dyt_o, 15) / (dzt_o >> 15);
 				yo += dy;
@@ -1112,7 +1107,7 @@ int Game::op_getObjectDistance(int argc, int32_t *argv) {
 		x_tmp = o_tmp->xPos + o_tmp->xPosParent;
 		z_tmp = o_tmp->zPos + o_tmp->zPosParent;
 		if ((o_tmp->specialData[1][8] & mask8) && (o_tmp->specialData[1][21] & mask21) && !testObjectCollision1(o, x, z, x_tmp, z_tmp, 0xFFFFFFFE)) {
-			dist = getSquareDistance(x >> 15, z >> 15, x_tmp >> 15, z_tmp >> 15);
+			dist = getSquareDistance(x, z, x_tmp, z_tmp, kPosShift);
 			o_cur = o_tmp;
 		} else {
 			dist = 0x7FFFFFFF;
@@ -1122,7 +1117,7 @@ int Game::op_getObjectDistance(int argc, int32_t *argv) {
 			x_tmp = o_tmp->xPos + o_tmp->xPosParent;
 			z_tmp = o_tmp->zPos + o_tmp->zPosParent;
 			if (o_tmp != o && (o_tmp->specialData[1][8] & mask8) && (o_tmp->specialData[1][21] & mask21) && !testObjectCollision1(o, x, z, x_tmp, z_tmp, 0xFFFFFFFE)) {
-				const int d = getSquareDistance(x >> 15, z >> 15, x_tmp >> 15, z_tmp >> 15);
+				const int d = getSquareDistance(x, z, x_tmp, z_tmp, kPosShift);
 				if (d < dist) {
 					dist = d;
 					o_cur = o_tmp;
@@ -1135,7 +1130,7 @@ int Game::op_getObjectDistance(int argc, int32_t *argv) {
 			x_tmp = o_tmp->xPos + o_tmp->xPosParent;
 			z_tmp = o_tmp->zPos + o_tmp->zPosParent;
 			if (o_tmp != o && (o_tmp->specialData[1][8] & mask8) && (o_tmp->specialData[1][21] & mask21) && testObjectsRoom(o->objKey, o_tmp->objKey) && !testObjectCollision1(o, x, z, x_tmp, z_tmp, 0xFFFFFFFE)) {
-				const int d = getSquareDistance(x >> 15, z >> 15, x_tmp >> 15, z_tmp >> 15);
+				const int d = getSquareDistance(x, z, x_tmp, z_tmp, kPosShift);
 				if (d < dist) {
 					dist = d;
 					o_cur = o_tmp;
@@ -1152,7 +1147,7 @@ int Game::op_getObjectDistance(int argc, int32_t *argv) {
 		_varsTable[11] = o_cur->objKey;
 		_varsTable[2] = dist;
 	}
-	return (o_cur != 0) ? 1 : 0;
+	return (o_cur != 0) ? -1 : 0;
 }
 
 int Game::op_setObjectSpecialCustomData(int argc, int32_t *argv) {
