@@ -2858,12 +2858,14 @@ void Game::clearObjectsDrawList() {
 	_objectsDrawCount = 0;
 }
 
-static int compareSceneObjectBackToFront(const void *p1, const void *p2, void *arg) {
+static int _compareBackToFront_xPos;
+static int _compareBackToFront_zPos;
+
+static int compareSceneObjectBackToFront(const void *p1, const void *p2) {
 	const SceneObject *o1 = *(const SceneObject **)p1;
 	const SceneObject *o2 = *(const SceneObject **)p2;
-	const Game *g = (const Game *)arg;
-	const int dist1 = getSquareDistance(o1->x, o1->z, g->_xPosObserver, g->_zPosObserver, kPosShift);
-	const int dist2 = getSquareDistance(o2->x, o2->z, g->_xPosObserver, g->_zPosObserver, kPosShift);
+	const int dist1 = getSquareDistance(o1->x, o1->z, _compareBackToFront_xPos, _compareBackToFront_zPos, kPosShift);
+	const int dist2 = getSquareDistance(o2->x, o2->z, _compareBackToFront_xPos, _compareBackToFront_zPos, kPosShift);
 	return dist2 - dist1;
 }
 
@@ -2936,7 +2938,9 @@ void Game::addObjectsToScene() {
 			_render->endObjectDraw();
 		}
 	}
-	qsort_r(translucentObjects, translucentObjectsCount, sizeof(SceneObject *), compareSceneObjectBackToFront, this);
+	_compareBackToFront_xPos = _xPosObserver;
+	_compareBackToFront_zPos = _zPosObserver;
+	qsort(translucentObjects, translucentObjectsCount, sizeof(SceneObject *), compareSceneObjectBackToFront);
 	// draw transparent
 	for (int i = 0; i < translucentObjectsCount; ++i) {
 		SceneObject *so = translucentObjects[i];
