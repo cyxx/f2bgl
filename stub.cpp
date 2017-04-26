@@ -123,7 +123,6 @@ struct GameStub_F2B : GameStub {
 	}
 
 	void setState(int state) {
-		debug(kDebug_INFO, "stub.state %d", state);
 		// release
 		if (_state == kStateCutscene) {
 			_render->setPalette(_g->_screenPalette, 0, 256);
@@ -425,11 +424,9 @@ struct GameStub_F2B : GameStub {
 		case kStateGame:
 			if (_g->_changeLevel) {
 				_g->_changeLevel = false;
-				warning("_changeLevel flag set, starting level %d", _g->_level);
 				_g->initLevel(true);
 			} else if (_g->_endGame) {
 				_g->_endGame = false;
-				warning("_endGame flag set, starting level %d", _g->_level);
 				_g->initLevel();
 			}
 			_g->updateGameInput();

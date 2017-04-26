@@ -3062,8 +3062,8 @@ void Game::drawSceneObjectMesh(SceneObject *so, int flags) {
 		if (fill == 8 || fill == 11 || fill == 12) {
 			const int texture = color & 255;
 			const int primitive = (color >> 13) & 7;
-			if (!_sceneTextureImagesBuffer[texture].data) { // level3
-				warning("Game::drawSceneObjectMesh() no sprite for texture %d", texture);
+			if (!_sceneTextureImagesBuffer[texture].data) {
+				debug(kDebug_GAME, "Game::drawSceneObjectMesh() no sprite for texture %d fill %d", texture, fill);
 			} else {
 				SpriteImage *spr = &_sceneTextureImagesBuffer[texture];
 				const uint8_t *texData = _spriteCache.getData(spr->key, spr->data);
@@ -3617,7 +3617,7 @@ void Game::setupInventoryObjects() {
 			}
 			_objectsPtrTable[_gameInventoryObjectsVars[i].obj] = o_tmp;
 		} else {
-			warning("Game::setupInventoryObjects() missing inventory object index %d", i);
+			debug(kDebug_GAME, "Game::setupInventoryObjects() missing inventory object index %d", i);
 		}
 		if (_gameInventoryObjectsVars[i].obj == 7) {
 			assert(o_tmp);
@@ -3715,7 +3715,7 @@ void Game::loadInventoryObjects() {
 	for (SavedInventoryObject *sio = _savedInventoryObjects; sio; sio = sio->next) {
 		GameObject *o = findObjectByName(_objectsPtrTable[kObjPtrWorld], sio->name);
 		if (!o) {
-			warning("Game::loadInventoryObjects() dropping '%s' when loading level %d", sio->name, _level);
+			debug(kDebug_GAME, "Game::loadInventoryObjects() dropping '%s' when loading level %d", sio->name, _level);
 			continue;
 		}
 		if ((o->flags[1] & 1) == 0 && o->specialData[1][21] == 128) {
@@ -4122,7 +4122,7 @@ bool Game::sendMessage(int msg, int16_t destObjKey) {
 						const bool isConradShoot = (typeObj == 8 && specObj != 0);
 						if (isConradShoot && (specObj & 0xDF0) != specObj) {
 							// flag should be set on (specObj & 0xDF0) but the original seems to set on (!= 0)
-							warning("Game::sendMessage() setting isConradShoot with specObj 0x%x", specObj);
+							debug(kDebug_GAME, "Game::sendMessage() setting isConradShoot with specObj 0x%x", specObj);
 						}
 						switch (_skillLevel) {
 						case kSkillEasy:
