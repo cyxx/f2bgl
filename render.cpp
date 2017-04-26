@@ -621,7 +621,7 @@ void Render::setupProjection(int mode) {
 	assert(mode == kProjGame);
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
-	glFrustum(-.5, .5, -aspect / 2, 0., 1., 512);
+	glFrustum(-.5, .5, -aspect / 2, 0., 1., 1024);
 	glTranslatef(0., 0., -16.);
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
