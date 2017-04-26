@@ -474,14 +474,11 @@ void Cutscene::queue(int num, int counter) {
 	debug(kDebug_CUTSCENE, "Cutscene::queue() num %d counter %d", num, counter);
 	if (_numToPlay < 0) {
 		_numToPlay = num;
-		_numToPlayCounter = counter;
+		_numToPlayCounter = 0;
 	} else {
 		if (_playQueueSize < kCutscenePlaybackQueueSize) {
 			_playQueue[_playQueueSize] = num;
 			++_playQueueSize;
-			if (counter != 0) {
-				warning("Cutscene::queue() ignoring cutscene %d delay %d", num, counter);
-			}
 		} else {
 			warning("Cutscene::queue() queue size %d, skipping cutscene %d", _playQueueSize, num);
 		}
