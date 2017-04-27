@@ -137,13 +137,13 @@ struct GameStub_F2B : GameStub {
 			_g->updatePalette();
 			break;
 		case kStateInventory:
-			_render->resizeOverlay(kScreenWidth, kScreenHeight);
+			_render->resizeOverlay(0, 0);
 			if (!_g->initInventory()) {
 				return;
 			}
 			break;
 		case kStateBox:
-			_render->resizeOverlay(kScreenWidth, kScreenHeight);
+			_render->resizeOverlay(0, 0);
 			_g->initBox();
 			break;
 		case kStateMenu:

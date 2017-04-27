@@ -3236,7 +3236,7 @@ static void initVerticesGround(Vertex *quad, int x, int z) {
 bool Game::redrawSceneGridCell(int x, int z, CellMap *cell) {
 	Vertex quad[4];
 	initVerticesGround(quad, x, z);
-	if (!_render->isQuadInFrustrum(quad, 4)) {
+	if (!_render->isQuadInFrustum(quad, 4)) {
 		return false;
 	}
 	if (cell->type != 20 && cell->type != 32) {
@@ -4515,13 +4515,17 @@ int Game::getShootPos(int16_t objKey, int *x, int *y, int *z) {
 	return -1;
 }
 
-void Game::drawSprite(int x, int y, int sprKey) {
+void Game::drawSprite(int x, int y, int sprKey, bool drawToOverlay) {
 	const uint8_t *p_btmdesc = _res.getData(kResType_SPR, sprKey, "BTMDESC");
 	const int w = READ_LE_UINT16(p_btmdesc);
 	const int h = READ_LE_UINT16(p_btmdesc + 2);
 	const uint8_t *data = _res.getData(kResType_SPR, sprKey, "SPRDATA");
 	data = _spriteCache.getData(sprKey, data);
 	if (data) {
-		_render->copyToOverlay(x, y, data, w, w, h, 0);
+		if (drawToOverlay) {
+			_render->copyToOverlay(x, y, data, w, w, h, 0);
+		} else {
+			_render->drawSprite(x, y, data, w, h, 0, sprKey);
+		}
 	}
 }

@@ -23,6 +23,7 @@ void Game::doBox() {
 		so->pitch += 6;
 		so->pitch &= 1023;
 
+		_render->setupProjection(kProj2D);
 		const int num = (_boxItemCount == 1) ? 28 : 29;
 		if (getMessage(_objectsPtrTable[kObjPtrWorld]->objKey, num, &_tmpMsg)) {
 			char buf[128];

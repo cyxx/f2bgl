@@ -476,7 +476,7 @@ void Render::endObjectDraw() {
 	glPopMatrix();
 }
 
-void Render::updateFrustrumPlanes() {
+void Render::updateFrustumPlanes() {
 	Matrix4f clip, proj, modl;
 	glGetFloatv(GL_PROJECTION_MATRIX, proj.t);
 	glGetFloatv(GL_MODELVIEW_MATRIX, modl.t);
@@ -501,7 +501,7 @@ void Render::updateFrustrumPlanes() {
 	}
 }
 
-bool Render::isQuadInFrustrum(const Vertex *vertices, int verticesCount) {
+bool Render::isQuadInFrustum(const Vertex *vertices, int verticesCount) {
 	assert(verticesCount == 4);
 	bool ret = false;
 	while (verticesCount-- && !ret) {
@@ -570,7 +570,7 @@ void Render::setPalette(const uint8_t *pal, int offset, int count) {
 }
 
 void Render::clearScreen() {
-	glClearColor(0, 0, 0, 0);
+	glClearColor(0, 0, 0, 1);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 #ifdef USE_GLES
 	glEnableClientState(GL_VERTEX_ARRAY);
@@ -628,7 +628,7 @@ void Render::setupProjection(int mode) {
 	glScalef(1., -.5, -1.);
 	glRotatef(_cameraPitch, 0., 1., 0.);
 	glTranslatef(-_cameraPos.x, _cameraPos.y, -_cameraPos.z);
-	updateFrustrumPlanes();
+	updateFrustumPlanes();
 }
 
 void Render::drawOverlay() {

@@ -102,11 +102,7 @@ void Game::drawString(int x, int y, const char *str, int font, int color) {
 			chr -= 33;
 			assert(chr >= 0 && chr < kFontGlyphsCount);
 			spr = &ft->glyphs[chr];
-			if (font == kFontNameInvent) {
-				_render->copyToOverlay(chrX, chrY + ft->h - spr->h, spr->data, spr->w, spr->w, spr->h, 0);
-			} else {
-				drawChar(chrX, chrY + ft->h - spr->h, spr, color);
-			}
+			drawChar(chrX, chrY + ft->h - spr->h, spr, color);
 			chrX += spr->w + ft->spacing;
 			break;
 		}
