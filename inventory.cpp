@@ -39,21 +39,16 @@ bool Game::initInventory() {
 }
 
 void Game::loadInventoryObjectMesh(GameObject *o) {
-	if (o->specialData[1][22] != 32) {
-		SceneObject *so = &_sceneObjectsTable[0];
-		int16_t key = _res.getNext(kResType_ANI, o->anim.currentAnimKey);
-		key = _res.getNext(kResType_ANI, key);
-		key = _res.getChild(kResType_ANI, key);
-		const uint8_t *p_anifram = _res.getData(kResType_ANI, key, "ANIFRAM");
-		if (p_anifram[2] == 9) {
-			uint8_t *p_poly3d;
-			uint8_t *p_form3d = initMesh(kResType_F3D, READ_LE_UINT16(p_anifram), &so->verticesData, &so->polygonsData, o, &p_poly3d, 0);
-			so->verticesCount = READ_LE_UINT16(p_form3d + 18);
-			so->x = 0;
-			so->z = 0;
-			so->y = 0;
-			so->pitch = 0;
-		}
+	SceneObject *so = &_sceneObjectsTable[0];
+	memset(so, 0, sizeof(SceneObject));
+	int16_t key = _res.getNext(kResType_ANI, o->anim.currentAnimKey);
+	key = _res.getNext(kResType_ANI, key);
+	key = _res.getChild(kResType_ANI, key);
+	const uint8_t *p_anifram = _res.getData(kResType_ANI, key, "ANIFRAM");
+	if (p_anifram[2] == 9) {
+		uint8_t *p_poly3d;
+		uint8_t *p_form3d = initMesh(kResType_F3D, READ_LE_UINT16(p_anifram), &so->verticesData, &so->polygonsData, o, &p_poly3d, 0);
+		so->verticesCount = READ_LE_UINT16(p_form3d + 18);
 	}
 }
 
@@ -138,8 +133,10 @@ void Game::updateInventoryInput() {
 		if (_inventoryCurrentObj) {
 			_3dObj = !_3dObj;
 			if (_3dObj) {
-				loadInventoryObjectMesh(_inventoryCurrentObj);
-				setPalette(_palKeysTable[_inventoryCurrentObj->pal]);
+				if (_inventoryCurrentObj->specialData[1][22] != 32) {
+					loadInventoryObjectMesh(_inventoryCurrentObj);
+					setPalette(_palKeysTable[_inventoryCurrentObj->pal]);
+				}
 			} else {
 				_snd.stopVoice(_inventoryCurrentObj->objKey);
 				_inventoryVoicePlayed = false;

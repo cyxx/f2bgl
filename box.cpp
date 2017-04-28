@@ -15,13 +15,15 @@ void Game::doBox() {
 	_render->clearScreen();
 	if (_boxItemCount != 0) {
 
-		_render->setupProjection(kProjMenu);
 		SceneObject *so = &_sceneObjectsTable[0];
-		_render->beginObjectDraw(so->x, so->y, so->z, so->pitch);
-		drawSceneObjectMesh(so);
-		_render->endObjectDraw();
-		so->pitch += 6;
-		so->pitch &= 1023;
+		if (so->verticesCount != 0) {
+			_render->setupProjection(kProjMenu);
+			_render->beginObjectDraw(so->x, so->y, so->z, so->pitch);
+			drawSceneObjectMesh(so);
+			_render->endObjectDraw();
+			so->pitch += 6;
+			so->pitch &= 1023;
+		}
 
 		_render->setupProjection(kProj2D);
 		const int num = (_boxItemCount == 1) ? 28 : 29;
