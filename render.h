@@ -35,7 +35,6 @@ struct Render {
 	struct {
 		uint8_t *buf;
 		Texture *tex;
-		bool hflip;
 		int r, g, b;
 	} _overlay;
 	struct {
@@ -70,7 +69,7 @@ struct Render {
 	bool isQuadInFrustum(const Vertex *vertices, int verticesCount);
 
 	void setOverlayBlendColor(int r, int g, int b);
-	void resizeOverlay(int w, int h, bool hflip = false);
+	void resizeOverlay(int w, int h);
 	void copyToOverlay(int x, int y, const uint8_t *data, int pitch, int w, int h, int transparentColor = -1);
 
 	void setPaletteScale(bool greyScale, int rgbScale);

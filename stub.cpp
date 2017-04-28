@@ -392,7 +392,6 @@ struct GameStub_F2B : GameStub {
 		_nextState = _state;
 		switch (_state) {
 		case kStateCutscene:
-			_render->clearScreen();
 			_skip = syncTicks(ticks, kCutsceneFrameDelay);
 			if (_skip) {
 				return;

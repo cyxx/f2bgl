@@ -649,7 +649,7 @@ struct Game {
 	void playDeathCutscene(int objKey);
 	void displayTarget(int cx, int cy);
 	int getShootPos(int16_t objKey, int *x, int *y, int *z);
-	void drawSprite(int x, int y, int sprKey, bool drawToOverlay = true);
+	void drawSprite(int x, int y, int sprKey);
 
 	// camera.cpp
 	void updateObserverSinCos();

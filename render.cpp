@@ -176,7 +176,6 @@ Render::Render() {
 	_screenshotBuf = 0;
 	_overlay.buf = (uint8_t *)calloc(kOverlayWidth * kOverlayHeight, sizeof(uint8_t));
 	_overlay.tex = 0;
-	_overlay.hflip = false;
 	_overlay.r = _overlay.g = _overlay.b = 255;
 	_viewport.changed = true;
 	_viewport.pw = 256;
@@ -523,7 +522,7 @@ void Render::setOverlayBlendColor(int r, int g, int b) {
 	_overlay.b = b;
 }
 
-void Render::resizeOverlay(int w, int h, bool hflip) {
+void Render::resizeOverlay(int w, int h) {
 	if (_overlay.tex) {
 		_textureCache.destroyTexture(_overlay.tex);
 		_overlay.tex = 0;
@@ -534,7 +533,6 @@ void Render::resizeOverlay(int w, int h, bool hflip) {
 	assert(w <= kOverlayWidth && h <= kOverlayHeight);
 	memset(_overlay.buf, 0, kOverlayWidth * kOverlayHeight);
 	_overlay.tex = _textureCache.createTexture(_overlay.buf, w, h);
-	_overlay.hflip = hflip;
 }
 
 void Render::setPaletteScale(bool greyScale, int rgbScale) {
@@ -636,12 +634,7 @@ void Render::drawOverlay() {
 		_textureCache.updateTexture(_overlay.tex, _overlay.buf, _overlay.tex->bitmapW, _overlay.tex->bitmapH);
 		glMatrixMode(GL_PROJECTION);
 		glLoadIdentity();
-		if (_overlay.hflip) {
-			glOrtho(0, _w, 0, _h, 0, 1);
-		} else {
-			glOrtho(0, _w, _h, 0, 0, 1);
-			memset(_overlay.buf, 0, kOverlayWidth * kOverlayHeight);
-		}
+		glOrtho(0, _w, 0, _h, 0, 1);
 		glMatrixMode(GL_MODELVIEW);
 		glLoadIdentity();
 		glDisable(GL_DEPTH_TEST);

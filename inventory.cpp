@@ -194,13 +194,11 @@ void Game::updateInventoryInput() {
 	}
 }
 
-static const bool kDrawToOverlay = false;
-
 void Game::doInventory() {
 
 	_render->clearScreen();
 	_render->setupProjection(kProj2D);
-	drawSprite(1, 1, _inventoryBackgroundKey, kDrawToOverlay);
+	drawSprite(1, 1, _inventoryBackgroundKey);
 
 	if (!_3dObj) {
 		int x = (kScreenWidth - (6 * kInventoryCategoryWidth + 5 * 6)) / 2;
@@ -209,13 +207,13 @@ void Game::doInventory() {
 		for (int i = 0; i < 6; ++i) {
 			if (i != _inventoryCategoryNum) {
 				const int sprKey = READ_LE_UINT16(tmpObj->anim.aniframData);
-				drawSprite(x, y, sprKey, kDrawToOverlay);
+				drawSprite(x, y, sprKey);
 			} else {
 				const int nextKey = _res.getNext(kResType_ANI, tmpObj->anim.currentAnimKey);
 				const int childKey = _res.getChild(kResType_ANI, nextKey);
 				const uint8_t *p_anifram = _res.getData(kResType_ANI, childKey, "ANIFRAM");
 				const int sprKey = READ_LE_UINT16(p_anifram);
-				drawSprite(x, y, sprKey, kDrawToOverlay);
+				drawSprite(x, y, sprKey);
 			}
 			x += kInventoryCategoryWidth + 6;
 			tmpObj = tmpObj->o_next;
@@ -236,12 +234,12 @@ void Game::doInventory() {
 		for (int ind = _inventoryFirstObjNum; ind < (_inventoryFirstObjNum + 5) && tmpObj; ++ind) {
 			if (ind != _inventoryCurrentNum) {
 				const int sprKey = READ_LE_UINT16(tmpObj->anim.aniframData);
-				drawSprite(x, y, sprKey, kDrawToOverlay);
+				drawSprite(x, y, sprKey);
 			} else {
 				const int nextKey = _res.getNext(kResType_ANI, tmpObj->anim.currentAnimKey);
 				const int childKey = _res.getChild(kResType_ANI, nextKey);
 				const uint8_t *p_anifram = _res.getData(kResType_ANI, childKey, "ANIFRAM");
-				drawSprite(x, y, READ_LE_UINT16(p_anifram), kDrawToOverlay);
+				drawSprite(x, y, READ_LE_UINT16(p_anifram));
 				if (getMessage(tmpObj->objKey, 1, &_tmpMsg)) {
 					memset(&_drawCharBuf, 0, sizeof(_drawCharBuf));
 					const int len = strlen((const char *)_tmpMsg.data);
@@ -261,14 +259,14 @@ void Game::doInventory() {
 			tmpObj = tmpObj->o_next;
 		}
 		if (_inventoryFirstObjNum > 0) {
-			drawSprite((kScreenWidth - kInventoryObjectWidth) / 2, 10 + kInventoryCategoryHeight, _inventoryCursor[1], kDrawToOverlay);
+			drawSprite((kScreenWidth - kInventoryObjectWidth) / 2, 10 + kInventoryCategoryHeight, _inventoryCursor[1]);
 		} else {
-			drawSprite((kScreenWidth - kInventoryObjectWidth) / 2, 10 + kInventoryCategoryHeight, _inventoryCursor[0], kDrawToOverlay);
+			drawSprite((kScreenWidth - kInventoryObjectWidth) / 2, 10 + kInventoryCategoryHeight, _inventoryCursor[0]);
 		}
 		if (tmpObj) {
-			drawSprite((kScreenWidth - kInventoryObjectWidth) / 2, 25 + kInventoryCategoryHeight + 14 + kInventoryObjectHeight + 5, _inventoryCursor[3], kDrawToOverlay);
+			drawSprite((kScreenWidth - kInventoryObjectWidth) / 2, 25 + kInventoryCategoryHeight + 14 + kInventoryObjectHeight + 5, _inventoryCursor[3]);
 		} else {
-			drawSprite((kScreenWidth - kInventoryObjectWidth) / 2, 25 + kInventoryCategoryHeight + 14 + kInventoryObjectHeight + 5, _inventoryCursor[2], kDrawToOverlay);
+			drawSprite((kScreenWidth - kInventoryObjectWidth) / 2, 25 + kInventoryCategoryHeight + 14 + kInventoryObjectHeight + 5, _inventoryCursor[2]);
 		}
 		_inventoryVoicePlayed = false;
 	} else {

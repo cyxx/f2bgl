@@ -4515,17 +4515,13 @@ int Game::getShootPos(int16_t objKey, int *x, int *y, int *z) {
 	return -1;
 }
 
-void Game::drawSprite(int x, int y, int sprKey, bool drawToOverlay) {
+void Game::drawSprite(int x, int y, int sprKey) {
 	const uint8_t *p_btmdesc = _res.getData(kResType_SPR, sprKey, "BTMDESC");
 	const int w = READ_LE_UINT16(p_btmdesc);
 	const int h = READ_LE_UINT16(p_btmdesc + 2);
 	const uint8_t *data = _res.getData(kResType_SPR, sprKey, "SPRDATA");
 	data = _spriteCache.getData(sprKey, data);
 	if (data) {
-		if (drawToOverlay) {
-			_render->copyToOverlay(x, y, data, w, w, h, 0);
-		} else {
-			_render->drawSprite(x, y, data, w, h, 0, sprKey);
-		}
+		_render->drawSprite(x, y, data, w, h, 0, sprKey);
 	}
 }
