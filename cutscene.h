@@ -34,7 +34,8 @@ enum {
 	kFrameBuffersCount = 3,
 	kSubtitleMessagesCount = 16,
 	kCutscenePlaybackQueueSize = 4,
-	kCutsceneFrameDelay = 1000 / 12
+	kCutsceneFrameDelay = 1000 / 12,
+	kCutsceneDisplayHeight = 200,
 };
 
 struct Game;

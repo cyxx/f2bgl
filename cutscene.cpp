@@ -414,7 +414,7 @@ bool Cutscene::load(int num) {
 
 bool Cutscene::play() {
 	if (_frameCounter == 0) {
-		_render->resizeOverlay(_fileHdr.videoFrameWidth, _fileHdr.videoFrameHeight);
+		_render->resizeOverlay(_fileHdr.videoFrameWidth, kCutsceneDisplayHeight);
 	}
 	++_frameCounter;
 	if (g_isDemo && _frameCounter == _duration) {
@@ -444,7 +444,8 @@ bool Cutscene::play() {
 		updateMessages();
 	}
 	_render->clearScreen();
-	_render->copyToOverlay(0, 0, _frameBuffers[0], _fileHdr.videoFrameWidth, _fileHdr.videoFrameWidth, _fileHdr.videoFrameHeight);
+	const int y = (kCutsceneDisplayHeight - _fileHdr.videoFrameHeight) / 2;
+	_render->copyToOverlay(0, y, _frameBuffers[0], _fileHdr.videoFrameWidth, _fileHdr.videoFrameWidth, _fileHdr.videoFrameHeight);
 	const PlayerInput &inp = _game->inp;
 	_interrupted = inp.spaceKey || inp.enterKey;
 	return !_interrupted;
