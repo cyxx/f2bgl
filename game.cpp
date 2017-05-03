@@ -13,7 +13,7 @@
 Game::Game(Render *render, const GameParams *params)
 	: _cut(render, this, &_snd), _snd(&_res), _xmi(&_res), _render(render), _params(*params) {
 
-	_cheats = 0;
+	_cheats = kCheatAutoReloadGun;
 
 	memset(&_drawCharBuf, 0, sizeof(_drawCharBuf));
 	memset(&_drawNumber, 0, sizeof(_drawNumber));

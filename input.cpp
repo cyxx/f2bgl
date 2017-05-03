@@ -220,7 +220,17 @@ void Game::updateGameInput() {
 			}
 		}
 	}
+	bool enterKey = inp.enterKey;
+	if ((_cheats & kCheatAutoReloadGun) != 0) {
+		if (_objectsPtrTable[kObjPtrGun]->customData[0] == 0) {
+			if (inp.ctrlKey) {
+				inp.enterKey = true;
+				inp.ctrlKey = false;
+			}
+		}
+	}
 	updateInput();
+	inp.enterKey = enterKey;
 }
 
 bool Game::testInputKeyMask(int num, int dir, int button, int index) const {

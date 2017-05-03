@@ -78,10 +78,10 @@ static void setupKeyMap() {
 	gGamepadMap[SDL_CONTROLLER_BUTTON_A] = kKeyCodeAlt;
 	gGamepadMap[SDL_CONTROLLER_BUTTON_B] = kKeyCodeSpace;
 	gGamepadMap[SDL_CONTROLLER_BUTTON_X] = kKeyCodeCtrl;
-	gGamepadMap[SDL_CONTROLLER_BUTTON_Y] = kKeyCodeReturn;
+	gGamepadMap[SDL_CONTROLLER_BUTTON_Y] = kKeyCodeU;
 	gGamepadMap[SDL_CONTROLLER_BUTTON_BACK]  = kKeyCodeEscape;
 	gGamepadMap[SDL_CONTROLLER_BUTTON_GUIDE] = kKeyCodeI;
-	gGamepadMap[SDL_CONTROLLER_BUTTON_START] = kKeyCodeEscape;
+	gGamepadMap[SDL_CONTROLLER_BUTTON_START] = kKeyCodeI;
 	gGamepadMap[SDL_CONTROLLER_BUTTON_LEFTSTICK]     = kKeyCodeJ;
 	gGamepadMap[SDL_CONTROLLER_BUTTON_LEFTSHOULDER]  = kKeyCodeJ;
 	gGamepadMap[SDL_CONTROLLER_BUTTON_RIGHTSTICK]    = kKeyCodeShift;

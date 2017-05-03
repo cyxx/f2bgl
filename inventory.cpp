@@ -154,11 +154,11 @@ void Game::updateInventoryInput() {
 			_inventoryCurrentNum = 0;
 			switch (_inventoryCategoryNum) {
 			case 0:
-				_objectsPtrTable[11] = _inventoryCurrentObj;
-				_varsTable[15] = _objectsPtrTable[11]->objKey;
+				_objectsPtrTable[kObjPtrGun] = _inventoryCurrentObj;
+				_varsTable[15] = _objectsPtrTable[kObjPtrGun]->objKey;
 				_objectsPtrTable[kObjPtrTargetCommand]->specialData[1][16] = 1;
-				if (getMessage(_objectsPtrTable[11]->objKey, 0, &_tmpMsg)) {
-					_objectsPtrTable[11]->text = (const char *)_tmpMsg.data;
+				if (getMessage(_objectsPtrTable[kObjPtrGun]->objKey, 0, &_tmpMsg)) {
+					_objectsPtrTable[kObjPtrGun]->text = (const char *)_tmpMsg.data;
 				}
 				break;
 			case 1:

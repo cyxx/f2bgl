@@ -106,6 +106,7 @@ enum {
 
 enum {
 	kCheatLifeCounter = 1 << 0,
+	kCheatAutoReloadGun = 1 << 1,
 };
 
 struct CollisionSlot;
