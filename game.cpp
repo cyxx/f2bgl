@@ -64,7 +64,6 @@ void Game::clearGlobalData() {
 	_updateGlobalPosRefObject = 0;
 	_collidingObjectsCount = 0;
 	memset(_collidingObjectsTable, 0, sizeof(_collidingObjectsTable));
-	_object10Counter = 0;
 	_conradEnvAni = 0;
 	_boxItemCount = 0;
 	_boxItemObj = 0;
@@ -1203,6 +1202,7 @@ void Game::initLevel(bool keepInventoryObjects) {
 	}
 	initFonts();
 	setupInventoryObjects();
+	setupScannerObjects();
 	initSprites();
 	initScene();
 
@@ -2576,40 +2576,11 @@ if (_mainLoopCurrentMode == 1) {
 	}
 }
 	clearObjectsDrawList();
+	_render->setupProjection(kProj2D);
+	drawInfoPanel();
 if (_mainLoopCurrentMode == 1) {
 	if (_objectsPtrTable[kObjPtrScan]) {
-		const int scannerLife = _objectsPtrTable[kObjPtrScan]->specialData[1][18];
-		const int conradLife = _objectsPtrTable[kObjPtrConrad]->specialData[1][18];
-		if (scannerLife || (conradLife >= scannerLife && (conradLife >= scannerLife * 36 || (_ticks % (scannerLife / 2) > scannerLife / 4)))) {
-			if (_objectsPtrTable[kObjPtrScan]->specialData[1][21] == 64) {
-				warning("Game::doTick() Unimplemented scanner");
-			}
-		}
-		if (_object10Counter <= 0) {
-			_object10Counter = 10;
-			_objectsPtrTable[kObjPtrConrad]->specialData[1][18] -= _objectsPtrTable[kObjPtrScan]->specialData[1][18];
-			if (_objectsPtrTable[kObjPtrConrad]->specialData[1][18] <= 0) {
-				_objectsPtrTable[kObjPtrConrad]->specialData[1][18] = 1;
-				while ((_objectsPtrTable[kObjPtrScan]->specialData[1][21] != 2) && (_objectsPtrTable[kObjPtrScan]->specialData[1][22] != 0xFFFF)) {
-					GameObject *o_tmp = _objectsPtrTable[kObjPtrScan];
-					while (o_tmp->o_next) {
-						o_tmp = o_tmp->o_next;
-					}
-					o_tmp->o_next = _objectsPtrTable[kObjPtrScan];
-					_objectsPtrTable[kObjPtrInventaire]->o_child->o_next->o_next->o_next->o_next->o_child = _objectsPtrTable[kObjPtrScan]->o_next;
-					_objectsPtrTable[kObjPtrScan]->o_next = 0;
-					_objectsPtrTable[kObjPtrScan] = _objectsPtrTable[kObjPtrInventaire]->o_child->o_next->o_next->o_next->o_next->o_child;
-				}
-				if (_objectsPtrTable[kObjPtrScan]) {
-					_varsTable[24] = _objectsPtrTable[kObjPtrScan]->objKey;
-					if (getMessage(_objectsPtrTable[kObjPtrScan]->objKey, 0, &_tmpMsg)) {
-						_objectsPtrTable[kObjPtrScan]->text = (const char *)_tmpMsg.data;
-					}
-				}
-			}
-		} else {
-			--_object10Counter;
-		}
+		updateScanner();
 	}
 	if ((_objectsPtrTable[kObjPtrConrad]->specialData[1][20] & 15) == 5) {
 		_objectsPtrTable[kObjPtrConrad]->specialData[1][18] -= 2;
@@ -2656,8 +2627,6 @@ if (_mainLoopCurrentMode == 1) {
 			}
 		}
 	}
-	_render->setupProjection(kProj2D);
-	drawInfoPanel();
 #ifdef F2B_DEBUG
 	if (1) {
 		int y = 8;
@@ -3591,6 +3560,103 @@ void Game::readInputEvents() {
 				_cameraStandingDist = !_cameraStandingDist;
 				if (_cameraStandingDist != _cameraDefaultDist) {
 					fixCamera();
+				}
+			}
+		}
+	}
+}
+
+void Game::setupScannerObjects() {
+	_scannerCounter = 0;
+	if (_objectsPtrTable[kObjPtrFondScanInfo]) {
+		const int16_t key = _res.getChild(kResType_ANI, _objectsPtrTable[kObjPtrFondScanInfo]->anim.currentAnimKey);
+		const uint8_t *p_anifram = _res.getData(kResType_ANI, key, "ANIFRAM");
+		_scannerBackgroundKey = READ_LE_UINT16(p_anifram);
+	}
+}
+
+void Game::updateScanner() {
+	const int scanCounter = _objectsPtrTable[kObjPtrScan]->specialData[1][18];
+	const int conradLife = _objectsPtrTable[kObjPtrConrad]->specialData[1][18];
+	if (scanCounter == 0 || (conradLife >= scanCounter && (conradLife >= scanCounter * 36 || (_ticks % (scanCounter / 2) < scanCounter / 4)))) {
+		if (_objectsPtrTable[kObjPtrScan]->specialData[1][21] == 64) {
+			warning("Game::updateScanner() stub draw scanner");
+			// drawScanner();
+		}
+		if (_scannerCounter > 0) {
+			--_scannerCounter;
+		} else {
+			_scannerCounter = 10;
+			_objectsPtrTable[kObjPtrConrad]->specialData[1][18] -= _objectsPtrTable[kObjPtrScan]->specialData[1][18];
+			if (_objectsPtrTable[kObjPtrConrad]->specialData[1][18] <= 0) {
+				_objectsPtrTable[kObjPtrConrad]->specialData[1][18] = 1;
+				while (_objectsPtrTable[kObjPtrScan]->specialData[1][21] != 2 && _objectsPtrTable[kObjPtrScan]->specialData[1][22] != 0xFFFF) {
+					GameObject *o = _objectsPtrTable[kObjPtrScan];
+					while (o->o_next) {
+						o = o->o_next;
+					}
+					o->o_next = _objectsPtrTable[kObjPtrScan];
+					_objectsPtrTable[kObjPtrInventaire]->o_child->o_next->o_next->o_next->o_next->o_child = _objectsPtrTable[kObjPtrScan]->o_next;
+					_objectsPtrTable[kObjPtrScan]->o_next = 0;
+					_objectsPtrTable[kObjPtrScan] = _objectsPtrTable[kObjPtrInventaire]->o_child->o_next->o_next->o_next->o_next->o_child;
+				}
+				if (_objectsPtrTable[kObjPtrScan]) {
+					_varsTable[24] = _objectsPtrTable[kObjPtrScan]->objKey;
+					if (getMessage(_objectsPtrTable[kObjPtrScan]->objKey, 0, &_tmpMsg)) {
+						_objectsPtrTable[kObjPtrScan]->text = (const char *)_tmpMsg.data;
+					}
+				}
+			}
+		}
+	}
+}
+
+void Game::drawScanner() {
+	if (_level == 6 || _level == 12) {
+		return;
+	}
+	if (_objectsPtrTable[kObjPtrConrad]->specialData[1][18] > 1) {
+		int16_t objKey = _varsTable[16];
+		if (objKey != 0) {
+			GameObject *o = getObjectByKey(objKey);
+			if (o) {
+				static const int kTypes[] = {
+					1, 2, 4, 8, 16, 32, 0, 128, // 100
+					256, 512, 1024, 2048, 4096, 8192, 16384, 32768, // 108
+					65536, 131072, 262144, 524288, 1048576, 2097152, 4194304, 8388608, // 116
+					0, 33554432, 134217728, 268435456, 536870912, 0, 67108864, 16777216, // 124
+					0, 64, -1 // 132
+				};
+				memset(&_tmpMsg, 0, sizeof(_tmpMsg));
+				for (int i = 0; kTypes[i] != -1; ++i) {
+					if (o->specialData[1][22] == kTypes[i]) {
+						getMessage(_worldObjectKey, 100 + i, &_tmpMsg);
+						break;
+					}
+				}
+				const int x = _res._userConfig.iconLrScanX;
+				const int y = _res._userConfig.iconLrScanY;
+				drawSprite(x, y, _scannerBackgroundKey);
+				if (_tmpMsg.data) {
+					drawString(x + _tmpMsg.xPos, y + _tmpMsg.yPos, (const char *)_tmpMsg.data, _tmpMsg.font, 0);
+					if (o->specialData[1][18] == 0xFFFF) {
+						if (getMessage(_worldObjectKey, 93, &_tmpMsg)) {
+							drawString(x + _tmpMsg.xPos, y + _tmpMsg.yPos, (const char *)_tmpMsg.data, _tmpMsg.font, 0);
+						}
+					} else if (o->specialData[1][18] > 0) {
+						if (getMessage(_worldObjectKey, 91, &_tmpMsg)) {
+							drawString(x + _tmpMsg.xPos, y + _tmpMsg.yPos, (const char *)_tmpMsg.data, _tmpMsg.font, 0);
+						}
+						int percent = 100;
+						if (o->specialData[1][22] != 64) {
+							percent = CLIP(o->specialData[1][18] * 100 / o->specialData[0][18], 1, 100);
+						}
+						char buf[64];
+						snprintf(buf, sizeof(buf), "%3d%%", percent);
+						if (getMessage(_worldObjectKey, 92, &_tmpMsg)) {
+							drawString(x + _tmpMsg.xPos - 26, y + _tmpMsg.yPos + 12, (const char *)_tmpMsg.data, _tmpMsg.font, 0);
+						}
+                                        }
 				}
 			}
 		}

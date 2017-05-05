@@ -421,7 +421,6 @@ struct Game {
 	GameObject *_updateGlobalPosRefObject;
 	int _collidingObjectsCount;
 	GameObject *_collidingObjectsTable[kCollidingObjectsTableSize];
-	int _object10Counter;
 	int32_t _conradEnvAni;
 	int _boxItemCount;
 	GameObject *_boxItemObj;
@@ -448,6 +447,8 @@ struct Game {
 	SpriteImage _infoPanelSpr;
 	int _inventoryBackgroundKey;
 	int _inventoryCursor[4];
+	int16_t _scannerBackgroundKey;
+	int _scannerCounter;
 
 	PlayerInput inp;
 	int _inputsCount;
@@ -627,6 +628,9 @@ struct Game {
 	bool findRoom(const CollisionSlot *colSlot, int room1, int room2);
 	bool testObjectsRoom(int16_t obj1Key, int16_t obj2Key);
 	void readInputEvents();
+	void setupScannerObjects();
+	void updateScanner();
+	void drawScanner();
 	void setupInventoryObjects();
 	void saveInventoryObjects();
 	void loadInventoryObjects();

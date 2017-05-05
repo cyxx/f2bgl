@@ -88,6 +88,8 @@ struct ResUserConfig {
 	int subtitles;
 	int iconLrInvX;
 	int iconLrInvY;
+	int iconLrScanX;
+	int iconLrScanY;
 	int skillLevel;
 	int soundVolume;
 	int musicVolume;
