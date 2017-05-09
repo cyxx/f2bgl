@@ -125,6 +125,7 @@ struct GameStub_F2B : GameStub {
 	void setState(int state) {
 		// release
 		if (_state == kStateCutscene) {
+			_render->resizeOverlay(0, 0);
 			_render->setPalette(_g->_screenPalette, 0, 256);
 		}
 		// init
@@ -133,17 +134,14 @@ struct GameStub_F2B : GameStub {
 			_g->_cut.load(_g->_cut._numToPlay);
 			break;
 		case kStateGame:
-			_render->resizeOverlay(0, 0);
 			_g->updatePalette();
 			break;
 		case kStateInventory:
-			_render->resizeOverlay(0, 0);
 			if (!_g->initInventory()) {
 				return;
 			}
 			break;
 		case kStateBox:
-			_render->resizeOverlay(0, 0);
 			_g->initBox();
 			break;
 		case kStateMenu:
