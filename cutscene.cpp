@@ -76,35 +76,25 @@ void Cutscene::updatePalette(int palType, int colorsCount, const uint8_t *p) {
 static int decodeHuffman(const uint8_t *src, int srcSize, uint8_t *dst) {
 	const uint8_t *dstStart = dst;
 	const uint8_t *srcEnd = src + srcSize;
-	uint8_t data, code = 0;
-	int codeCount = 1;
 	uint8_t buf[15];
 	memcpy(buf, src, 15); src += 15;
 	while (src < srcEnd) {
-		if (codeCount == 1) {
+		uint8_t code = *src++;
+		if ((code & 0xF0) == 0xF0) {
+			const uint8_t data = code << 4;
 			code = *src++;
-			if ((code & 0xF0) == 0xF0) {
-				data = code << 4;
-				code = *src++;
-				data += code >> 4;
-			} else {
-				data = buf[code >> 4];
-			}
-			*dst++ = data;
-			--codeCount;
+			*dst++ = data + (code >> 4);
 		} else {
-			if ((code &= 0xF) == 0xF) {
-				*dst++ = *src++;
-				++codeCount;
-			} else {
-				code = buf[code];
-				*dst++ = code;
-				++codeCount;
-			}
+			*dst++ = buf[code >> 4];
 		}
-	}
-	if (codeCount != 1 && (code &= 0xF) != 0xF) {
-		*dst++ = buf[code];
+		if ((code &= 0xF) == 0xF) {
+			if (src < srcEnd) {
+				*dst++ = *src++;
+			}
+		} else {
+			code = buf[code];
+			*dst++ = code;
+		}
 	}
 	return dst - dstStart;
 }
