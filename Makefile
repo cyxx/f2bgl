@@ -4,7 +4,7 @@ SDL_LIBS = `sdl2-config --libs`
 
 #DEFINES = -DF2B_DEBUG
 
-LIBS = $(SDL_LIBS) -lGL -lz -lWildMidi
+LIBS = $(SDL_LIBS) -lGL -lz -lWildMidi -lm
 
 CXXFLAGS += -Wall -Wno-sign-compare
 

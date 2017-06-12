@@ -257,16 +257,12 @@ void Resource::loadTrigo() {
 	} else {
 		for (int i = 0; i < 1024; ++i) {
 			const double a = i * 2 * M_PI / 1024.;
-			g_sin[i] = (int)(cos(a) * 32767);
-			g_cos[i] = (int)(sin(a) * 32767);
+			g_sin[i] = (int32_t)(sin(a) * 32767);
+			g_cos[i] = (int32_t)(cos(a) * 32767);
 		}
-		int count = 0;
 		g_atan[0] = 0;
 		for (int i = 1; i < 256; ++i) {
-			g_atan[i] = (int)(atan(i / 256.) * (1024. / 2) / M_PI);
-			if (g_atan[i - 1] != g_atan[i]) {
-				++count;
-			}
+			g_atan[i] = (int32_t)(atan(i / 256.) * (1024. / 2) / M_PI);
 		}
 	}
 }
