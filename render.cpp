@@ -550,9 +550,9 @@ void Render::setPalette(const uint8_t *pal, int offset, int count) {
 			r = g = b = grey;
 		}
 		if (_paletteRgbScale != 256) {
-			r = (r * _paletteRgbScale) >> 8;
-			g = (g * _paletteRgbScale) >> 8;
-			b = (b * _paletteRgbScale) >> 8;
+			r = CLIP((r * _paletteRgbScale) >> 8, 0, 255);
+			g = CLIP((g * _paletteRgbScale) >> 8, 0, 255);
+			b = CLIP((b * _paletteRgbScale) >> 8, 0, 255);
 		}
 		const int j = offset + i;
 		_clut[3 * j]     = r;
