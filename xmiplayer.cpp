@@ -14,7 +14,7 @@ static void writeConfigurationFile(File *fp, Resource *res) {
 			fileWriteLine(fp, "%3d\t%s.pat\n", i, res->_gusPatches[i]);
 		}
 	}
-	fileWriteLine(fp, "\ndrum 0\n\n");
+	fileWriteLine(fp, "\ndrumset 0\n\n");
 	for (int i = 128; i < 256; ++i) {
 		if (res->_gusPatches[i][0]) {
 			fileWriteLine(fp, "%3d\t%s.pat\n", i - 128, res->_gusPatches[i]);
