@@ -387,7 +387,7 @@ struct Game {
 	Render *_render;
 	GameParams _params;
 	SpriteCache _spriteCache;
-	Random _rnd;
+	Random _rnd, _rnd2;
 	int _cheats;
 
 	DrawBuffer _drawCharBuf;

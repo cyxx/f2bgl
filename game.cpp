@@ -972,7 +972,7 @@ bool Game::updateSceneAnimationsKeyFrame(int rnd, int index, SceneAnimation *sa,
 }
 
 void Game::updateSceneAnimations() {
-	const int rnd = _rnd.getRandomNumber();
+	const int rnd = _rnd2.getRandomNumber();
 	for (int i = 2; i < _sceneAnimationsCount2 + 2; ++i) {
 		_sceneAnimationsTable[i].type &= ~0x40;
 	}
