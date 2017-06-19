@@ -687,6 +687,9 @@ void Resource::loadDelphineINI() {
 				const char *param = parameters[i].name;
 				if (strncmp(param, p, strlen(param)) == 0) {
 					const char *q = p + strlen(param);
+					if (*q != ' ') {
+						continue;
+					}
 					while (q < next && *q == ' ') {
 						++q;
 					}
