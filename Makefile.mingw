@@ -21,7 +21,7 @@ DEPS = $(SRCS:.cpp=.d)
 ICON = dists/win32/resource.rc
 
 f2bgl.exe: $(OBJS) $(ICON).o
-	$(CXX) $(LDFLAGS) -o $@ $^ -static-libgcc -static-libstdc++ $(LIBS) -Wl,-Bstatic -lz
+	$(CXX) $(LDFLAGS) -o $@ $^ -static-libgcc -static-libstdc++ $(LIBS) -Wl,-Bstatic,--subsystem=console -lz
 	$(STRIP) $@
 	upx -9 $@
 
