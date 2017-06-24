@@ -111,6 +111,11 @@ enum {
 
 struct CollisionSlot;
 
+enum {
+	kCellMapDrawGround = 1 << 0,
+	kCellMapDrawWall = 1 << 1,
+};
+
 struct CellMap {
 	int16_t texture[2];
 	int8_t data[2];
@@ -122,7 +127,7 @@ struct CellMap {
 	bool isDoor;
 	int rayCastCounter;
 	bool fixed;
-	bool visible;
+	int draw;
 	int16_t north, south, west, east;
 	CollisionSlot *colSlot;
 };

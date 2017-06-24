@@ -3205,9 +3205,6 @@ static void initVerticesGround(Vertex *quad, int x, int z) {
 bool Game::redrawSceneGridCell(int x, int z, CellMap *cell) {
 	Vertex quad[4];
 	initVerticesGround(quad, x, z);
-	if (!_render->isQuadInFrustum(quad, 4)) {
-		return false;
-	}
 	if (cell->type != 20 && cell->type != 32) {
 		const int index = _sceneGroundMap[x][z];
 		if (index >= 0 && index < 512) {
@@ -3221,7 +3218,7 @@ bool Game::redrawSceneGridCell(int x, int z, CellMap *cell) {
 			}
 		}
 	}
-	if (cell->type > 0) {
+	if (cell->type > 0 && (cell->draw & kCellMapDrawWall) != 0) {
 		static const int kWallHeight = kGroundY * 4;
 		int dx = 0, dz = 0;
 		switch (cell->type) {
@@ -3336,7 +3333,7 @@ void Game::redrawSceneGroundWalls() {
 	_decorTexture = 0;
 	for (int x = 0; x < kMapSizeX; ++x) {
 		for (int z = 0; z < kMapSizeZ; ++z) {
-			_sceneCellMap[x][z].visible = false;
+			_sceneCellMap[x][z].draw = 0;
 		}
 	}
 	rayCastWall(_xPosObserver << 1, _zPosObserver << 1);
@@ -3361,7 +3358,7 @@ void Game::redrawSceneGroundWalls() {
 	for (int x = 0; x < kMapSizeX; ++x) {
 		for (int z = 0; z < kMapSizeZ; ++z) {
 			CellMap *cell = &_sceneCellMap[x][z];
-			if (cell->visible) {
+			if (cell->draw != 0) {
 				redrawSceneGridCell(x, z, cell);
 			}
 		}

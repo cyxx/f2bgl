@@ -16,6 +16,7 @@ static int _xStepDistance, _zStepDistance;
 static int _resXRayX, _resZRayX, _resXRayZ, _resZRayZ;
 static int _zRayStepX, _zRayStepZ, _xRayStepX, _xRayStepZ;
 static int _xRayMask, _zRayMask;
+static bool _xTransparent, _zTransparent;
 
 void Game::rayCastInit(int sx) {
 	const int xb = ((sx - (kScreenWidth / 2)) << 1) - 1;
@@ -363,6 +364,7 @@ enum {
 };
 
 static int testRayX(int sx, CellMap *cell, int x, int z, int ex, int ez, int type) {
+	_xTransparent = false;
 	if (type == kRayCastWall) {
 		switch (cell->type) {
 		case 10:
@@ -388,36 +390,44 @@ static int testRayX(int sx, CellMap *cell, int x, int z, int ex, int ez, int typ
 			}
 			return 0;
 		case 16:
-//			if (get2dIntersection(cell->data[0], ex, ez, _zRayStepX, _zRayStepZ, &x, &z)) {
-//				int num = (z >> kFracShift) & ((kWallWidth << 2) - 1);
-//				if (num > cell->data[1]) {
-//					return 0;
-//				}
-//			}
+			if (get2dIntersection(cell->data[0], ex, ez, _zRayStepX, _zRayStepZ, &x, &z)) {
+				int num = (z >> kFracShift) & ((kWallWidth << 2) - 1);
+				if (num > cell->data[1]) {
+					return 0;
+				}
+				_xTransparent = true;
+				return 0;
+			}
 			return 0;
 		case 17:
-//			if (get2dIntersection(cell->data[0], ex, ez, _zRayStepX, _zRayStepZ, &x, &z)) {
-//				int num = (z >> kFracShift) & ((kWallWidth << 2) - 1);
-//				if (num < 63 - cell->data[1]) {
-//					return 0;
-//				}
-//			}
+			if (get2dIntersection(cell->data[0], ex, ez, _zRayStepX, _zRayStepZ, &x, &z)) {
+				int num = (z >> kFracShift) & ((kWallWidth << 2) - 1);
+				if (num < 63 - cell->data[1]) {
+					return 0;
+				}
+				_xTransparent = true;
+				return 0;
+			}
 			return 0;
 		case 18:
-//			if (get2dIntersection(cell->data[0], ez, ex, _xRayStepZ, _xRayStepX, &z, &x)) {
-//				int num = (x >> kFracShift) & ((kWallWidth << 2) - 1);
-//				if (num > cell->data[1]) {
-//					return 0;
-//				}
-//			}
+			if (get2dIntersection(cell->data[0], ez, ex, _xRayStepZ, _xRayStepX, &z, &x)) {
+				int num = (x >> kFracShift) & ((kWallWidth << 2) - 1);
+				if (num > cell->data[1]) {
+					return 0;
+				}
+				_xTransparent = true;
+				return 0;
+			}
 			return 0;
 		case 19:
-//			if (get2dIntersection(cell->data[0], ez, ex, _xRayStepZ, _xRayStepX, &z, &x)) {
-//				int num = (x >> kFracShift) & ((kWallWidth << 2) - 1);
-//				if (num < 63 - cell->data[1]) {
-//					return 0;
-//				}
-//			}
+			if (get2dIntersection(cell->data[0], ez, ex, _xRayStepZ, _xRayStepX, &z, &x)) {
+				int num = (x >> kFracShift) & ((kWallWidth << 2) - 1);
+				if (num < 63 - cell->data[1]) {
+					return 0;
+				}
+				_xTransparent = true;
+				return 0;
+			}
 			return 0;
 		}
 	}
@@ -497,6 +507,7 @@ static int testRayX(int sx, CellMap *cell, int x, int z, int ex, int ez, int typ
 }
 
 static int testRayZ(int sx, CellMap *cell, int x, int z, int ex, int ez, int type) {
+	_zTransparent = false;
 	if (type == kRayCastWall) {
 		switch (cell->type) {
 		case 10:
@@ -522,36 +533,44 @@ static int testRayZ(int sx, CellMap *cell, int x, int z, int ex, int ez, int typ
 			}
 			return 0;
 		case 16:
-//			if (get2dIntersection(cell->data[0], ex, ez, _zRayStepX, _zRayStepZ, &x, &z)) {
-//				int num = (z >> kFracShift) & ((kWallWidth << 2) - 1);
-//				if (num > cell->data[1]) {
-//					return 0;
-//				}
-//			}
+			if (get2dIntersection(cell->data[0], ex, ez, _zRayStepX, _zRayStepZ, &x, &z)) {
+				int num = (z >> kFracShift) & ((kWallWidth << 2) - 1);
+				if (num > cell->data[1]) {
+					return 0;
+				}
+				_zTransparent = true;
+				return 0;
+			}
 			return 0;
 		case 17:
-//			if (get2dIntersection(cell->data[0], ex, ez, _zRayStepX, _zRayStepZ, &x, &z)) {
-//				int num = (z >> kFracShift) & ((kWallWidth << 2) - 1);
-//				if (num < 63 - cell->data[1]) {
-//					return 0;
-//				}
-//			}
+			if (get2dIntersection(cell->data[0], ex, ez, _zRayStepX, _zRayStepZ, &x, &z)) {
+				int num = (z >> kFracShift) & ((kWallWidth << 2) - 1);
+				if (num < 63 - cell->data[1]) {
+					return 0;
+				}
+				_zTransparent = true;
+				return 0;
+			}
 			return 0;
 		case 18:
-//			if (get2dIntersection(cell->data[0], ez, ex, _xRayStepZ, _xRayStepX, &z, &x)) {
-//				int num = (x >> kFracShift) & ((kWallWidth << 2) - 1);
-//				if (num > cell->data[1]) {
-//					return 0;
-//				}
-//			}
+			if (get2dIntersection(cell->data[0], ez, ex, _xRayStepZ, _xRayStepX, &z, &x)) {
+				int num = (x >> kFracShift) & ((kWallWidth << 2) - 1);
+				if (num > cell->data[1]) {
+					return 0;
+				}
+				_zTransparent = true;
+				return 0;
+			}
 			return 0;
 		case 19:
-//			if (get2dIntersection(cell->data[0], ez, ex, _xRayStepZ, _xRayStepX, &z, &x)) {
-//				int num = (x >> kFracShift) & ((kWallWidth << 2) - 1);
-//				if (num < 63 - cell->data[1]) {
-//					return 0;
-//				}
-//			}
+			if (get2dIntersection(cell->data[0], ez, ex, _xRayStepZ, _xRayStepX, &z, &x)) {
+				int num = (x >> kFracShift) & ((kWallWidth << 2) - 1);
+				if (num < 63 - cell->data[1]) {
+					return 0;
+				}
+				_zTransparent = true;
+				return 0;
+			}
 			return 0;
 		}
 	}
@@ -720,7 +739,7 @@ int Game::rayCast(GameObject *o, int xStartRay, RayCastCallbackType callback, in
 			}
 			CellMap *cellMap = getCellMap(rayxex, rayxez);
 			if (type == kRayCastWall) {
-				cellMap->visible = true;
+				cellMap->draw |= kCellMapDrawGround;
 				if (cellMap->type == 20) {
 					_decorTexture = cellMap->texture[0];
 				}
@@ -729,6 +748,9 @@ int Game::rayCast(GameObject *o, int xStartRay, RayCastCallbackType callback, in
 				if (cellMap->type == 1) {
 					const int num = (_dzRay > 0) ? cellMap->south : cellMap->north;
 					if (num) {
+						if (type == kRayCastWall) {
+							cellMap->draw |= kCellMapDrawWall;
+						}
 						xray = 1;
 						break;
 					}
@@ -745,8 +767,16 @@ int Game::rayCast(GameObject *o, int xStartRay, RayCastCallbackType callback, in
 						cellMap->rayCastCounter = _rayCastCounter;
 					}
 					if ((type == kRayCastCamera) || testRayX(xStartRay, cellMap, _resXRayX, _resZRayX, rayxex, rayxez, type)) {
+						if (type == kRayCastWall) {
+							cellMap->draw |= kCellMapDrawWall;
+						}
 						xray = 2;
 						break;
+					}
+					if (_xTransparent) {
+						if (type == kRayCastWall) {
+							cellMap->draw |= kCellMapDrawWall;
+						}
 					}
 				}
 			} else {
@@ -783,7 +813,7 @@ int Game::rayCast(GameObject *o, int xStartRay, RayCastCallbackType callback, in
 			}
 			CellMap *cellMap = getCellMap(rayzex, rayzez);
 			if (type == kRayCastWall) {
-				cellMap->visible = true;
+				cellMap->draw |= kCellMapDrawGround;
 				if (cellMap->type == 20) {
 					_decorTexture = cellMap->texture[0];
 				}
@@ -792,6 +822,9 @@ int Game::rayCast(GameObject *o, int xStartRay, RayCastCallbackType callback, in
 				if (cellMap->type == 1) {
 					const int num = (_dxRay > 0) ? cellMap->west : cellMap->east;
 					if (num) {
+						if (type == kRayCastWall) {
+							cellMap->draw |= kCellMapDrawWall;
+						}
 						zray = 1;
 						break;
 					}
@@ -808,8 +841,16 @@ int Game::rayCast(GameObject *o, int xStartRay, RayCastCallbackType callback, in
 						cellMap->rayCastCounter = _rayCastCounter;
 					}
 					if ((type == kRayCastCamera) || testRayZ(xStartRay, cellMap, _resXRayZ, _resZRayZ, rayzex, rayzez, type)) {
+						if (type == kRayCastWall) {
+							cellMap->draw |= kCellMapDrawWall;
+						}
 						zray = 2;
 						break;
+					}
+					if (_zTransparent) {
+						if (type == kRayCastWall) {
+							cellMap->draw |= kCellMapDrawWall;
+						}
 					}
 				}
 			} else {
@@ -836,9 +877,6 @@ int Game::rayCast(GameObject *o, int xStartRay, RayCastCallbackType callback, in
 			zRayDistance += _zStepDistance;
 		}
 	}
-	if (type == kRayCastWall) {
-		return 0;
-	}
 	int rrzx;
 	if (xray <= 0) {
 		rrzx = 0x7FFFFFFF;
@@ -858,6 +896,20 @@ int Game::rayCast(GameObject *o, int xStartRay, RayCastCallbackType callback, in
 		rrzz = fixedMul(_yInvSinObserver, x, kFracShift) + fixedMul(_yInvCosObserver, z, kFracShift);
 	} else {
 		rrzz = zRayDistance - fixedInt(1, kRayShift);
+	}
+	if (type == kRayCastWall) {
+		if (rrzx < rrzz) {
+			rrzx >>= kFracShift;
+			if (rrzx < -64 || rrzx >= 4096) {
+				rrzx = -64;
+			}
+		} else {
+			rrzz >>= kFracShift;
+			if (rrzz < -64 || rrzz >= 4096) {
+				rrzz = -64;
+			}
+		}
+		return 0;
 	}
 	if (rrzx < rrzz) {
 		o->xPos = _resXRayX >> (kRayShift - 19);
@@ -902,7 +954,7 @@ void Game::rayCastWall(int x, int z) {
 	}
 	if (rayxex < kMapSizeX && rayxez < kMapSizeZ) {
 		CellMap *cellMap = getCellMap(rayxex, rayxez);
-		cellMap->visible = true;
+		cellMap->draw |= kCellMapDrawGround;
 		if (cellMap->colSlot && cellMap->rayCastCounter != _rayCastCounter) {
 			switch (cellMap->type) {
 			case 0:
@@ -913,8 +965,7 @@ void Game::rayCastWall(int x, int z) {
 			cellMap->rayCastCounter = _rayCastCounter;
 		}
 	}
-	static const int delta = kScreenWidth / 4;
-	for (int x = -delta; x < kScreenWidth + delta; ++x) {
+	for (int x = 0; x < kScreenWidth; ++x) {
 		rayCast(0, x, 0, kRayCastWall);
 	}
 }
