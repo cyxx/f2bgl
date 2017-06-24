@@ -65,9 +65,6 @@ struct Render {
 	void beginObjectDraw(int x, int y, int z, int ry, int shift = 0);
 	void endObjectDraw();
 
-	void updateFrustumPlanes();
-	bool isQuadInFrustum(const Vertex *vertices, int verticesCount);
-
 	void setOverlayBlendColor(int r, int g, int b);
 	void resizeOverlay(int w, int h);
 	void copyToOverlay(int x, int y, const uint8_t *data, int pitch, int w, int h, int transparentColor = -1);

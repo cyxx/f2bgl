@@ -31,25 +31,6 @@ struct Vertex4f {
 	}
 };
 
-struct Matrix4f {
-	GLfloat t[16];
-
-	void identity() {
-		memset(t, 0, sizeof(t));
-		for (int i = 0; i < 3; ++i) {
-			t[i * 4 + i] = 1.;
-		}
-	}
-
-	static void mul(const Matrix4f& a, const Matrix4f& b, Matrix4f &res) {
-		for (int i = 0; i < 16; ++i) {
-			const GLfloat *va = &a.t[i & 12];
-			const GLfloat *vb = &b.t[i &  3];
-			res.t[i] = va[0] * vb[0] + va[1] * vb[4] + va[2] * vb[8] + va[3] * vb[12];
-		}
-	}
-};
-
 #ifdef USE_GLES
 
 #define glOrtho glOrthof
@@ -169,7 +150,6 @@ static void emitPoint3f(const Vertex *pos) {
 static TextureCache _textureCache;
 static Vertex3f _cameraPos;
 static GLfloat _cameraPitch;
-static Vertex4f _frustum[6];
 
 Render::Render() {
 	memset(_clut, 0, sizeof(_clut));
@@ -475,47 +455,6 @@ void Render::endObjectDraw() {
 	glPopMatrix();
 }
 
-void Render::updateFrustumPlanes() {
-	Matrix4f clip, proj, modl;
-	glGetFloatv(GL_PROJECTION_MATRIX, proj.t);
-	glGetFloatv(GL_MODELVIEW_MATRIX, modl.t);
-	Matrix4f::mul(modl, proj, clip);
-	// extract right,left,top,bottom,far,near planes
-	const GLfloat *v = &clip.t[0];
-	int i = 0;
-	while (i < 6) {
-		_frustum[i].x = clip.t[3]  - v[0];
-		_frustum[i].y = clip.t[7]  - v[4];
-		_frustum[i].z = clip.t[11] - v[8];
-		_frustum[i].w = clip.t[15] - v[12];
-		_frustum[i].normalize();
-		++i;
-		_frustum[i].x = clip.t[3]  + v[0];
-		_frustum[i].y = clip.t[7]  + v[4];
-		_frustum[i].z = clip.t[11] + v[8];
-		_frustum[i].w = clip.t[15] + v[12];
-		_frustum[i].normalize();
-		++i;
-		++v;
-	}
-}
-
-bool Render::isQuadInFrustum(const Vertex *vertices, int verticesCount) {
-	assert(verticesCount == 4);
-	bool ret = false;
-	while (verticesCount-- && !ret) {
-		ret = true;
-		for (int i = 0; i < 6; ++i) {
-			if (_frustum[i].x * vertices->x + _frustum[i].y * vertices->y + _frustum[i].z * vertices->z + _frustum[i].w <= 0) {
-				ret = false;
-				break;
-			}
-		}
-		++vertices;
-	}
-	return ret;
-}
-
 void Render::setOverlayBlendColor(int r, int g, int b) {
 	_overlay.r = r;
 	_overlay.g = g;
@@ -626,7 +565,6 @@ void Render::setupProjection(int mode) {
 	glScalef(1., -.5, -1.);
 	glRotatef(_cameraPitch, 0., 1., 0.);
 	glTranslatef(-_cameraPos.x, _cameraPos.y, -_cameraPos.z);
-	updateFrustumPlanes();
 }
 
 void Render::drawOverlay() {
