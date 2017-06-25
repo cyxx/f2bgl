@@ -54,8 +54,8 @@ struct Sound {
 	void stopVoice(int16_t objKey);
 	bool isVoicePlaying(int16_t objKey) const;
 
-	void playMidi(int16_t objKey, int index);
-	void stopMidi(int16_t objKey, int index);
+	void playMidi(int16_t objKey, int16_t sndKey);
+	void stopMidi(int16_t objKey, int16_t sndKey);
 
 	int _sfxVolume;
 	int _sfxPan;

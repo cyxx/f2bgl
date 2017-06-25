@@ -13,7 +13,8 @@ static const char *kLevels[] = { "1", "2a", "2b", "2c", "3", "4a", "4b", "4c", "
 // 21 - first version
 // 22 - persists GameObject.text
 // 23 - remove Game._sceneCameraPosTable (read-only data)
-static int kSaveVersion = 23;
+// 24 - lookup _musicKey index
+static int kSaveVersion = 24;
 
 enum {
 	kModeSave,
@@ -477,6 +478,12 @@ static void persistMusic(File *fp, Game &g) {
 	pad<M>(fp, sizeof(uint32_t)); // _soundMode
 	persist<M>(fp, g._snd._musicMode);
 	persist<M>(fp, g._snd._musicKey);
+	if (_saveVersion <= 23 && M == kModeLoad) {
+		const int16_t sndKey = g._snd._musicKey;
+		if (sndKey >= 0 && sndKey < kMusicKeyPathsTableSize) {
+			g._snd._musicKey = g._res._musicKeysTable[sndKey];
+		}
+	}
 }
 
 template <int M>

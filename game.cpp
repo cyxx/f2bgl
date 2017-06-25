@@ -1196,6 +1196,9 @@ void Game::initLevel(bool keepInventoryObjects) {
 	for (int i = 0; i < kSoundKeyPathsTableSize; ++i) {
 		_res._sndKeysTable[i] = _res.getKeyFromPath(_res._soundKeyPathsTable[i]);
 	}
+	for (int i = 0; i < kMusicKeyPathsTableSize; ++i) {
+		_res._musicKeysTable[i] = _res.getKeyFromPath(_res._musicKeyPathsTable[i]);
+	}
 	setupObjects();
 	if (keepInventoryObjects) {
 		loadInventoryObjects();
@@ -1254,19 +1257,19 @@ void Game::playMusic(int mode) {
 	int16_t currentKey = _snd._musicKey;
 	if (mode == 1) {
 		const int num = _roomsTable[_objectsPtrTable[kObjPtrConrad]->room].o->customData[mode];
-		_snd._musicKey = _res._levelDescriptionsTable[_level].musicKeys[num];
+		_snd._musicKey = _res._musicKeysTable[_res._levelDescriptionsTable[_level].musicKeys[num]];
 	} else if (mode == 3) {
 		if (_objectsPtrTable[kObjPtrMusic]->specialData[1][21] == 67108864) {
 			switch (_objectsPtrTable[kObjPtrMusic]->specialData[1][22]) {
 			case 1:
-				_snd._musicKey = _res._levelDescriptionsTable[_level].musicKeys[10];
+				_snd._musicKey = _res._musicKeysTable[_res._levelDescriptionsTable[_level].musicKeys[10]];
 				break;
 			case 2:
-				_snd._musicKey = _res._levelDescriptionsTable[_level].musicKeys[11];
+				_snd._musicKey = _res._musicKeysTable[_res._levelDescriptionsTable[_level].musicKeys[11]];
 				break;
 			}
 		} else if (_objectsPtrTable[kObjPtrMusic]->specialData[1][21] == 0x4000) {
-			_snd._musicKey = _res._levelDescriptionsTable[_level].musicKeys[12];
+			_snd._musicKey = _res._musicKeysTable[_res._levelDescriptionsTable[_level].musicKeys[12]];
 		} else {
 			switch (_objectsPtrTable[kObjPtrMusic]->specialData[1][22]) {
 			case 0:
@@ -1279,17 +1282,17 @@ void Game::playMusic(int mode) {
 			case 16384:
 				if (_level != 8 && _level != 9) {
 					if (_ticks & 1) {
-						_snd._musicKey = _res._levelDescriptionsTable[_level].musicKeys[7];
+						_snd._musicKey = _res._musicKeysTable[_res._levelDescriptionsTable[_level].musicKeys[7]];
 					} else {
-						_snd._musicKey = _res._levelDescriptionsTable[_level].musicKeys[8];
+						_snd._musicKey = _res._musicKeysTable[_res._levelDescriptionsTable[_level].musicKeys[8]];
 					}
 				}
 				break;
 			case 4:
-				_snd._musicKey = _res._levelDescriptionsTable[_level].musicKeys[9];
+				_snd._musicKey = _res._musicKeysTable[_res._levelDescriptionsTable[_level].musicKeys[9]];
 				break;
 			case 1073741824:
-				_snd._musicKey = _res._levelDescriptionsTable[_level].musicKeys[12];
+				_snd._musicKey = _res._musicKeysTable[_res._levelDescriptionsTable[_level].musicKeys[12]];
 				break;
 			case 8:
 				break;
@@ -1302,21 +1305,21 @@ void Game::playMusic(int mode) {
 				}
 				if (_level == 2 || _level == 3 || _level == 4 || _level == 6 || _level == 7 || _level == 9 || _level == 11) {
 					if (_objectsPtrTable[kObjPtrMusic]->specialData[1][22] == 2097152) {
-						_snd._musicKey = _res._levelDescriptionsTable[_level].musicKeys[6];
+						_snd._musicKey = _res._musicKeysTable[_res._levelDescriptionsTable[_level].musicKeys[6]];
 					}
 				} else if (_level != 9) {
 					if (_ticks & 2) {
-						_snd._musicKey = _res._levelDescriptionsTable[_level].musicKeys[4];
+						_snd._musicKey = _res._musicKeysTable[_res._levelDescriptionsTable[_level].musicKeys[4]];
 					} else {
-						_snd._musicKey = _res._levelDescriptionsTable[_level].musicKeys[5];
+						_snd._musicKey = _res._musicKeysTable[_res._levelDescriptionsTable[_level].musicKeys[5]];
 					}
 				} else {
 					if (_ticks & 2) {
-						_snd._musicKey = _res._levelDescriptionsTable[_level].musicKeys[4];
+						_snd._musicKey = _res._musicKeysTable[_res._levelDescriptionsTable[_level].musicKeys[4]];
 					} else if ((_ticks & 3) == 3) {
-						_snd._musicKey = _res._levelDescriptionsTable[_level].musicKeys[5];
+						_snd._musicKey = _res._musicKeysTable[_res._levelDescriptionsTable[_level].musicKeys[5]];
 					} else {
-						_snd._musicKey = _res._levelDescriptionsTable[_level].musicKeys[6];
+						_snd._musicKey = _res._musicKeysTable[_res._levelDescriptionsTable[_level].musicKeys[6]];
 					}
 				}
 				break;
@@ -1331,14 +1334,14 @@ void Game::playMusic(int mode) {
 			case 4096:
 			case 131072:
 				if (_level != 8 && _level != 9) {
-					_snd._musicKey = _res._levelDescriptionsTable[_level].musicKeys[5];
+					_snd._musicKey = _res._musicKeysTable[_res._levelDescriptionsTable[_level].musicKeys[5]];
 				}
 				break; 
 			case 65536:
 				break;
 			default:
 				if (_level != 8 && _level != 9) {
-					_snd._musicKey = _res._levelDescriptionsTable[_level].musicKeys[5];
+					_snd._musicKey = _res._musicKeysTable[_res._levelDescriptionsTable[_level].musicKeys[5]];
 				}
 				break;
 			}

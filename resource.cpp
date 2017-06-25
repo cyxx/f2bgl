@@ -29,6 +29,7 @@ Resource::Resource() {
 	memset(_soundKeyPathsTable, 0, sizeof(_soundKeyPathsTable));
 	memset(_sndKeysTable, 0, sizeof(_sndKeysTable));
 	memset(_musicKeyPathsTable, 0, sizeof(_musicKeyPathsTable));
+	memset(_musicKeysTable, 0, sizeof(_musicKeysTable));
 	_demoInputDataSize = 0;
 	_demoInputData = 0;
 	memset(&_userConfig, 0, sizeof(_userConfig));

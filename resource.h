@@ -120,6 +120,7 @@ struct Resource {
 	char _soundKeyPathsTable[kSoundKeyPathsTableSize][kKeyPathNameLength];
 	int16_t _sndKeysTable[kSoundKeyPathsTableSize];
 	char _musicKeyPathsTable[kMusicKeyPathsTableSize][kKeyPathNameLength];
+	int16_t _musicKeysTable[kMusicKeyPathsTableSize];
 	int _demoInputDataSize;
 	ResDemoInput *_demoInputData;
 	ResUserConfig _userConfig;
