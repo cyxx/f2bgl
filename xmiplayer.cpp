@@ -45,6 +45,10 @@ struct XmiPlayerImpl {
 		}
 		const int ret = WildMidi_Init(path, mixingRate, WM_MO_ENHANCED_RESAMPLING);
 		debug(kDebug_XMIDI, "WildMidi_Init() path '%s' ret %d", path, ret);
+		if (ret != 0) {
+			const char *err = WildMidi_GetError();
+			warning("Error initializing WildMIDI ret %d '%s'", ret, err);
+		}
 	}
 
 	void setVolume(int volume) {
