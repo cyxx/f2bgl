@@ -143,6 +143,7 @@ struct Resource {
 	const uint8_t *getCmdData(int num);
 	const uint8_t *getMsgData(int num);
 	bool getMessageDescription(ResMessageDescription *m, uint32_t value, uint32_t offset);
+	void patchCmdData(int levelNum);
 
 	void loadINI(File *fp, int dataSize);
 	void loadCMD(File *fp, int dataSize);

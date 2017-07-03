@@ -405,6 +405,8 @@ void Resource::loadLevelData(const char *levelName, int levelNum) {
 		fileClose(fp);
 	}
 
+	patchCmdData(levelNum);
+
 	snprintf(filename, sizeof(filename), "%s.env", levelName);
 	fp = fileOpen(filename, &dataSize, kFileType_DATA);
 	loadENV(fp, dataSize);
@@ -612,6 +614,36 @@ bool Resource::getMessageDescription(ResMessageDescription *m, uint32_t value, u
 		p += sz;
 	}
 	return false;
+}
+
+void Resource::patchCmdData(int levelNum) {
+	if (g_isDemo) {
+		return;
+	}
+	if (levelNum == 1) {
+		//
+		// Some messages are randomly displayed in Level 1. It is unclear what was the original intent.
+		//
+		// script 328 (0x7004) - COND rnd( 3 ) STMT msg ( 1, 146 ) : 'order to activate security drones'
+		// script 399 (0x8280) - COND rnd( 5 ) STMT msg ( 1, 152 ) : 'secure all exits'
+		//
+		// The messages are now always displayed. rnd(x) calls are replaced with rnd(1) (eg. 'true')
+		//
+		static const int kCmd328 = 328;
+		if (kCmd328 < _cmdOffsetsTableCount) {
+			uint8_t *p = _cmdData + _cmdOffsetsTable[kCmd328];
+			if (READ_LE_UINT32(p + 0x30) == 0x13 && READ_LE_UINT32(p + 0x34) == 0 && READ_LE_UINT32(p + 0x38) == 3) {
+				p[0x38] = 1;
+			}
+		}
+		static const int kCmd399 = 399;
+		if (kCmd399 < _cmdOffsetsTableCount) {
+			uint8_t *p = _cmdData + _cmdOffsetsTable[kCmd399];
+			if (READ_LE_UINT32(p + 0x24) == 0x13 && READ_LE_UINT32(p + 0x28) == 0 && READ_LE_UINT32(p + 0x2C) == 5) {
+				p[0x2C] = 1;
+			}
+		}
+	}
 }
 
 void Resource::loadDEM(File *fp, int dataSize) {
