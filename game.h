@@ -370,11 +370,12 @@ struct DrawNumber {
 struct Render;
 
 struct GameParams {
-	GameParams() : playDemo(false), levelNum(0), xPosConrad(0), zPosConrad(0), subtitles(false) {}
+	GameParams() : playDemo(false), levelNum(0), xPosConrad(0), zPosConrad(0), subtitles(false), sf2(0) {}
 	bool playDemo;
 	int levelNum;
 	int xPosConrad, zPosConrad;
 	bool subtitles;
+	const char *sf2;
 };
 
 struct Game {

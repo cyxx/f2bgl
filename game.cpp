@@ -1127,12 +1127,18 @@ void Game::init() {
 	_res.loadINI(fp, dataSize);
 	fileClose(fp);
 
-	_res.loadCustomGUS();
-	_snd._mix._xmiPlayer = XmiPlayer_WildMidi_create(&_res);
+	// use GUS music resources if no soundfont is specified
+	const int midiType = _params.sf2 ? MIDI_AWE32 : MIDI_GUS;
+	if (midiType == MIDI_GUS) {
+		_res.loadCustomGUS();
+		_snd._mix._xmiPlayer = XmiPlayer_WildMidi_create(&_res);
+	} else {
+		_snd._mix._xmiPlayer = XmiPlayer_FluidSynth_create(_params.sf2);
+	}
 	_snd._mix.setSoundVolume(_res._userConfig.soundOn ? _res._userConfig.soundVolume : 0);
 	_snd._mix.setMusicVolume(_res._userConfig.musicOn ? _res._userConfig.musicVolume : 0);
 	_snd._mix.setVoiceVolume(_res._userConfig.voiceOn ? _res._userConfig.voiceVolume : 0);
-	_snd.init(MIDI_GUS);
+	_snd.init(midiType);
 
 	_ticks = 0;
 	_level = _params.levelNum;

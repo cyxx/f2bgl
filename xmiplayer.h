@@ -20,5 +20,6 @@ struct XmiPlayer {
 };
 
 XmiPlayer *XmiPlayer_WildMidi_create(Resource *res);
+XmiPlayer *XmiPlayer_FluidSynth_create(const char *sf2);
 
 #endif

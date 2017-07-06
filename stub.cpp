@@ -23,6 +23,7 @@ static const char *USAGE =
 	"  --savepath=PATH             Path to save files (default '.')\n"
 	"  --fullscreen                Fullscreen display (stretched)\n"
 	"  --fullscreen-ar             Fullscreen display (4:3 aspect ratio)\n"
+	"  --soundfont=FILE            SoundFont (.sf2) file for music\n"
 ;
 
 static const struct {
@@ -93,6 +94,7 @@ static int getNextCutsceneNum(int num) {
 
 static char *_dataPath;
 static char *_savePath;
+static char *_soundFont;
 
 struct GameStub_F2B : GameStub {
 
@@ -172,6 +174,7 @@ struct GameStub_F2B : GameStub {
 				{ "fullscreen",    no_argument,   0,  9 },
 				{ "fullscreen-ar", no_argument,   0, 10 },
 				{ "alt-level", required_argument, 0, 11 },
+				{ "soundfont", required_argument, 0, 12 },
 #ifdef F2B_DEBUG
 				{ "xpos_conrad",    required_argument, 0, 100 },
 				{ "zpos_conrad",    required_argument, 0, 101 },
@@ -226,6 +229,10 @@ struct GameStub_F2B : GameStub {
 						}
 					}
 				}
+				break;
+			case 12:
+				_soundFont = strdup(optarg);
+				_params.sf2 = _soundFont;
 				break;
 #ifdef F2B_DEBUG
 			case 100:
@@ -292,6 +299,7 @@ struct GameStub_F2B : GameStub {
 		delete _render;
 		free(_dataPath);
 		free(_savePath);
+		free(_soundFont);
 		_dataPath = 0;
 	}
 	virtual StubMixProc getMixProc(int rate, int fmt, void (*lock)(int)) {

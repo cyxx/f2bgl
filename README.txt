@@ -40,6 +40,7 @@ Defaults can be changed using command line switches :
     --savepath=PATH             Path to save files (default '.')
     --fullscreen                Fullscreen display (stretched)
     --fullscreen-ar             Fullscreen display (4:3 aspect ratio)
+    --soundfont=FILE            SoundFont (.sf2) file for music
 
 In-game hotkeys :
 

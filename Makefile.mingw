@@ -7,7 +7,7 @@ STRIP    := i686-w64-mingw32-strip
 WINDRES  := i686-w64-mingw32-windres
 CXXFLAGS += -Wall -Wno-sign-compare -MMD $(SDL_CFLAGS)
 
-LIBS = $(SDL_LIBS) -lopengl32 -lWildMidi.dll
+LIBS = $(SDL_LIBS) -lopengl32 -lWildMidi.dll -lfluidsynth.dll
 
 SRCS = box.cpp camera.cpp collision.cpp cutscene.cpp decoder.cpp file.cpp \
 	font.cpp game.cpp input.cpp installer.cpp inventory.cpp main.cpp menu.cpp mixer.cpp \
