@@ -13,7 +13,6 @@
 #include "spritecache.h"
 #include "random.h"
 #include "render.h"
-#include "xmiplayer.h"
 
 enum {
 	kObjPtrWorld = 0,
@@ -388,7 +387,6 @@ struct Game {
 	Resource _res;
 	Cutscene _cut;
 	Sound _snd;
-	XmiPlayer _xmi;
 	Render *_render;
 	GameParams _params;
 	SpriteCache _spriteCache;

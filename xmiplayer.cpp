@@ -1,9 +1,14 @@
 
 #include <sys/param.h>
-#include <wildmidi_lib.h>
 #include "resource.h"
 #include "file.h"
 #include "xmiplayer.h"
+
+//
+// WildMidi
+//
+
+#include <wildmidi_lib.h>
 
 // convert drivers/custom.gus to wildmidi configuration file
 static void writeConfigurationFile(File *fp, Resource *res) {
@@ -22,24 +27,32 @@ static void writeConfigurationFile(File *fp, Resource *res) {
 	}
 }
 
-struct XmiPlayerImpl {
+struct XmiPlayer_WildMidi : XmiPlayer {
 
+	Resource *_res;
 	midi *_midiHandle;
 	uint8_t *_midiBuffer;
 
-	XmiPlayerImpl() {
+	XmiPlayer_WildMidi(Resource *res)
+		: _res(res) {
 		_midiHandle = 0;
 		_midiBuffer = 0;
 	}
 
-	void init(int mixingRate, Resource *res) {
+	virtual ~XmiPlayer_WildMidi() {
+		unload();
+		const int ret = WildMidi_Shutdown();
+		debug(kDebug_XMIDI, "WildMidi_Shutdown() ret %d", ret);
+	}
+
+	virtual void setRate(int mixingRate) {
 		static const char *fname = "wildmidi.cfg";
 		char path[MAXPATHLEN];
 		snprintf(path, sizeof(path), "%s/%s", g_fileSavePath, fname);
 		if (!fileExists(fname, kFileType_CONFIG)) {
 			File *fp = fileOpen(fname, 0, kFileType_CONFIG, false);
 			if (fp) {
-				writeConfigurationFile(fp, res);
+				writeConfigurationFile(fp, _res);
 				fileClose(fp);
 			}
 		}
@@ -51,17 +64,11 @@ struct XmiPlayerImpl {
 		}
 	}
 
-	void setVolume(int volume) {
+	virtual void setVolume(int volume) {
 		WildMidi_MasterVolume(volume);
 	}
 
-	void fini() {
-		unload();
-		const int ret = WildMidi_Shutdown();
-		debug(kDebug_XMIDI, "WildMidi_Shutdown() ret %d", ret);
-	}
-
-	void load(const uint8_t *data, int dataSize) {
+	virtual void load(const uint8_t *data, int dataSize) {
 		_midiBuffer = (uint8_t *)malloc(dataSize);
 		if (_midiBuffer) {
 			memcpy(_midiBuffer, data, dataSize);
@@ -69,7 +76,7 @@ struct XmiPlayerImpl {
 		}
 	}
 
-	void unload() {
+	virtual void unload() {
 		if (_midiHandle) {
 			WildMidi_Close(_midiHandle);
 			_midiHandle = 0;
@@ -80,43 +87,13 @@ struct XmiPlayerImpl {
 		}
 	}
 
-	void readSamples(int16_t *buf, int len) {
+	virtual void readSamples(int16_t *buf, int len) {
 		if (_midiHandle) {
 			WildMidi_GetOutput(_midiHandle, (int8_t *)buf, len * 2);
 		}
 	}
 };
 
-XmiPlayer::XmiPlayer(Resource *res)
-	: _res(res) {
-	_impl = new XmiPlayerImpl();
-}
-
-XmiPlayer::~XmiPlayer() {
-	_impl->fini();
-	delete _impl;
-}
-
-void XmiPlayer::setRate(int mixingRate) {
-	debug(kDebug_XMIDI, "XmiPlayer::setRate() rate %d", mixingRate);
-	_impl->init(mixingRate, _res);
-}
-
-void XmiPlayer::setVolume(int volume) {
-	_impl->setVolume(volume);
-}
-
-void XmiPlayer::load(const uint8_t *data, int size) {
-	debug(kDebug_XMIDI, "XmiPlayer::load() size %d", size);
-	_impl->unload();
-	return _impl->load(data, size);
-}
-
-void XmiPlayer::unload() {
-	debug(kDebug_XMIDI, "XmiPlayer::unload()");
-	_impl->unload();
-}
-
-void XmiPlayer::readSamples(int16_t *buf, int len) {
-	_impl->readSamples(buf, len);
+XmiPlayer *XmiPlayer_WildMidi_create(Resource *res) {
+	return new XmiPlayer_WildMidi(res);
 }

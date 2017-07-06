@@ -7,8 +7,6 @@
 #include "resource.h"
 #include "sound.h"
 
-static const int kMidiType = MIDI_GUS;
-
 Sound::Sound(Resource *res)
 	: _res(res), _mix() {
 	_sfxVolume = kDefaultVolume;
@@ -59,12 +57,12 @@ static const char *getSngName(int type) {
 	return fname;
 }
 
-void Sound::init() {
+void Sound::init(int midiType) {
 	int dataSize;
 	_digiCompressed = !g_isDemo;
 	_fpSnd = fileOpen(g_isDemo ? "L1DIGI.SND" : "DIGICMP.SND", &dataSize, kFileType_SOUND);
 	loadDigiSnd(_fpSnd);
-	_fpSng = fileOpen(getSngName(kMidiType), &dataSize, kFileType_SOUND);
+	_fpSng = fileOpen(getSngName(midiType), &dataSize, kFileType_SOUND);
 	loadMidiSng(_fpSng);
 }
 

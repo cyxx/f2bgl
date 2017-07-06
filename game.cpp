@@ -9,9 +9,10 @@
 #include "trigo.h"
 #include "resource.h"
 #include "render.h"
+#include "xmiplayer.h"
 
 Game::Game(Render *render, const GameParams *params)
-	: _cut(render, this, &_snd), _snd(&_res), _xmi(&_res), _render(render), _params(*params) {
+	: _cut(render, this, &_snd), _snd(&_res), _render(render), _params(*params) {
 
 	_cheats = kCheatAutoReloadGun;
 
@@ -1127,11 +1128,11 @@ void Game::init() {
 	fileClose(fp);
 
 	_res.loadCustomGUS();
-	_snd._mix._xmiPlayer = &_xmi;
+	_snd._mix._xmiPlayer = XmiPlayer_WildMidi_create(&_res);
 	_snd._mix.setSoundVolume(_res._userConfig.soundOn ? _res._userConfig.soundVolume : 0);
 	_snd._mix.setMusicVolume(_res._userConfig.musicOn ? _res._userConfig.musicVolume : 0);
 	_snd._mix.setVoiceVolume(_res._userConfig.voiceOn ? _res._userConfig.voiceVolume : 0);
-	_snd.init();
+	_snd.init(MIDI_GUS);
 
 	_ticks = 0;
 	_level = _params.levelNum;

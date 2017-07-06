@@ -5,22 +5,20 @@
 #include "util.h"
 
 struct Resource;
-struct XmiPlayerImpl;
 
 struct XmiPlayer {
 
-	XmiPlayerImpl *_impl;
-	Resource *_res;
+	XmiPlayer() {}
+	virtual ~XmiPlayer() {}
 
-	XmiPlayer(Resource *res);
-	~XmiPlayer();
+	virtual void setRate(int rate) = 0;
+	virtual void setVolume(int volume) = 0;
 
-	void setRate(int rate);
-	void setVolume(int volume);
-
-	void load(const uint8_t *data, int size);
-	void unload();
-	void readSamples(int16_t *buf, int len);
+	virtual void load(const uint8_t *data, int size) = 0;
+	virtual void unload() = 0;
+	virtual void readSamples(int16_t *buf, int len) = 0;
 };
+
+XmiPlayer *XmiPlayer_WildMidi_create(Resource *res);
 
 #endif

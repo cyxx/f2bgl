@@ -36,7 +36,7 @@ struct Sound {
 	Sound(Resource *res);
 	~Sound();
 
-	void init();
+	void init(int midiType);
 
 	void loadDigiSnd(File *fp);
 	const DigiSnd *findDigiSndByName(const char *name) const;
