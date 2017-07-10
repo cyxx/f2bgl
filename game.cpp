@@ -1121,6 +1121,7 @@ void Game::init() {
 		_params.subtitles = _res._userConfig.subtitles;
 	}
 	_render->setPaletteScale(_res._userConfig.greyScale != 0, _res._userConfig.lightCoef);
+	_render->_fog = _params.renderFog;
 
 	int dataSize;
 	File *fp = fileOpen("PLAYER.INI", &dataSize, kFileType_DATA);

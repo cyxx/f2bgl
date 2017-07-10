@@ -163,6 +163,7 @@ Render::Render() {
 	_textureCache.init();
 	_paletteGreyScale = false;
 	_paletteRgbScale = 256;
+	_fog = false;
 }
 
 Render::~Render() {
@@ -175,8 +176,18 @@ void Render::flushCachedTextures() {
 	_overlay.tex = 0;
 }
 
+static const GLfloat _fogColor[4] = { .1, .1, .1, 1. };
+
 void Render::resizeScreen(int w, int h, float *p) {
 	glDisable(GL_LIGHTING);
+	if (_fog) {
+		glEnable(GL_FOG);
+		glFogi(GL_FOG_MODE, GL_LINEAR);
+		glFogfv(GL_FOG_COLOR, _fogColor);
+		glFogf(GL_FOG_DENSITY, .35);
+		glFogf(GL_FOG_START, 16.);
+		glFogf(GL_FOG_END, 256.);
+	}
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	glEnable(GL_DEPTH_TEST);
@@ -524,6 +535,13 @@ void Render::clearScreen() {
 }
 
 void Render::setupProjection(int mode) {
+	if (_fog) {
+		if (mode == kProjGame) {
+			glEnable(GL_FOG);
+		} else {
+			glDisable(GL_FOG);
+		}
+	}
 	if (mode == kProj2D) {
 		glMatrixMode(GL_PROJECTION);
 		glLoadIdentity();

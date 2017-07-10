@@ -24,6 +24,7 @@ static const char *USAGE =
 	"  --fullscreen                Fullscreen display (stretched)\n"
 	"  --fullscreen-ar             Fullscreen display (4:3 aspect ratio)\n"
 	"  --soundfont=FILE            SoundFont (.sf2) file for music\n"
+	"  --fog                       Enable fog rendering\n"
 ;
 
 static const struct {
@@ -175,6 +176,7 @@ struct GameStub_F2B : GameStub {
 				{ "fullscreen-ar", no_argument,   0, 10 },
 				{ "alt-level", required_argument, 0, 11 },
 				{ "soundfont", required_argument, 0, 12 },
+				{ "fog",       no_argument,       0, 13 },
 #ifdef F2B_DEBUG
 				{ "xpos_conrad",    required_argument, 0, 100 },
 				{ "zpos_conrad",    required_argument, 0, 101 },
@@ -233,6 +235,9 @@ struct GameStub_F2B : GameStub {
 			case 12:
 				_soundFont = strdup(optarg);
 				_params.sf2 = _soundFont;
+				break;
+			case 13:
+				_params.renderFog = true;
 				break;
 #ifdef F2B_DEBUG
 			case 100:

@@ -45,6 +45,7 @@ struct Render {
 	} _viewport;
 	bool _paletteGreyScale;
 	int _paletteRgbScale;
+	bool _fog;
 
 	Render();
 	~Render();
