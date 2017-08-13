@@ -382,6 +382,9 @@ struct XmiPlayer_FluidSynth : XmiPlayer {
 		}
 	}
 	virtual void setVolume(int volume) {
+		if (_fluidSettings) {
+			fluid_settings_setnum(_fluidSettings, "synth.gain", .8 * volume / 255);
+		}
 	}
 
 	virtual void load(const uint8_t *data, int size) {
@@ -393,11 +396,8 @@ struct XmiPlayer_FluidSynth : XmiPlayer {
 	}
 	virtual void unload() {
 		if (_fluidSynth) {
-			// turn off any active notes
-			for (int i = 0; i < 128; ++i) {
-				for (int ch = 0; ch < 16; ++ch) {
-					fluid_synth_noteoff(_fluidSynth, ch, i);
-				}
+			for (int ch = 0; ch < 16; ++ch) {
+				fluid_synth_all_sounds_off(_fluidSynth, ch); // MIDI CC 120
 			}
 		}
 	}
