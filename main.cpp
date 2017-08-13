@@ -175,6 +175,8 @@ int main(int argc, char *argv[]) {
 		setAspectRatio(gWindowW, gWindowH);
 	}
 	SDL_GLContext glcontext = SDL_GL_CreateContext(window);
+	SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
+	SDL_GL_SetSwapInterval(1);
 	ret = stub->init();
 	if (ret != 0) {
 		return ret;
