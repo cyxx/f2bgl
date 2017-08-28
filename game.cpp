@@ -15,6 +15,7 @@ Game::Game(Render *render, const GameParams *params)
 	: _cut(render, this, &_snd), _snd(&_res), _render(render), _params(*params) {
 
 	_cheats = kCheatAutoReloadGun;
+	_gameStateMsg = 0;
 
 	memset(&_drawCharBuf, 0, sizeof(_drawCharBuf));
 	memset(&_drawNumber, 0, sizeof(_drawNumber));
@@ -2656,6 +2657,11 @@ if (_mainLoopCurrentMode == 1) {
 		snprintf(buf, sizeof(buf), "%d", _drawNumber.value);
 		drawString(_drawNumber.x, _drawNumber.y, buf, _drawNumber.font, 0);
 		memset(&_drawNumber, 0, sizeof(_drawNumber));
+	}
+	if (_gameStateMsg != 0) {
+		int32_t argv[] = { _objectsPtrTable[kObjPtrWorld]->objKey, _gameStateMsg };
+		op_addObjectMessage(2, argv);
+		_gameStateMsg = 0;
 	}
 	if (_cut._numToPlayCounter > 0) {
 		--_cut._numToPlayCounter;

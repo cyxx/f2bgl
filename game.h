@@ -84,6 +84,12 @@ enum {
 };
 
 enum {
+	kMsgGameSave = 1,
+	kMsgGameLoad = 2,
+	kMsgPause = 8,
+};
+
+enum {
 	kIndirectColorShadow = 0,
 	kIndirectColorLight,
 	kIndirectColorGreen,
@@ -394,6 +400,7 @@ struct Game {
 	SpriteCache _spriteCache;
 	Random _rnd, _rnd2;
 	int _cheats;
+	int _gameStateMsg;
 
 	DrawBuffer _drawCharBuf;
 	DrawNumber _drawNumber;
@@ -549,6 +556,13 @@ struct Game {
 
 	bool isInputKeyDown(uint32_t mask, int input) const {
 		return (_inputsTable[input].keymask & mask) == mask;
+	}
+
+	void setGameStateLoad(int slot) {
+		_gameStateMsg = kMsgGameLoad;
+	}
+	void setGameStateSave(int slot) {
+		_gameStateMsg = kMsgGameSave;
 	}
 
 	// box.cpp
