@@ -2573,117 +2573,116 @@ void Game::doTick() {
 		_objectsPtrTable[kObjPtrConrad]->specialData[1][18] = _varsTable[kVarConradLife];
 	}
 	runObject(_objectsPtrTable[kObjPtrWorld]->o_child);
-if (_mainLoopCurrentMode == 1) {
-	GameObject *o_ply = getObjectByKey(_varsTable[kVarPlayerObject]);
-	CellMap *cell = getCellMapShr19(o_ply->xPosParent + o_ply->xPos, o_ply->zPosParent + o_ply->zPos);
-	if (cell->room != 0 && cell->room2 == 0) {
-		GameObject *o_room = _roomsTable[cell->room].o;
-		assert(o_room);
-		if (o_room->state != 1) {
-			while (o_room != _objectsPtrTable[kObjPtrWorld]) {
-				o_room->state = 1;
-				o_room = o_room->o_parent;
+	if (_mainLoopCurrentMode == 1) {
+		GameObject *o_ply = getObjectByKey(_varsTable[kVarPlayerObject]);
+		CellMap *cell = getCellMapShr19(o_ply->xPosParent + o_ply->xPos, o_ply->zPosParent + o_ply->zPos);
+		if (cell->room != 0 && cell->room2 == 0) {
+			GameObject *o_room = _roomsTable[cell->room].o;
+			assert(o_room);
+			if (o_room->state != 1) {
+				while (o_room != _objectsPtrTable[kObjPtrWorld]) {
+					o_room->state = 1;
+					o_room = o_room->o_parent;
+				}
 			}
 		}
 	}
-}
 	clearObjectsDrawList();
 	_render->setupProjection(kProj2D);
 	drawInfoPanel();
-if (_mainLoopCurrentMode == 1) {
-	if (_objectsPtrTable[kObjPtrScan]) {
-		updateScanner();
-	}
-	if ((_objectsPtrTable[kObjPtrConrad]->specialData[1][20] & 15) == 5) {
-		_objectsPtrTable[kObjPtrConrad]->specialData[1][18] -= 2;
-		if (_objectsPtrTable[kObjPtrConrad]->specialData[1][18] < 2) {
-			_objectsPtrTable[kObjPtrConrad]->specialData[1][18] = 2;
-			while (_objectsPtrTable[kObjPtrShield]->specialData[1][22] != 0) {
-				GameObject *o_tmp = _objectsPtrTable[kObjPtrShield];
-				while (o_tmp->o_next) {
-					o_tmp = o_tmp->o_next;
-				}
-				o_tmp->o_next = _objectsPtrTable[kObjPtrShield];
-				_objectsPtrTable[kObjPtrInventaire]->o_child->o_next->o_next->o_next->o_child = _objectsPtrTable[kObjPtrShield]->o_next;
-				_objectsPtrTable[kObjPtrShield]->o_next = 0;
-				_objectsPtrTable[kObjPtrShield] = _objectsPtrTable[kObjPtrInventaire]->o_child->o_next->o_next->o_next->o_child;
-			}
-			if (_objectsPtrTable[kObjPtrShield]) {
-				_varsTable[25] = _objectsPtrTable[kObjPtrShield]->objKey;
-				if (getMessage(_objectsPtrTable[kObjPtrShield]->objKey, 0, &_tmpMsg)) {
-					_objectsPtrTable[kObjPtrShield]->text = (const char *)_tmpMsg.data;
-				}
-			}
-			setObjectData(_objectsPtrTable[kObjPtrConrad], 20, 0);
-		}
-	}
-	if (_objectsPtrTable[kObjPtrShield]->specialData[1][22] == 2) {
-		_objectsPtrTable[kObjPtrConrad]->specialData[1][18] -= 1;
-		if (_objectsPtrTable[kObjPtrConrad]->specialData[1][18] < 1) {
-			_objectsPtrTable[kObjPtrConrad]->specialData[1][18] = 1;
-			while (_objectsPtrTable[kObjPtrShield]->specialData[1][22] != 0) {
-				GameObject *o_tmp = _objectsPtrTable[kObjPtrShield];
-				while (o_tmp->o_next) {
-					o_tmp = o_tmp->o_next;
-				}
-				o_tmp->o_next = _objectsPtrTable[kObjPtrShield];
-				_objectsPtrTable[kObjPtrInventaire]->o_child->o_next->o_next->o_next->o_child = _objectsPtrTable[kObjPtrShield]->o_next;
-				_objectsPtrTable[kObjPtrShield]->o_next = 0;
-				_objectsPtrTable[kObjPtrShield] = _objectsPtrTable[kObjPtrInventaire]->o_child->o_next->o_next->o_next->o_child;
-			}
-			if (_objectsPtrTable[kObjPtrShield]) {
-				_varsTable[25] = _objectsPtrTable[kObjPtrShield]->objKey;
-				if (getMessage(_objectsPtrTable[kObjPtrShield]->objKey, 0, &_tmpMsg)) {
-					_objectsPtrTable[kObjPtrShield]->text = (const char *)_tmpMsg.data;
-				}
-			}
-		}
-	}
-#ifdef F2B_DEBUG
-	if (1) {
-		int y = 8;
-		GameObject *o = _objectsPtrTable[kObjPtrConrad];
-		char buf[64];
-		snprintf(buf, sizeof(buf), "conrad.pos %d %d %d pitch %d", o->xPos >> kPosShift, o->zPos >> kPosShift, o->yPos >> kPosShift, o->pitch);
-		drawString(8, y, buf, kFontNormale, 0);
-		y += 8;
-		snprintf(buf, sizeof(buf), "camera.pos %d %d %d pitch %d", _xPosObserver >> kPosShift, _zPosObserver >> kPosShift, _yPosObserver >> kPosShift, _yRotObserver);
-		drawString(8, y, buf, kFontNormale, 0);
-		y += 8;
-	}
-#endif
-	if (_drawNumber.font != 0) {
-		char buf[32];
-		snprintf(buf, sizeof(buf), "%d", _drawNumber.value);
-		drawString(_drawNumber.x, _drawNumber.y, buf, _drawNumber.font, 0);
-		memset(&_drawNumber, 0, sizeof(_drawNumber));
-	}
-	if (_gameStateMsg != 0) {
-		int32_t argv[] = { _objectsPtrTable[kObjPtrWorld]->objKey, _gameStateMsg };
-		op_addObjectMessage(2, argv);
-		_gameStateMsg = 0;
-	}
-	if (_cut._numToPlayCounter > 0) {
-		--_cut._numToPlayCounter;
-	}
-	if (_changeLevel) {
-		setPaletteColor(1, 255, 255, 255);
-		if (getMessage(_objectsPtrTable[kObjPtrFadeToBlack]->objKey, 1, &_tmpMsg)) {
-			memset(&_drawCharBuf, 0, sizeof(_drawCharBuf));
-			int w, h;
-			getStringRect((const char *)_tmpMsg.data, kFontNameCineTypo, &w, &h);
-			drawString((kScreenWidth - w) / 2, kScreenHeight / 2, (const char *)_tmpMsg.data, kFontNameCineTypo, 0);
-		}
-	} else if (!_endGame) {
+	if (_mainLoopCurrentMode == 0) {
 		updateScreen();
+	} else if (_mainLoopCurrentMode == 1) {
+		if (_objectsPtrTable[kObjPtrScan]) {
+			updateScanner();
+		}
+		if ((_objectsPtrTable[kObjPtrConrad]->specialData[1][20] & 15) == 5) {
+			_objectsPtrTable[kObjPtrConrad]->specialData[1][18] -= 2;
+			if (_objectsPtrTable[kObjPtrConrad]->specialData[1][18] < 2) {
+				_objectsPtrTable[kObjPtrConrad]->specialData[1][18] = 2;
+				while (_objectsPtrTable[kObjPtrShield]->specialData[1][22] != 0) {
+					GameObject *o_tmp = _objectsPtrTable[kObjPtrShield];
+					while (o_tmp->o_next) {
+						o_tmp = o_tmp->o_next;
+					}
+					o_tmp->o_next = _objectsPtrTable[kObjPtrShield];
+					_objectsPtrTable[kObjPtrInventaire]->o_child->o_next->o_next->o_next->o_child = _objectsPtrTable[kObjPtrShield]->o_next;
+					_objectsPtrTable[kObjPtrShield]->o_next = 0;
+					_objectsPtrTable[kObjPtrShield] = _objectsPtrTable[kObjPtrInventaire]->o_child->o_next->o_next->o_next->o_child;
+				}
+				if (_objectsPtrTable[kObjPtrShield]) {
+					_varsTable[25] = _objectsPtrTable[kObjPtrShield]->objKey;
+					if (getMessage(_objectsPtrTable[kObjPtrShield]->objKey, 0, &_tmpMsg)) {
+						_objectsPtrTable[kObjPtrShield]->text = (const char *)_tmpMsg.data;
+					}
+				}
+				setObjectData(_objectsPtrTable[kObjPtrConrad], 20, 0);
+			}
+		}
+		if (_objectsPtrTable[kObjPtrShield]->specialData[1][22] == 2) {
+			_objectsPtrTable[kObjPtrConrad]->specialData[1][18] -= 1;
+			if (_objectsPtrTable[kObjPtrConrad]->specialData[1][18] < 1) {
+				_objectsPtrTable[kObjPtrConrad]->specialData[1][18] = 1;
+				while (_objectsPtrTable[kObjPtrShield]->specialData[1][22] != 0) {
+					GameObject *o_tmp = _objectsPtrTable[kObjPtrShield];
+					while (o_tmp->o_next) {
+						o_tmp = o_tmp->o_next;
+					}
+					o_tmp->o_next = _objectsPtrTable[kObjPtrShield];
+					_objectsPtrTable[kObjPtrInventaire]->o_child->o_next->o_next->o_next->o_child = _objectsPtrTable[kObjPtrShield]->o_next;
+					_objectsPtrTable[kObjPtrShield]->o_next = 0;
+					_objectsPtrTable[kObjPtrShield] = _objectsPtrTable[kObjPtrInventaire]->o_child->o_next->o_next->o_next->o_child;
+				}
+				if (_objectsPtrTable[kObjPtrShield]) {
+					_varsTable[25] = _objectsPtrTable[kObjPtrShield]->objKey;
+					if (getMessage(_objectsPtrTable[kObjPtrShield]->objKey, 0, &_tmpMsg)) {
+						_objectsPtrTable[kObjPtrShield]->text = (const char *)_tmpMsg.data;
+					}
+				}
+			}
+		}
+#ifdef F2B_DEBUG
+		if (1) {
+			int y = 8;
+			GameObject *o = _objectsPtrTable[kObjPtrConrad];
+			char buf[64];
+			snprintf(buf, sizeof(buf), "conrad.pos %d %d %d pitch %d", o->xPos >> kPosShift, o->zPos >> kPosShift, o->yPos >> kPosShift, o->pitch);
+			drawString(8, y, buf, kFontNormale, 0);
+			y += 8;
+			snprintf(buf, sizeof(buf), "camera.pos %d %d %d pitch %d", _xPosObserver >> kPosShift, _zPosObserver >> kPosShift, _yPosObserver >> kPosShift, _yRotObserver);
+			drawString(8, y, buf, kFontNormale, 0);
+			y += 8;
+		}
+#endif
+		if (_drawNumber.font != 0) {
+			char buf[32];
+			snprintf(buf, sizeof(buf), "%d", _drawNumber.value);
+			drawString(_drawNumber.x, _drawNumber.y, buf, _drawNumber.font, 0);
+			memset(&_drawNumber, 0, sizeof(_drawNumber));
+		}
+		if (_gameStateMsg != 0) {
+			int32_t argv[] = { _objectsPtrTable[kObjPtrWorld]->objKey, _gameStateMsg };
+			op_addObjectMessage(2, argv);
+			_gameStateMsg = 0;
+		}
+		if (_cut._numToPlayCounter > 0) {
+			--_cut._numToPlayCounter;
+		}
+		if (_changeLevel) {
+			setPaletteColor(1, 255, 255, 255);
+			if (getMessage(_objectsPtrTable[kObjPtrFadeToBlack]->objKey, 1, &_tmpMsg)) {
+				memset(&_drawCharBuf, 0, sizeof(_drawCharBuf));
+				int w, h;
+				getStringRect((const char *)_tmpMsg.data, kFontNameCineTypo, &w, &h);
+				drawString((kScreenWidth - w) / 2, kScreenHeight / 2, (const char *)_tmpMsg.data, kFontNameCineTypo, 0);
+			}
+		} else if (!_endGame) {
+			updateScreen();
+		}
+		if (currentRoom != _room) {
+			changeRoom(currentRoom);
+		}
 	}
-	if (currentRoom != _room) {
-		changeRoom(currentRoom);
-	}
-} else if (_mainLoopCurrentMode == 0) {
-	_render->setupProjection(kProj2D);
-	updateScreen();
-}
 	if (_collidingObjectsCount != 0) {
 		updateCollidingObjects();
 	}
