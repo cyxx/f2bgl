@@ -8,13 +8,28 @@ static const char *kFn_s = "f2bgl-level%s-%02d.%s";
 static const char *kSaveText = "1.00 Aug 25 1995  09:11:45 (c) 1995 Delphine Software, France";
 static int kHeaderSize = 96;
 
-static const char *kLevels[] = { "1", "2a", "2b", "2c", "3", "4a", "4b", "4c", "5a", "5b", "5c", "6a", "6b" };
-
 // 21 - first version
 // 22 - persists GameObject.text
 // 23 - remove Game._sceneCameraPosTable (read-only data)
 // 24 - lookup _musicKey index
-static int kSaveVersion = 24;
+static const int kSaveVersion = 24;
+
+static const char *kLevels[] = { "1", "2a", "2b", "2c", "3", "4a", "4b", "4c", "5a", "5b", "5c", "6a", "6b" };
+
+static const char *kLevelNames[] = {
+	"The Prison",
+	"Morph Base",
+	"Mars Mining Facility",
+	"Venus Space Station",
+	"The Pyramid",
+	"Landing Pad",
+	"Underground",
+	"Morph Mothership",
+	"Earth Base : Command Room",
+	"Earth Base : Dormitory",
+	"Reactor Room",
+	"The Master Brain",
+};
 
 enum {
 	kModeSave,
@@ -549,4 +564,17 @@ void Game::saveScreenshot(int num) {
 		snprintf(filename, sizeof(filename), kFn_s, kLevels[_level], num, "tga");
 		saveTGA(filename, p, w, h);
 	}
+}
+
+const char *Game::getLevelName(int level) const {
+	if (level >= 0 && level < ARRAYSIZE(kLevelNames)) {
+		return kLevelNames[level];
+	}
+	return 0;
+}
+
+bool Game::hasSavedGameState(int level, int num) const {
+	char filename[32];
+	snprintf(filename, sizeof(filename), kFn_s, kLevels[_level], num, "sav");
+	return fileExists(filename, kFileType_LOAD);
 }

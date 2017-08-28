@@ -836,6 +836,8 @@ struct Game {
 	void saveGameState(int num);
 	void loadGameState(int num);
 	void saveScreenshot(int num);
+	const char *getLevelName(int level) const;
+	bool hasSavedGameState(int level, int num) const;
 };
 
 #endif // GAME_H__
