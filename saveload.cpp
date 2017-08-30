@@ -6,7 +6,7 @@
 static const char *kFn_s = "f2bgl-level%s-%02d.%s";
 
 static const char *kSaveText = "1.00 Aug 25 1995  09:11:45 (c) 1995 Delphine Software, France";
-static int kHeaderSize = 96;
+static const int kHeaderSize = 96;
 
 // 21 - first version
 // 22 - persists GameObject.text
@@ -514,12 +514,12 @@ static void persistGameState(File *fp, Game &g) {
 	persistMusic<M>(fp, g);
 }
 
-void Game::saveGameState(int num) {
+bool Game::saveGameState(int num) {
 	char filename[32];
 	snprintf(filename, sizeof(filename), kFn_s, kLevels[_level], num, "sav");
 	File *fp = fileOpen(filename, 0, kFileType_SAVE, false);
 	if (!fp) {
-		return;
+		return false;
 	}
 	char header[kHeaderSize];
 	memset(header, 0, sizeof(header));
@@ -530,14 +530,15 @@ void Game::saveGameState(int num) {
 	persist<kModeSave>(fp, _level);
 	persistGameState<kModeSave>(fp, *this);
 	fileClose(fp);
+	return true;
 }
 
-void Game::loadGameState(int num) {
+bool Game::loadGameState(int num) {
 	char filename[32];
 	snprintf(filename, sizeof(filename), kFn_s, kLevels[_level], num, "sav");
 	File *fp = fileOpen(filename, 0, kFileType_LOAD, false);
 	if (!fp) {
-		return;
+		return false;
 	}
 	char header[kHeaderSize];
 	fileRead(fp, header, sizeof(header));
@@ -554,6 +555,7 @@ void Game::loadGameState(int num) {
 		playMusic(_snd._musicMode);
 	}
 	fileClose(fp);
+	return true;
 }
 
 void Game::saveScreenshot(int num) {

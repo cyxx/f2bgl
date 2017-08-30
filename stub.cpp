@@ -489,18 +489,20 @@ struct GameStub_F2B : GameStub {
 		_render->drawOverlay();
 		if (_loadState) {
 			if (_state == kStateGame) {
-				_g->loadGameState(_slotState);
-				_g->setGameStateLoad(_slotState);
-				debug(kDebug_INFO, "Loaded game state from slot %d", _slotState);
+				if (_g->loadGameState(_slotState)) {
+					_g->setGameStateLoad(_slotState);
+					debug(kDebug_INFO, "Loaded game state from slot %d", _slotState);
+				}
 			}
 			_loadState = false;
 		}
 		if (_saveState) {
 			if (_state == kStateGame) {
-				_g->saveGameState(_slotState);
-				_g->saveScreenshot(_slotState);
-				_g->setGameStateSave(_slotState);
-				debug(kDebug_INFO, "Saved game state to slot %d", _slotState);
+				if (_g->saveGameState(_slotState)) {
+					_g->saveScreenshot(_slotState);
+					_g->setGameStateSave(_slotState);
+					debug(kDebug_INFO, "Saved game state to slot %d", _slotState);
+				}
 			}
 			_saveState = false;
 		}

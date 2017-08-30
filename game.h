@@ -833,8 +833,8 @@ struct Game {
 	void rayCastWall(int x, int z);
 
 	// saveload.cpp
-	void saveGameState(int num);
-	void loadGameState(int num);
+	bool saveGameState(int num);
+	bool loadGameState(int num);
 	void saveScreenshot(int num);
 	const char *getLevelName(int level) const;
 	bool hasSavedGameState(int level, int num) const;
