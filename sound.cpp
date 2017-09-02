@@ -209,16 +209,22 @@ void Sound::playMidi(int16_t objKey, int16_t sndKey) {
 	const uint8_t *p_sndinfo = _res->getData(kResType_SND, sndKey, "SNDINFO");
 	if (p_sndinfo && READ_LE_UINT32(p_sndinfo + 32) == 2) {
 		debug(kDebug_SOUND, "Sound::playMidi() key %d '%s'", sndKey, (const char *)p_sndinfo);
-		const MidiSng *ms = findMidiSngByName((const char *)p_sndinfo);
-		if (ms) {
-			debug(kDebug_SOUND, "Sound::playMidi() offset 0x%x size %d", ms->offset, ms->size);
-			fileSetPos(_fpSng, ms->offset, kFilePosition_SET);
-			_mix.playXmi(_fpSng, ms->size);
-		}
+		playMidi((const char *)p_sndinfo);
 	}
 }
 
 void Sound::stopMidi(int16_t objKey, int16_t sndKey) {
 	debug(kDebug_SOUND, "Sound::stopMidi() key 0x%x", objKey);
 	_mix.stopXmi();
+}
+
+void Sound::playMidi(const char *name) {
+	const MidiSng *ms = findMidiSngByName(name);
+	if (ms) {
+		debug(kDebug_SOUND, "Sound::playMidi() offset 0x%x size %d", ms->offset, ms->size);
+		fileSetPos(_fpSng, ms->offset, kFilePosition_SET);
+		_mix.playXmi(_fpSng, ms->size);
+	} else {
+		warning("MIDI file '%s' not found", name);
+	}
 }

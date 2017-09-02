@@ -22,6 +22,8 @@ static int _currentOption = kOptionSave;
 static int _rotateDirection;
 static int _rotateTargetPitch;
 
+static bool _resumeMusic;
+
 static struct SaveLoadTexture {
 	int16_t texKey;
 	int w, h;
@@ -78,6 +80,9 @@ void Game::initMenu() {
 	// current game state screenshot
 	_saveLoadTexture.data = _render->captureScreen(&_saveLoadTexture.w, &_saveLoadTexture.h);
 	_render->prepareTextureRgb(_saveLoadTexture.data, _saveLoadTexture.w, _saveLoadTexture.h, kSaveLoadTexKey + texIndexLut[0]);
+
+	_snd.playMidi("savemap.xmi");
+	_resumeMusic = true;
 }
 
 void Game::finiMenu() {
@@ -86,6 +91,9 @@ void Game::finiMenu() {
 		uint8_t *texData = (uint8_t *)_saveLoadSlots[i].texture.data;
 		free(texData);
 		memset(&_saveLoadSlots[i].texture, 0, sizeof(_saveLoadSlots[i].texture));
+	}
+	if (_resumeMusic) {
+		_snd.playMidi(_objectsPtrTable[kObjPtrWorld]->objKey, _snd._musicKey);
 	}
 }
 
@@ -223,6 +231,8 @@ bool Game::doMenu() {
 					loadGameState(_saveLoadSlots[saveSlot].num);
 					// game state loaded, return to the game
 					setGameStateLoad(saveSlot);
+					// and do not resume level music
+					_resumeMusic = false;
 					return false;
 				}
 			}

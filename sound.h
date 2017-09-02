@@ -56,6 +56,7 @@ struct Sound {
 
 	void playMidi(int16_t objKey, int16_t sndKey);
 	void stopMidi(int16_t objKey, int16_t sndKey);
+	void playMidi(const char *name);
 
 	int _sfxVolume;
 	int _sfxPan;

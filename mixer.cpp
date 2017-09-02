@@ -331,6 +331,7 @@ void Mixer::stopQueue() {
 
 void Mixer::playXmi(File *f, int size) {
 	MixerLock ml(_lock);
+	_xmiPlayer->unload();
 	uint8_t *buf = (uint8_t *)malloc(size);
 	if (buf) {
 		fileRead(f, buf, size);
