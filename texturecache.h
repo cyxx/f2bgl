@@ -26,9 +26,11 @@ struct TextureCache {
 	void init();
 	void flush();
 
-	Texture *getCachedTexture(int16_t key, const uint8_t *data, int w, int h, const uint8_t *pal = 0);
+	bool hasTexture(int16_t key) const;
+	void releaseTexture(int16_t key);
+	Texture *getCachedTexture(int16_t key, const uint8_t *data, int w, int h, bool rgb = false, const uint8_t *pal = 0);
 	void convertTexture(const uint8_t *src, int w, int h, const uint16_t *clut, uint16_t *dst, int dstPitch);
-	Texture *createTexture(const uint8_t *data, int w, int h, const uint8_t *pal = 0);
+	Texture *createTexture(const uint8_t *data, int w, int h, bool rgb = false, const uint8_t *pal = 0);
 	void destroyTexture(Texture *);
 	void updateTexture(Texture *, const uint8_t *data, int w, int h);
 

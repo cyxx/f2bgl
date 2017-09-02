@@ -73,7 +73,9 @@ enum {
 	kFollowingObjectPointsTableSize = 30,
 	kViewportMax = 20,
 	kTickDurationMs = 40,
-	kLevelGameOver = 14
+	kLevelGameOver = 14,
+	kSaveLoadTexKey = 10000,
+	kSaveLoadSlots = 8,
 };
 
 enum {
@@ -521,6 +523,8 @@ struct Game {
 	int _rayCastedObjectsCount;
 	RayCastedObject _rayCastedObjectsTable[kRayCastedObjectsTableSize];
 
+	int _saveLoadTextureIdTable[kSaveLoadSlots];
+
 	Game(Render *render, const GameParams *params);
 	~Game();
 
@@ -740,10 +744,10 @@ struct Game {
 
 	// menu.cpp
 	void initMenu();
+	void finiMenu();
 	void resetObjectAnim(GameObject *o);
-	int setNextObjectAnim(GameObject *o, int direction);
 	void loadMenuObjectMesh(GameObject *o, int16_t key);
-	void doMenu();
+	bool doMenu();
 
 	// opcodes.cpp
 	int op_true(int argc, int32_t *argv);
@@ -837,7 +841,7 @@ struct Game {
 	bool loadGameState(int num);
 	void saveScreenshot(int num);
 	const char *getLevelName(int level) const;
-	bool hasSavedGameState(int level, int num) const;
+	bool hasSavedGameState(int num) const;
 };
 
 #endif // GAME_H__

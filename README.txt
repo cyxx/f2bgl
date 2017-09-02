@@ -51,6 +51,7 @@ In-game hotkeys :
     Enter          recharge
     Space          open
     Tab            skip cutscene
+    Escape         save/load menu
     I              inventory menu
     J              jump
     U              use

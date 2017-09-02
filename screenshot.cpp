@@ -74,22 +74,23 @@ void saveBMP(const char *filepath, const uint8_t *rgb, int w, int h) {
 #define kTgaImageTypeUncompressedTrueColor 2
 #define kTgaImageTypeRunLengthEncodedTrueColor 10
 
+static const int TGA_HEADER_SIZE = 18;
+
 void saveTGA(const char *filepath, const uint8_t *rgb, int w, int h) {
 	static const uint8_t kImageType = kTgaImageTypeRunLengthEncodedTrueColor;
-	static const int HEADER_SIZE = 18;
-	uint8_t buffer[HEADER_SIZE];
+	uint8_t buffer[TGA_HEADER_SIZE];
 	buffer[0]            = 0; // ID Length
 	buffer[1]            = 0; // ColorMap Type
 	buffer[2]            = kImageType;
 	TO_LE16(buffer +  3,   0); // ColorMap Start
 	TO_LE16(buffer +  5,   0); // ColorMap Length
-	buffer[7]            = 0; // ColorMap Bits
+	buffer[7]            = 0;  // ColorMap Bits
 	TO_LE16(buffer +  8,   0); // X-origin
 	TO_LE16(buffer + 10,   0); // Y-origin
 	TO_LE16(buffer + 12,   w); // Image Width
 	TO_LE16(buffer + 14,   h); // Image Height
 	buffer[16]           = 24; // Pixel Depth
-	buffer[17]           = 0; // Descriptor
+	buffer[17]           = 0;  // Descriptor
 
 	File *f = fileOpen(filepath, 0, kFileType_SCREENSHOT);
 	if (f) {
@@ -127,4 +128,39 @@ void saveTGA(const char *filepath, const uint8_t *rgb, int w, int h) {
 		}
 		fileClose(f);
 	}
+}
+
+uint8_t *loadTGA(const char *filepath, int *w, int *h) {
+	*w = *h = 0;
+	uint8_t *buffer = 0;
+	File *f = fileOpen(filepath, 0, kFileType_SCREENSHOT);
+	if (f) {
+		uint8_t header[TGA_HEADER_SIZE];
+		fileRead(f, header, sizeof(header));
+		const int hdrW = READ_LE_UINT16(header + 12);
+		const int hdrH = READ_LE_UINT16(header + 14);
+		const int bufferSize = hdrW * hdrH * 3;
+		buffer = (uint8_t *)calloc(bufferSize, 1);
+		if (buffer) {
+			// This is not a generic TGA loader and only support decoding the output of saveTGA
+			if (header[2] == kTgaImageTypeRunLengthEncodedTrueColor) {
+				int offset = 0;
+				while (offset < bufferSize) {
+					const int count = (fileReadByte(f) & 0x7F) + 1;
+					const int b = fileReadByte(f);
+					const int g = fileReadByte(f);
+					const int r = fileReadByte(f);
+					for (int i = 0; i < count && offset < bufferSize; ++i) {
+						buffer[offset++] = r;
+						buffer[offset++] = g;
+						buffer[offset++] = b;
+					}
+				}
+				*w = hdrW;
+				*h = hdrH;
+			}
+		}
+		fileClose(f);
+	}
+	return buffer;
 }

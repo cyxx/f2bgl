@@ -127,9 +127,14 @@ struct GameStub_F2B : GameStub {
 
 	void setState(int state) {
 		// release
-		if (_state == kStateCutscene) {
+		switch (_state) {
+		case kStateCutscene:
 			_render->resizeOverlay(0, 0);
 			_render->setPalette(_g->_screenPalette, 0, 256);
+			break;
+		case kStateMenu:
+			_g->finiMenu();
+			break;
 		}
 		// init
 		switch (state) {
@@ -444,9 +449,9 @@ struct GameStub_F2B : GameStub {
 			if (_g->inp.inventoryKey) {
 				_g->inp.inventoryKey = false;
 				_nextState = kStateInventory;
-//			} else if (_g->inp.escapeKey) {
-//				_g->inp.escapeKey = false;
-//				_nextState = kStateMenu;
+			} else if (_g->inp.escapeKey) {
+				_g->inp.escapeKey = false;
+				_nextState = kStateMenu;
 			} else if (_g->_cut._numToPlay >= 0 && _g->_cut._numToPlayCounter == 0) {
 				_nextState = kStateCutscene;
 			} else if (_g->_boxItemCount != 0) {
@@ -470,7 +475,9 @@ struct GameStub_F2B : GameStub {
 			}
 			break;
 		case kStateMenu:
-			_g->doMenu();
+			if (!_g->doMenu()) {
+				_nextState = kStateGame;
+			}
 			if (_g->inp.escapeKey) {
 				_g->inp.escapeKey = false;
 				_nextState = kStateGame;

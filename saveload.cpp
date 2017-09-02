@@ -4,6 +4,7 @@
 #include "render.h"
 
 static const char *kFn_s = "f2bgl-level%s-%02d.%s";
+static const char *kMenuFn_s = "f2bgl-freesav%d.%s";
 
 static const char *kSaveText = "1.00 Aug 25 1995  09:11:45 (c) 1995 Delphine Software, France";
 static const int kHeaderSize = 96;
@@ -516,7 +517,11 @@ static void persistGameState(File *fp, Game &g) {
 
 bool Game::saveGameState(int num) {
 	char filename[32];
-	snprintf(filename, sizeof(filename), kFn_s, kLevels[_level], num, "sav");
+	if (num < 0) {
+		snprintf(filename, sizeof(filename), kMenuFn_s, -num, "sav");
+	} else {
+		snprintf(filename, sizeof(filename), kFn_s, kLevels[_level], num, "sav");
+	}
 	File *fp = fileOpen(filename, 0, kFileType_SAVE, false);
 	if (!fp) {
 		return false;
@@ -535,7 +540,11 @@ bool Game::saveGameState(int num) {
 
 bool Game::loadGameState(int num) {
 	char filename[32];
-	snprintf(filename, sizeof(filename), kFn_s, kLevels[_level], num, "sav");
+	if (num < 0) {
+		snprintf(filename, sizeof(filename), kMenuFn_s, -num, "sav");
+	} else {
+		snprintf(filename, sizeof(filename), kFn_s, kLevels[_level], num, "sav");
+	}
 	File *fp = fileOpen(filename, 0, kFileType_LOAD, false);
 	if (!fp) {
 		return false;
@@ -575,8 +584,9 @@ const char *Game::getLevelName(int level) const {
 	return 0;
 }
 
-bool Game::hasSavedGameState(int level, int num) const {
+bool Game::hasSavedGameState(int num) const {
+	assert(num < 0);
 	char filename[32];
-	snprintf(filename, sizeof(filename), kFn_s, kLevels[_level], num, "sav");
+	snprintf(filename, sizeof(filename), kMenuFn_s, -num, "sav");
 	return fileExists(filename, kFileType_LOAD);
 }

@@ -97,7 +97,25 @@ void TextureCache::flush() {
 	memset(_clut, 0, sizeof(_clut));
 }
 
-Texture *TextureCache::getCachedTexture(int16_t key, const uint8_t *data, int w, int h, const uint8_t *pal) {
+bool TextureCache::hasTexture(int16_t key) const {
+	for (Texture *t = _texturesListHead; t; t = t->next) {
+		if (t->key == key) {
+			return true;
+		}
+	}
+	return false;
+}
+
+void TextureCache::releaseTexture(int16_t key) {
+	for (Texture *t = _texturesListHead; t; t = t->next) {
+		if (t->key == key) {
+			destroyTexture(t);
+			break;
+		}
+	}
+}
+
+Texture *TextureCache::getCachedTexture(int16_t key, const uint8_t *data, int w, int h, bool rgb, const uint8_t *pal) {
 	Texture *prev = 0;
 	for (Texture *t = _texturesListHead; t; t = t->next) {
 		if (t->key == key) {
@@ -114,7 +132,7 @@ Texture *TextureCache::getCachedTexture(int16_t key, const uint8_t *data, int w,
 		prev = t;
 	}
 	assert(data && w > 0 && h > 0);
-	Texture *t = createTexture(data, w, h, pal);
+	Texture *t = createTexture(data, w, h, rgb, pal);
 	if (t) {
 		t->key = key;
 	}
@@ -153,18 +171,23 @@ void TextureCache::convertTexture(const uint8_t *src, int w, int h, const uint16
 	}
 }
 
-Texture *TextureCache::createTexture(const uint8_t *data, int w, int h, const uint8_t *pal) {
+Texture *TextureCache::createTexture(const uint8_t *data, int w, int h, bool rgb, const uint8_t *pal) {
 	Texture *t = new Texture;
 	t->bitmapW = w;
 	t->bitmapH = h;
-	t->bitmapData = (uint8_t *)malloc(w * h);
-	if (!t->bitmapData) {
-		delete t;
-		return 0;
+	if (rgb) {
+		// bitmap is true color, we don't need to keep a copy for palette changes
+		t->bitmapData = 0;
+	} else {
+		t->bitmapData = (uint8_t *)malloc(w * h);
+		if (!t->bitmapData) {
+			delete t;
+			return 0;
+		}
+		memcpy(t->bitmapData, data, w * h);
+		w *= _scalers[_scaler].factor;
+		h *= _scalers[_scaler].factor;
 	}
-	memcpy(t->bitmapData, data, w * h);
-	w *= _scalers[_scaler].factor;
-	h *= _scalers[_scaler].factor;
 	t->texW = _npotTex ? w : roundPow2(w);
 	t->texH = _npotTex ? h : roundPow2(h);
 	t->u = w / (float)t->texW;
@@ -172,7 +195,15 @@ Texture *TextureCache::createTexture(const uint8_t *data, int w, int h, const ui
 	glGenTextures(1, &t->id);
 	uint16_t *texData = (uint16_t *)malloc(t->texW * t->texH * sizeof(uint16_t));
 	if (texData) {
-		if (pal) {
+		if (rgb) {
+			uint16_t *p = texData;
+			for (int y = 0; y < h; ++y) {
+				for (int x = 0; x < w; ++x) {
+					p[x] = _formats[_fmt].convertColor(data[0], data[1], data[2]); data += 3;
+				}
+				p += t->texW;
+			}
+		} else if (pal) {
 			uint16_t clut[256];
 			convertPalette(pal, clut);
 			convertTexture(t->bitmapData, t->bitmapW, t->bitmapH, clut, texData, t->texW);
@@ -255,6 +286,10 @@ void TextureCache::setPalette(const uint8_t *pal, bool updateTextures) {
 	convertPalette(pal, _clut);
 	if (updateTextures) {
 		for (Texture *t = _texturesListHead; t; t = t->next) {
+			if (!t->bitmapData) {
+				// skip rgb textures
+				continue;
+			}
 			uint16_t *texData = (uint16_t *)malloc(t->texW * t->texH * sizeof(uint16_t));
 			if (texData) {
 				convertTexture(t->bitmapData, t->bitmapW, t->bitmapH, _clut, texData, t->texW);

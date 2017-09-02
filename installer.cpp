@@ -88,7 +88,7 @@ struct Installer {
                                 const int h = READ_BE_UINT16(bitmapBuf + 10);
                                 const int c = READ_BE_UINT16(bitmapBuf + 12);
 				assert(w == kFlagWidth && h == kFlagHeight && c == 256);
-				_render->prepareTexture(bitmapBuf + kHeaderSize + 256 * 3, w, h, bitmapBuf + kHeaderSize, kTexKeyFlag + i);
+				_render->prepareTextureLut(bitmapBuf + kHeaderSize + 256 * 3, w, h, bitmapBuf + kHeaderSize, kTexKeyFlag + i);
 			}
 			free(bitmapBuf);
 		}

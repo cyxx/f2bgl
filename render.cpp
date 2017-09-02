@@ -215,8 +215,20 @@ void Render::setCameraPitch(int ry) {
 	_cameraPitch = ry * 360 / 1024.;
 }
 
-void Render::prepareTexture(const uint8_t *texData, int texW, int texH, const uint8_t *clut, int16_t texKey) {
-	_textureCache.getCachedTexture(texKey, texData, texW, texH, clut);
+bool Render::hasTexture(int16_t key) {
+	return _textureCache.hasTexture(key);
+}
+
+void Render::prepareTextureLut(const uint8_t *data, int w, int h, const uint8_t *clut, int16_t texKey) {
+	_textureCache.getCachedTexture(texKey, data, w, h, false, clut);
+}
+
+void Render::prepareTextureRgb(const uint8_t *data, int w, int h, int16_t texKey) {
+	_textureCache.getCachedTexture(texKey, data, w, h, true);
+}
+
+void Render::releaseTexture(int16_t texKey) {
+	_textureCache.releaseTexture(texKey);
 }
 
 void Render::drawPolygonFlat(const Vertex *vertices, int verticesCount, int color) {

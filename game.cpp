@@ -40,6 +40,8 @@ Game::Game(Render *render, const GameParams *params)
 	memset(_sceneObjectsTable, 0, sizeof(_sceneObjectsTable));
 	memset(_sceneCellMap, 0, sizeof(_sceneCellMap));
 	memset(_playerMessagesTable, 0, sizeof(_playerMessagesTable));
+
+	memset(_saveLoadTextureIdTable, 0, sizeof(_saveLoadTextureIdTable));
 }
 
 Game::~Game() {
@@ -3047,7 +3049,21 @@ void Game::drawSceneObjectMesh(SceneObject *so, int flags) {
 			const int y = (kGroundY << 15) + (polygonPoints[0].y << 1);
 			addParticleBlob(so, polygonPoints[0].x, y, polygonPoints[0].z, 5, 6, color & 255);
 		}
-		const int fill = (color >> 8) & 31;
+		int fill = (color >> 8) & 31;
+		if (so->o == _objectsPtrTable[kObjPtrSaveloadOption] && fill == 12) { // menu save/load textures
+			const int texture = color & 255;
+			const int primitive = 8; // upside down bitmap
+			for (int i = 0; i < ARRAYSIZE(_saveLoadTextureIdTable); ++i) {
+				if (_saveLoadTextureIdTable[i] == texture) {
+					const int texKey = kSaveLoadTexKey + i;
+					if (_render->hasTexture(texKey)) {
+						_render->drawPolygonTexture(polygonPoints, count + 1, primitive, 0, 0, 0, texKey);
+						fill = 10; // no further rendering
+					}
+					break;
+				}
+			}
+		}
 		if (fill == 8 || fill == 11 || fill == 12) {
 			const int texture = color & 255;
 			const int primitive = (color >> 13) & 7;

@@ -300,7 +300,19 @@ File *fileOpen(const char *fileName, int *fileSize, int fileType, bool errorIfNo
 		default:
 			break;
 		}
-		if (fp && !fp->open(filePath, (fileType == kFileType_LOAD) ? "rb" : "wb")) {
+		const char *mode = 0;
+		switch (fileType) {
+		case kFileType_LOAD:
+			mode = "rb";
+			break;
+		case kFileType_SCREENSHOT:
+			mode = "ab+";
+			break;
+		default:
+			mode = "wb";
+			break;
+		}
+		if (fp && !fp->open(filePath, mode)) {
 			delete fp;
 			fp = 0;
 		}

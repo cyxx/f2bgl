@@ -55,7 +55,10 @@ struct Render {
 	void setCameraPos(int x, int y, int z, int shift = 0);
 	void setCameraPitch(int a);
 
-	void prepareTexture(const uint8_t *texData, int texW, int texH, const uint8_t *clut, int16_t texKey);
+	bool hasTexture(int16_t key);
+	void prepareTextureLut(const uint8_t *data, int w, int h, const uint8_t *clut, int16_t texKey);
+	void prepareTextureRgb(const uint8_t *data, int w, int h, int16_t texKey);
+	void releaseTexture(int16_t texKey);
 
 	void drawPolygonFlat(const Vertex *vertices, int verticesCount, int color);
 	void drawPolygonTexture(const Vertex *vertices, int verticesCount, int primitive, const uint8_t *texData, int texW, int texH, int16_t texKey);
