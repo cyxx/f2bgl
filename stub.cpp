@@ -410,9 +410,8 @@ struct GameStub_F2B : GameStub {
 		case kStateCutscene:
 			_skip = syncTicks(ticks, kCutsceneFrameDelay);
 			if (_skip) {
-				return;
-			}
-			if (!_g->_cut.play()) {
+				_g->_cut.drawFrame();
+			} else if (!_g->_cut.play()) {
 				_g->_cut.unload();
 				if (!_g->_cut.isInterrupted()) {
 					do {

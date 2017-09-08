@@ -81,6 +81,7 @@ struct Cutscene {
 	bool load(int num);
 	void unload();
 	bool play();
+	void drawFrame();
 	bool isInterrupted() const;
 	void queue(int num, int counter = 0);
 	int dequeue();
