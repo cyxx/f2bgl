@@ -19,22 +19,11 @@ struct Vertex3f {
 	GLfloat x, y, z;
 };
 
-struct Vertex4f {
-	GLfloat x, y, z, w;
-
-	void normalize() {
-		const GLfloat len = sqrt(x * x + y * y + z * z);
-		x /= len;
-		y /= len;
-		z /= len;
-		w /= len;
-	}
-};
-
 #ifdef USE_GLES
 
 #define glOrtho glOrthof
 #define glFrustum glFrustumf
+#define glFogi glFogf
 
 static const int kVerticesBufferSize = 1024;
 static GLfloat _verticesBuffer[kVerticesBufferSize * 3];
