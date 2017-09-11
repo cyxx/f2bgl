@@ -23,7 +23,7 @@ struct TextureCache {
 	TextureCache();
 	~TextureCache();
 
-	void init();
+	void init(const char *filter, const char *scaler);
 	void flush();
 
 	bool hasTexture(int16_t key) const;
@@ -37,6 +37,8 @@ struct TextureCache {
 	void convertPalette(const uint8_t *src, uint16_t *dst);
 	void setPalette(const uint8_t *pal, bool updateTextures = true);
 
+	int _filter;
+	int _scaler;
 	int _fmt;
 	Texture *_texturesListHead, *_texturesListTail;
 	uint16_t _clut[256];

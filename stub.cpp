@@ -25,6 +25,8 @@ static const char *USAGE =
 	"  --fullscreen-ar             Fullscreen display (4:3 aspect ratio)\n"
 	"  --soundfont=FILE            SoundFont (.sf2) file for music\n"
 	"  --fog                       Enable fog rendering\n"
+	"  --texturefilter=FILTER      Texture filter (default 'linear')\n"
+	"  --texturescaler=NAME        Texture scaler (default 'scale2x')\n"
 ;
 
 static const struct {
@@ -95,7 +97,6 @@ static int getNextCutsceneNum(int num) {
 
 static char *_dataPath;
 static char *_savePath;
-static char *_soundFont;
 
 struct GameStub_F2B : GameStub {
 
@@ -118,11 +119,19 @@ struct GameStub_F2B : GameStub {
 	bool _skip;
 	int _slotState;
 	bool _loadState, _saveState;
+	char *_soundFont;
+	RenderParams _renderParams;
+	char *_textureFilter;
+	char *_textureScaler;
 
 	GameStub_F2B()
 		: _render(0), _g(0),
 		_fileLanguage(kFileLanguage_EN), _fileVoice(kFileLanguage_EN), _displayMode(kDisplayModeWindowed) {
 		memset(&_params, 0, sizeof(_params));
+		_soundFont = 0;
+		memset(&_renderParams, 0, sizeof(_renderParams));
+		_textureFilter = 0;
+		_textureScaler = 0;
 	}
 
 	void setState(int state) {
@@ -182,6 +191,8 @@ struct GameStub_F2B : GameStub {
 				{ "alt-level", required_argument, 0, 11 },
 				{ "soundfont", required_argument, 0, 12 },
 				{ "fog",       no_argument,       0, 13 },
+				{ "texturefilter", required_argument, 0, 14 },
+				{ "texturescaler", required_argument, 0, 15 },
 #ifdef F2B_DEBUG
 				{ "xpos_conrad",    required_argument, 0, 100 },
 				{ "zpos_conrad",    required_argument, 0, 101 },
@@ -242,7 +253,15 @@ struct GameStub_F2B : GameStub {
 				_params.sf2 = _soundFont;
 				break;
 			case 13:
-				_params.renderFog = true;
+				_renderParams.fog = true;
+				break;
+			case 14:
+				_textureFilter = strdup(optarg);
+				_renderParams.textureFilter = _textureFilter;
+				break;
+			case 15:
+				_textureScaler = strdup(optarg);
+				_renderParams.textureScaler = _textureScaler;
 				break;
 #ifdef F2B_DEBUG
 			case 100:
@@ -291,7 +310,7 @@ struct GameStub_F2B : GameStub {
 			warning("Unable to find datafiles");
 			return -2;
 		}
-		_render = new Render;
+		_render = new Render(&_renderParams);
 		_g = new Game(_render, &_params);
 		_g->init();
 		_g->_cut._numToPlay = 47;
@@ -308,8 +327,12 @@ struct GameStub_F2B : GameStub {
 		delete _g;
 		delete _render;
 		free(_dataPath);
+		_dataPath = 0;
 		free(_savePath);
+		_savePath = 0;
 		free(_soundFont);
+		free(_textureFilter);
+		free(_textureScaler);
 		_dataPath = 0;
 	}
 	virtual StubMixProc getMixProc(int rate, int fmt, void (*lock)(int)) {

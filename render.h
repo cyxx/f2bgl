@@ -27,6 +27,12 @@ enum {
 
 struct Texture;
 
+struct RenderParams {
+	bool fog;
+	const char *textureFilter;
+	const char *textureScaler;
+};
+
 struct Render {
 	uint8_t _clut[256 * 3];
 	float _pixelColorMap[4][256];
@@ -47,7 +53,7 @@ struct Render {
 	int _paletteRgbScale;
 	bool _fog;
 
-	Render();
+	Render(const RenderParams *params);
 	~Render();
 
 	void flushCachedTextures();

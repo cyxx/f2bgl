@@ -140,7 +140,7 @@ static TextureCache _textureCache;
 static Vertex3f _cameraPos;
 static GLfloat _cameraPitch;
 
-Render::Render() {
+Render::Render(const RenderParams *params) {
 	memset(_clut, 0, sizeof(_clut));
 	_screenshotBuf = 0;
 	_overlay.buf = (uint8_t *)calloc(kOverlayWidth * kOverlayHeight, sizeof(uint8_t));
@@ -149,10 +149,10 @@ Render::Render() {
 	_viewport.changed = true;
 	_viewport.pw = 256;
 	_viewport.ph = 256;
-	_textureCache.init();
+	_textureCache.init(params->textureFilter, params->textureScaler);
 	_paletteGreyScale = false;
 	_paletteRgbScale = 256;
-	_fog = false;
+	_fog = params->fog;
 }
 
 Render::~Render() {

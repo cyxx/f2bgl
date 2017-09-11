@@ -12,7 +12,6 @@
 #include "texturecache.h"
 
 static const int kDefaultTexBufSize = 320 * 200;
-static const int kTextureMinMaxFilter = GL_LINEAR; // GL_NEAREST
 
 uint16_t convert_RGBA_5551(int r, int g, int b) {
 	return ((r >> 3) << 11) | ((g >> 3) << 6) | ((b >> 3) << 1) | 1;
@@ -34,33 +33,40 @@ static const struct {
 #ifdef USE_GLES
 	{ GL_RGBA, GL_RGBA, GL_UNSIGNED_SHORT_5_5_5_1, &convert_RGBA_5551 },
 #else
-	{ GL_RGB5_A1, GL_RGBA, GL_UNSIGNED_SHORT_5_5_5_1,     &convert_RGBA_5551 },
+	{ GL_RGB5_A1, GL_RGBA, GL_UNSIGNED_SHORT_5_5_5_1, &convert_RGBA_5551 },
 #endif
 	{ -1, -1, -1, 0 }
 };
 
 static const struct {
-	void (*proc)(uint16_t *dst, int dstPitch, const uint16_t *src, int srcPitch, int w, int h);
-        int factor;
-} _scalers[] = {
-	{ point1x, 1 },
-	{ point2x, 2 },
-	{ scale2x, 2 },
-	{ point3x, 3 },
-	{ scale3x, 3 },
+	const char *name;
+	int filter;
+} _filters[] = {
+	{ "nearest", GL_NEAREST },
+	{ "linear", GL_LINEAR },
+	{ 0, 0 },
 };
 
-static const int _scaler = 2;
+static const struct {
+	void (*proc)(uint16_t *dst, int dstPitch, const uint16_t *src, int srcPitch, int w, int h);
+	const char *name;
+	int factor;
+} _scalers[] = {
+	{ point1x, "point1x", 1 },
+	{ point2x, "point2x", 2 },
+	{ scale2x, "scale2x", 2 },
+	{ point3x, "point3x", 3 },
+	{ scale3x, "scale3x", 3 },
+	{ 0, 0, 0 },
+};
 
 TextureCache::TextureCache()
 	: _fmt(0), _texturesListHead(0), _texturesListTail(0) {
 	memset(_clut, 0, sizeof(_clut));
-	if (_scalers[_scaler].factor != 1) {
-		_texBuf = (uint16_t *)malloc(kDefaultTexBufSize * sizeof(uint16_t));
-	} else {
-		_texBuf = 0;
-	}
+	_texBuf = 0;
 	_npotTex = false;
+	_filter = GL_LINEAR;
+	_scaler = 2;
 }
 
 TextureCache::~TextureCache() {
@@ -77,10 +83,29 @@ static bool hasExt(const char *exts, const char *name) {
 	return false;
 }
 
-void TextureCache::init() {
+void TextureCache::init(const char *filter, const char *scaler) {
 	const char *exts = (const char *)glGetString(GL_EXTENSIONS);
 	if (exts && hasExt(exts, "GL_ARB_texture_non_power_of_two")) {
 		_npotTex = true;
+	}
+	if (filter) {
+		for (int i = 0; _filters[i].name; ++i) {
+			if (strcasecmp(_filters[i].name, filter) == 0) {
+				_filter = _filters[i].filter;
+				break;
+			}
+		}
+	}
+	if (scaler) {
+		for (int i = 0; _scalers[i].name; ++i) {
+			if (strcasecmp(_scalers[i].name, scaler) == 0) {
+				_scaler = i;
+				break;
+			}
+		}
+	}
+	if (_scalers[_scaler].factor != 1) {
+		_texBuf = (uint16_t *)malloc(kDefaultTexBufSize * sizeof(uint16_t));
 	}
 }
 
@@ -211,9 +236,9 @@ Texture *TextureCache::createTexture(const uint8_t *data, int w, int h, bool rgb
 			convertTexture(t->bitmapData, t->bitmapW, t->bitmapH, _clut, texData, t->texW);
 		}
 		glBindTexture(GL_TEXTURE_2D, t->id);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, kTextureMinMaxFilter);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, kTextureMinMaxFilter);
-		if (kTextureMinMaxFilter == GL_LINEAR) {
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, _filter);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, _filter);
+		if (_filter == GL_LINEAR) {
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 		}

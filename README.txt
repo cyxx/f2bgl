@@ -41,6 +41,9 @@ Defaults can be changed using command line switches :
     --fullscreen                Fullscreen display (stretched)
     --fullscreen-ar             Fullscreen display (4:3 aspect ratio)
     --soundfont=FILE            SoundFont (.sf2) file for music
+    --fog                       Enable fog rendering
+    --texturefilter=FILTER      Texture filter (default 'linear')
+    --texturescaler=NAME        Texture scaler (default 'scale2x')
 
 In-game hotkeys :
 
