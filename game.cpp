@@ -42,6 +42,9 @@ Game::Game(Render *render, const GameParams *params)
 	memset(_playerMessagesTable, 0, sizeof(_playerMessagesTable));
 
 	memset(_saveLoadTextureIdTable, 0, sizeof(_saveLoadTextureIdTable));
+
+	_iconsCount = 0;
+	memset(_iconsTable, 0, sizeof(_iconsTable));
 }
 
 Game::~Game() {
@@ -78,6 +81,7 @@ void Game::clearGlobalData() {
 	memset(_inputDirKeyReleased, 0, sizeof(_inputDirKeyReleased));
 	memset(_inputDirKeyPressed, 0, sizeof(_inputDirKeyPressed));
 	memset(_inputButtonKey, 0, sizeof(_inputButtonKey));
+	_inputButtonMouse = _inputDirMouse = 0;
 	_inputKeyAction = _inputKeyUse = _inputKeyJump = false;
 }
 
@@ -1214,6 +1218,9 @@ void Game::initLevel(bool keepInventoryObjects) {
 		loadInventoryObjects();
 	}
 	initFonts();
+	if (_params.mouseMode) {
+		initIcons();
+	}
 	setupInventoryObjects();
 	setupScannerObjects();
 	initSprites();
@@ -2591,6 +2598,9 @@ void Game::doTick() {
 	clearObjectsDrawList();
 	_render->setupProjection(kProj2D);
 	drawInfoPanel();
+	if (_params.mouseMode) {
+		drawIcons();
+	}
 	if (_mainLoopCurrentMode == 0) {
 		updateScreen();
 	} else if (_mainLoopCurrentMode == 1) {

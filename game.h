@@ -76,6 +76,7 @@ enum {
 	kLevelGameOver = 14,
 	kSaveLoadTexKey = 10000,
 	kSaveLoadSlots = 8,
+	kPlayerInputPointersCount = 4,
 };
 
 enum {
@@ -100,6 +101,25 @@ enum {
 	kIndirectColorBlue,
 
 	kIndirectColorTableSize
+};
+
+enum {
+	kIconActionStatic,
+	kIconActionRun,
+	kIconActionWalk,
+	kIconActionJump,
+	kIconActionDuck,
+	kIconActionLoad,
+	kIconActionGun,
+	kIconActionHand,
+	kIconActionHandUse,
+	kIconActionDirHalfTurn,
+	kIconActionDirUp,
+	kIconActionDirDown,
+	kIconActionDirLeft,
+	kIconActionDirRight,
+	kIconActionInventory,
+	kIconActionOptions,
 };
 
 enum {
@@ -329,6 +349,12 @@ struct Font {
 	SpriteImage glyphs[kFontGlyphsCount];
 };
 
+struct Icon {
+	int x, y;
+	SpriteImage spr;
+	int action;
+};
+
 struct RayCastedObject {
 	GameObject *o;
 	int x, z;
@@ -361,6 +387,10 @@ struct PlayerInput {
 	bool backStepKey;
 	bool farNear;
 	uint8_t lookAtDir;
+	struct {
+		int x, y;
+		bool down;
+	} pointers[kPlayerInputPointersCount];
 };
 
 struct DrawBuffer {
@@ -378,12 +408,13 @@ struct DrawNumber {
 struct Render;
 
 struct GameParams {
-	GameParams() : playDemo(false), levelNum(0), xPosConrad(0), zPosConrad(0), subtitles(false), sf2(0) {}
+	GameParams() : playDemo(false), levelNum(0), xPosConrad(0), zPosConrad(0), subtitles(false), sf2(0), mouseMode(false) {}
 	bool playDemo;
 	int levelNum;
 	int xPosConrad, zPosConrad;
 	bool subtitles;
 	const char *sf2;
+	bool mouseMode;
 };
 
 struct Game {
@@ -462,6 +493,8 @@ struct Game {
 	int _inventoryCursor[4];
 	int16_t _scannerBackgroundKey;
 	int _scannerCounter;
+	int _iconsCount;
+	Icon _iconsTable[32];
 
 	PlayerInput inp;
 	int _inputsCount;
@@ -469,6 +502,8 @@ struct Game {
 	uint8_t _inputDirKeyReleased[kInputKeySize];
 	uint8_t _inputDirKeyPressed[kInputKeySize];
 	uint8_t _inputButtonKey[kInputKeySize];
+	uint8_t _inputButtonMouse;
+	uint8_t _inputDirMouse;
 	bool _inputKeyAction, _inputKeyUse, _inputKeyJump;
 	int _demoInput;
 
@@ -714,6 +749,11 @@ struct Game {
 	int testObjectCollision1(GameObject *o, int xFrom, int zFrom, int xTo, int zTo, int mask8);
 	void fixCoordinates2(GameObject *o_following, int x1, int z1, int *x2, int *z2, int *x3, int *z3);
 
+	// icons.cpp
+	void loadIcon(int16_t key, int num, int x, int y, int action);
+	void initIcons(bool inBox = false);
+	void drawIcons();
+
 	// font.cpp
 	void loadFont(int num, int h, int w, int spacing, int16_t fontKey);
 	void initFonts();
@@ -724,6 +764,7 @@ struct Game {
 
 	// input.cpp
 	void updateInput();
+	void updateMouseInput();
 	void updateGameInput();
 	bool testInputKeyMask(int num, int dir, int button, int index) const;
 	bool testInputKeyMaskEq(int num, int dir, int button, int index) const;

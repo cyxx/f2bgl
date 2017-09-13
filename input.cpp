@@ -101,11 +101,13 @@ void Game::updateInput() {
 		// _inputDirKeyReleased[inputKey1]
 	}
 
+	_inputButtonKey[0] |= _inputButtonMouse;
+	_inputDirKeyPressed[0] |= _inputDirMouse;
+
 	for (int i = 0; i < _inputsCount; ++i) {
 		_inputsTable[i].sysmaskPrev = _inputsTable[i].sysmask;
 		if (currentInput == i) {
 			_inputsTable[i].sysmask = _inputButtonKey[0] | (_inputDirKeyPressed[0] << 4) | (_inputButtonKey[1] << 8) | (_inputDirKeyPressed[1] << 12);
-//			_inputsTable[i].sysmask |= _inputButtonMouse | (_inputDirMouse << 4);
 			updateInputKeyMask(i);
 		} else {
 			_inputsTable[i].sysmask = 0;
@@ -114,6 +116,81 @@ void Game::updateInput() {
 		}
 	}
 	readInputEvents();
+}
+
+void Game::updateMouseInput() {
+	_inputButtonMouse = 0;
+	_inputDirMouse = 0;
+	inp.footStepKey = false;
+	inp.backStepKey = false;
+	for (int i = 0; i < kPlayerInputPointersCount; ++i) {
+		if (inp.pointers[i].down) {
+			for (int j = 0; j < _iconsCount; ++j) {
+				const int x1 = _iconsTable[j].x;
+				const int x2 = _iconsTable[j].x + _iconsTable[j].spr.w - 1;
+				if (inp.pointers[i].x < x1 || inp.pointers[i].x > x2) {
+					continue;
+				}
+				const int y1 = _iconsTable[j].y;
+				const int y2 = _iconsTable[j].y + _iconsTable[j].spr.h - 1;
+				if (inp.pointers[i].y < y1 || inp.pointers[i].y > y2) {
+					continue;
+				}
+				switch (_iconsTable[j].action) {
+				case kIconActionStatic:
+					_inputButtonMouse |= 1;
+					break;
+				case kIconActionRun:
+					_inputDirMouse |= 8;
+					break;
+				case kIconActionWalk:
+					_inputButtonMouse |= 2;
+					break;
+				case kIconActionJump:
+					inp.jumpKey = true;
+					break;
+				case kIconActionDuck:
+					_inputDirMouse |= 4;
+					break;
+				case kIconActionLoad:
+					_inputButtonMouse |= 4;
+					break;
+				case kIconActionGun:
+					_inputButtonMouse |= 1;
+					break;
+				case kIconActionHand:
+					_inputButtonMouse |= 8;
+					break;
+				case kIconActionHandUse:
+					inp.spaceKey = true;
+					break;
+				case kIconActionDirHalfTurn:
+					// shift+down
+					_inputButtonMouse |= 2;
+					_inputDirMouse |= 4;
+					break;
+				case kIconActionDirUp:
+					inp.footStepKey = true;
+					break;
+				case kIconActionDirDown:
+					inp.backStepKey = true;
+					break;
+				case kIconActionDirLeft:
+					_inputDirMouse |= 2;
+					break;
+				case kIconActionDirRight:
+					_inputDirMouse |= 1;
+					break;
+				case kIconActionInventory:
+					inp.inventoryKey = true;
+					break;
+				case kIconActionOptions:
+					inp.escapeKey = true;
+					break;
+				}
+			}
+		}
+	}
 }
 
 void Game::updateGameInput() {
@@ -139,10 +216,10 @@ void Game::updateGameInput() {
 				inp.numKeys[5] = true;
 				break;
 			case 33:
-				_inputKeyUse = true;
+				inp.useKey = true;
 				break;
 			case 34:
-				_inputKeyJump = true;
+				inp.jumpKey = true;
 				break;
 			case 51:
 				inp.enterKey = input->pressed;
@@ -228,6 +305,9 @@ void Game::updateGameInput() {
 				inp.ctrlKey = false;
 			}
 		}
+	}
+	if (_params.mouseMode) {
+		updateMouseInput();
 	}
 	updateInput();
 	inp.enterKey = enterKey;

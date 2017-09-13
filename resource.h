@@ -86,6 +86,14 @@ struct ResUserConfig {
 	int greyScale;
 	int lightCoef;
 	int subtitles;
+	int iconLrMoveX;
+	int iconLrMoveY;
+	int iconLrStepX;
+	int iconLrStepY;
+	int iconLrToolsX;
+	int iconLrToolsY;
+	int iconLrCabX;
+	int iconLrCabY;
 	int iconLrInvX;
 	int iconLrInvY;
 	int iconLrScanX;

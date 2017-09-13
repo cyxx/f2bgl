@@ -27,6 +27,7 @@ static const char *USAGE =
 	"  --fog                       Enable fog rendering\n"
 	"  --texturefilter=FILTER      Texture filter (default 'linear')\n"
 	"  --texturescaler=NAME        Texture scaler (default 'scale2x')\n"
+	"  --mouse                     Enable mouse controls\n"
 ;
 
 static const struct {
@@ -193,6 +194,7 @@ struct GameStub_F2B : GameStub {
 				{ "fog",       no_argument,       0, 13 },
 				{ "texturefilter", required_argument, 0, 14 },
 				{ "texturescaler", required_argument, 0, 15 },
+				{ "mouse",     no_argument,       0, 16 },
 #ifdef F2B_DEBUG
 				{ "xpos_conrad",    required_argument, 0, 100 },
 				{ "zpos_conrad",    required_argument, 0, 101 },
@@ -263,6 +265,9 @@ struct GameStub_F2B : GameStub {
 				_textureScaler = strdup(optarg);
 				_renderParams.textureScaler = _textureScaler;
 				break;
+			case 16:
+				_params.mouseMode = true;
+				break;
 #ifdef F2B_DEBUG
 			case 100:
 				_params.xPosConrad = atoi(optarg);
@@ -304,6 +309,9 @@ struct GameStub_F2B : GameStub {
 	}
 	virtual int getDisplayMode() {
 		return _displayMode;
+	}
+	virtual bool hasCursor() {
+		return _params.mouseMode;
 	}
 	virtual int init() {
 		if (!fileInit(_fileLanguage, _fileVoice, _dataPath ? _dataPath : ".", _savePath ? _savePath : ".")) {
@@ -412,6 +420,13 @@ struct GameStub_F2B : GameStub {
 		case kKeyCodeCheatLifeCounter:
 			_g->_cheats ^= kCheatLifeCounter;
 			break;
+		}
+	}
+	void queueTouchInput(int pointer, int x, int y, int down) {
+		if (pointer >= 0 && pointer < kPlayerInputPointersCount) {
+			_g->inp.pointers[pointer].x = x * kScreenWidth  / 640;
+			_g->inp.pointers[pointer].y = y * kScreenHeight / 480;
+			_g->inp.pointers[pointer].down = down != 0;
 		}
 	}
 	bool syncTicks(unsigned int ticks, int tickDuration) {

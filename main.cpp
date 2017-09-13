@@ -139,6 +139,14 @@ static void setAspectRatio(int w, int h) {
 	}
 }
 
+static int transformPointerX(int x) {
+	return int((x - _aspectRatio[0] * gWindowW) * kDefaultW / (_aspectRatio[2] * gWindowW));
+}
+
+static int transformPointerY(int y) {
+	return int((y - _aspectRatio[1] * gWindowH) * kDefaultH / (_aspectRatio[3] * gWindowH));
+}
+
 struct GetStub_impl {
 	GameStub *getGameStub() {
 		return GameStub_create();
@@ -157,7 +165,7 @@ int main(int argc, char *argv[]) {
 	}
 	const int displayMode = stub->getDisplayMode();
 	SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_JOYSTICK | SDL_INIT_GAMECONTROLLER);
-	SDL_ShowCursor(SDL_DISABLE);
+	SDL_ShowCursor(stub->hasCursor() ? SDL_ENABLE : SDL_DISABLE);
 	int flags = SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE;
 	if (displayMode != kDisplayModeWindowed) {
 		flags |= SDL_WINDOW_FULLSCREEN_DESKTOP;
@@ -326,6 +334,25 @@ int main(int argc, char *argv[]) {
 					if (gGamepadMap[ev.cbutton.button] != 0) {
 						stub->queueKeyInput(gGamepadMap[ev.cbutton.button], ev.cbutton.state == SDL_PRESSED);
 					}
+				}
+				break;
+			case SDL_MOUSEMOTION:
+				if (ev.motion.state & SDL_BUTTON_LMASK) {
+					stub->queueTouchInput(0, transformPointerX(ev.motion.x), transformPointerY(ev.motion.y), 1);
+				}
+				if (ev.motion.state & SDL_BUTTON_RMASK) {
+					stub->queueTouchInput(1, transformPointerX(ev.motion.x), transformPointerY(ev.motion.y), 1);
+				}
+				break;
+			case SDL_MOUSEBUTTONDOWN:
+			case SDL_MOUSEBUTTONUP:
+				switch (ev.button.button) {
+				case SDL_BUTTON_LEFT:
+					stub->queueTouchInput(0, transformPointerX(ev.button.x), transformPointerY(ev.button.y), ev.button.state == SDL_PRESSED);
+					break;
+				case SDL_BUTTON_RIGHT:
+					stub->queueTouchInput(1, transformPointerX(ev.button.x), transformPointerY(ev.button.y), ev.button.state == SDL_PRESSED);
+					break;
 				}
 				break;
 			default:
