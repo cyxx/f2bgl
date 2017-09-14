@@ -94,12 +94,8 @@ void Game::loadIcon(int16_t key, int num, int x, int y, int action) {
 	const uint8_t *p_anifram = _res.getData(kResType_ANI, key, "ANIFRAM");
 	assert(p_anifram);
 	int16_t sprKey = READ_LE_UINT16(p_anifram);
-	const uint8_t *p_btmdesc = _res.getData(kResType_SPR, sprKey, "BTMDESC");
-	icon->spr.w = READ_LE_UINT16(p_btmdesc);
-	icon->spr.h = READ_LE_UINT16(p_btmdesc + 2);
-	const uint8_t *data = _res.getData(kResType_SPR, sprKey, "SPRDATA");
-	icon->spr.data = _spriteCache.getData(sprKey, data);
-	icon->spr.key = sprKey;
+	initSprite(kResType_SPR, sprKey, &icon->spr);
+	icon->spr.data = _spriteCache.getData(sprKey, icon->spr.data);
 	_res.unload(kResType_SPR, sprKey);
 
 	icon->x = x;

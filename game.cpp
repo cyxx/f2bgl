@@ -641,11 +641,8 @@ void Game::getSceneAnimationTexture(SceneAnimation *sa, uint16_t *len, uint16_t 
 		}
 	}
 	const uint8_t *p_frm = _res.getData(kResType_ANI, key, "ANIFRAM");
-	const uint8_t *p_btm = _res.getData(kResType_SPR, READ_LE_UINT16(p_frm), "BTMDESC");
-	spr->w = READ_LE_UINT16(p_btm);
-	spr->h = READ_LE_UINT16(p_btm + 2);
-	spr->data = _res.getData(kResType_SPR, READ_LE_UINT16(p_frm), "SPRDATA");
-	spr->key = READ_LE_UINT16(p_frm);
+	int16_t sprKey = READ_LE_UINT16(p_frm);
+	initSprite(kResType_SPR, sprKey, spr);
 	const uint8_t *p_key = _res.getData(kResType_ANI, sa->frmKey, "ANIKEYF");
 	if (len) {
 		*len = p_key[0];
@@ -1065,11 +1062,7 @@ void Game::getSceneTexture(int16_t key, int framesSkip, SpriteImage *spr) {
 	assert(frameKey != 0);
 	const uint8_t *p_frm = _res.getData(kResType_ANI, frameKey, "ANIFRAM");
 	int16_t sprKey = READ_LE_UINT16(p_frm);
-	const uint8_t *p_btm = _res.getData(kResType_SPR, sprKey, "BTMDESC");
-	spr->w = READ_LE_UINT16(p_btm);
-	spr->h = READ_LE_UINT16(p_btm + 2);
-	spr->data = _res.getData(kResType_SPR, sprKey, "SPRDATA");
-	spr->key = sprKey;
+	initSprite(kResType_SPR, sprKey, spr);
 }
 
 void Game::loadSceneTextures(int16_t key) {
@@ -2701,10 +2694,10 @@ void Game::doTick() {
 
 void Game::initSprite(int type, int16_t key, SpriteImage *spr) {
 	assert(type == kResType_SPR);
-	uint8_t *p = _res.getData(type, key, "BTMDESC");
+	uint8_t *p = _res.getData(kResType_SPR, key, "BTMDESC");
 	spr->w = READ_LE_UINT16(p);
 	spr->h = READ_LE_UINT16(p + 2);
-	spr->data = _res.getData(type, key, "SPRDATA");
+	spr->data = _res.getData(kResType_SPR, key, "SPRDATA");
 	spr->key = key;
 }
 
@@ -3752,13 +3745,9 @@ void Game::setupInventoryObjects() {
 	p_anifram = _res.getData(kResType_ANI, childKey, "ANIFRAM");
 	sprKey = READ_LE_UINT16(p_anifram);
 	if (!_infoPanelSpr.data) {
-		const uint8_t *p_btmdesc = _res.getData(kResType_SPR, sprKey, "BTMDESC");
-		_infoPanelSpr.w = READ_LE_UINT16(p_btmdesc);
-		_infoPanelSpr.h = READ_LE_UINT16(p_btmdesc + 2);
-		_infoPanelSpr.data = _res.getData(kResType_SPR, sprKey, "SPRDATA");
+		initSprite(kResType_SPR, sprKey, &_infoPanelSpr);
 		assert(_infoPanelSpr.data);
 		_infoPanelSpr.data = _spriteCache.getData(sprKey, _infoPanelSpr.data);
-		_infoPanelSpr.key = sprKey;
 		_res.unload(kResType_SPR, sprKey);
 		if (_level == 6 || _level == 12) {
 			// only display the energy level
