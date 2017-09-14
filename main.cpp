@@ -147,15 +147,8 @@ static int transformPointerY(int y) {
 	return int((y - _aspectRatio[1] * gWindowH) * 200 / (_aspectRatio[3] * gWindowH));
 }
 
-struct GetStub_impl {
-	GameStub *getGameStub() {
-		return GameStub_create();
-	}
-};
-
 int main(int argc, char *argv[]) {
-	GetStub_impl gs;
-	GameStub *stub = gs.getGameStub();
+	GameStub *stub = GameStub_create();
 	if (!stub) {
 		return -1;
 	}
