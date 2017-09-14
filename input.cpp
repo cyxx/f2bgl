@@ -126,14 +126,7 @@ void Game::updateMouseInput() {
 	for (int i = 0; i < kPlayerInputPointersCount; ++i) {
 		if (inp.pointers[i].down) {
 			for (int j = 0; j < _iconsCount; ++j) {
-				const int x1 = _iconsTable[j].x;
-				const int x2 = _iconsTable[j].x + _iconsTable[j].spr.w - 1;
-				if (inp.pointers[i].x < x1 || inp.pointers[i].x > x2) {
-					continue;
-				}
-				const int y1 = _iconsTable[j].y;
-				const int y2 = _iconsTable[j].y + _iconsTable[j].spr.h - 1;
-				if (inp.pointers[i].y < y1 || inp.pointers[i].y > y2) {
+				if (!_iconsTable[j].isCursorOver(inp.pointers[i].x, inp.pointers[i].y)) {
 					continue;
 				}
 				switch (_iconsTable[j].action) {

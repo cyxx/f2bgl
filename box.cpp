@@ -9,6 +9,21 @@ void Game::initBox() {
 	assert(_boxItemObj);
 	setPalette(_palKeysTable[_boxItemObj->pal]);
 	loadInventoryObjectMesh(_boxItemObj);
+	initIcons(kIconModeCabinet);
+}
+
+void Game::finiBox() {
+	// restore game mode icons
+	if (_params.mouseMode) {
+		initIcons(kIconModeGame);
+	}
+}
+
+void Game::setBoxItem(GameObject *o) {
+	assert(o);
+	_boxItemObj = o;
+	setPalette(_palKeysTable[_boxItemObj->pal]);
+	loadInventoryObjectMesh(_boxItemObj);
 }
 
 void Game::doBox() {
@@ -42,17 +57,36 @@ void Game::doBox() {
 			getStringRect((const char *)_tmpMsg.data, _tmpMsg.font, &w, &h);
 			drawString((kScreenWidth - w) / 2, 3, (const char *)_tmpMsg.data, _tmpMsg.font, 0);
 		}
+		drawIcons();
 	}
 	if (_boxItemCount > 1) {
 		if (inp.dirMask & kInputDirLeft) {
 			inp.dirMask &= ~kInputDirLeft;
-			_boxItemObj = getPreviousObject(_boxItemObj);
-			initBox();
+			setBoxItem(getPreviousObject(_boxItemObj));
 		}
 		if (inp.dirMask & kInputDirRight) {
 			inp.dirMask &= ~kInputDirRight;
-			_boxItemObj = getNextObject(_boxItemObj);
-			initBox();
+			setBoxItem(getNextObject(_boxItemObj));
+		}
+		for (int i = 0; i < kPlayerInputPointersCount; ++i) {
+			if (inp.pointers[i].down) {
+				for (int j = 0; j < _iconsCount; ++j) {
+					if (!_iconsTable[j].isCursorOver(inp.pointers[i].x, inp.pointers[i].y)) {
+						continue;
+					}
+					switch (_iconsTable[j].action) {
+					case kIconActionHand:
+						inp.spaceKey = true;
+						break;
+					case kIconActionDirLeft:
+						setBoxItem(getPreviousObject(_boxItemObj));
+						break;
+					case kIconActionDirRight:
+						setBoxItem(getNextObject(_boxItemObj));
+						break;
+					}
+                                }
+			}
 		}
 	}
 	if (inp.spaceKey) {
@@ -120,8 +154,7 @@ void Game::doBox() {
 				}
 				setObjectParent(_boxItemObj, _objectsPtrTable[kObjPtrCimetiere]);
 			}
-			_boxItemObj = nextItemObj;
-			initBox();
+			setBoxItem(nextItemObj);
 			_snd.playSfx(_objectsPtrTable[kObjPtrWorld]->objKey, _res._sndKeysTable[8]);
 		}
 	}

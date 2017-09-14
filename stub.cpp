@@ -142,6 +142,9 @@ struct GameStub_F2B : GameStub {
 			_render->resizeOverlay(0, 0);
 			_render->setPalette(_g->_screenPalette, 0, 256);
 			break;
+		case kStateBox:
+			_g->finiBox();
+			break;
 		case kStateMenu:
 			_g->finiMenu();
 			break;

@@ -104,6 +104,11 @@ enum {
 };
 
 enum {
+	kIconModeGame,
+	kIconModeCabinet,
+};
+
+enum {
 	kIconActionStatic,
 	kIconActionRun,
 	kIconActionWalk,
@@ -353,6 +358,16 @@ struct Icon {
 	int x, y;
 	SpriteImage spr;
 	int action;
+
+	bool isCursorOver(int xCursor, int yCursor) const {
+		if (xCursor < x || xCursor > x + spr.w - 1) {
+			return false;
+		}
+		if (yCursor < y || yCursor > y + spr.h - 1) {
+			return false;
+		}
+		return true;
+	}
 };
 
 struct RayCastedObject {
@@ -605,6 +620,8 @@ struct Game {
 
 	// box.cpp
 	void initBox();
+	void finiBox();
+	void setBoxItem(GameObject *o);
 	void doBox();
 
 	// game.cpp
@@ -751,7 +768,7 @@ struct Game {
 
 	// icons.cpp
 	void loadIcon(int16_t key, int num, int x, int y, int action);
-	void initIcons(bool inBox = false);
+	void initIcons(int iconMode);
 	void drawIcons();
 
 	// font.cpp

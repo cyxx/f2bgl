@@ -1212,7 +1212,7 @@ void Game::initLevel(bool keepInventoryObjects) {
 	}
 	initFonts();
 	if (_params.mouseMode) {
-		initIcons();
+		initIcons(kIconModeGame);
 	}
 	setupInventoryObjects();
 	setupScannerObjects();
