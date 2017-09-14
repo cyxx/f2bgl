@@ -427,8 +427,8 @@ struct GameStub_F2B : GameStub {
 	}
 	void queueTouchInput(int pointer, int x, int y, int down) {
 		if (pointer >= 0 && pointer < kPlayerInputPointersCount) {
-			_g->inp.pointers[pointer].x = x * kScreenWidth  / 640;
-			_g->inp.pointers[pointer].y = y * kScreenHeight / 480;
+			_g->inp.pointers[pointer].x = x;
+			_g->inp.pointers[pointer].y = y;
 			_g->inp.pointers[pointer].down = down != 0;
 		}
 	}

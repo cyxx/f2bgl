@@ -140,11 +140,11 @@ static void setAspectRatio(int w, int h) {
 }
 
 static int transformPointerX(int x) {
-	return int((x - _aspectRatio[0] * gWindowW) * kDefaultW / (_aspectRatio[2] * gWindowW));
+	return int((x - _aspectRatio[0] * gWindowW) * 320 / (_aspectRatio[2] * gWindowW));
 }
 
 static int transformPointerY(int y) {
-	return int((y - _aspectRatio[1] * gWindowH) * kDefaultH / (_aspectRatio[3] * gWindowH));
+	return int((y - _aspectRatio[1] * gWindowH) * 200 / (_aspectRatio[3] * gWindowH));
 }
 
 struct GetStub_impl {
