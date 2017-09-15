@@ -275,10 +275,10 @@ void Game::updateGameInput() {
 				inp.farNear = true;
 				break;
 			case 163:
-				inp.footStepKey = true;
+				inp.footStepKey = input->pressed;
 				break;
 			case 164:
-				inp.backStepKey = true;
+				inp.backStepKey = input->pressed;
 				break;
 			default:
 				warning("Game::updateGameInput() unhandled demo input key %d", input->key);
