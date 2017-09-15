@@ -248,7 +248,7 @@ static File *fileOpenIntern(const char *fileName, int fileType, const char *pref
 }
 
 bool fileExists(const char *fileName, int fileType) {
-	if (fileType == kFileType_SAVE || fileType == kFileType_LOAD || fileType == kFileType_SCREENSHOT || fileType == kFileType_CONFIG) {
+	if (fileType == kFileType_SAVE || fileType == kFileType_LOAD || fileType == kFileType_SCREENSHOT_LOAD || fileType == kFileType_CONFIG) {
 		char filePath[MAXPATHLEN];
 		snprintf(filePath, sizeof(filePath), "%s/%s", g_fileSavePath, fileName);
 		struct stat st;
@@ -284,7 +284,7 @@ int fileLanguage() {
 }
 
 File *fileOpen(const char *fileName, int *fileSize, int fileType, bool errorIfNotFound) {
-	if (fileType == kFileType_SAVE || fileType == kFileType_LOAD || fileType == kFileType_SCREENSHOT || fileType == kFileType_CONFIG) {
+	if (fileType == kFileType_SAVE || fileType == kFileType_LOAD || fileType == kFileType_SCREENSHOT_SAVE || fileType == kFileType_SCREENSHOT_LOAD || fileType == kFileType_CONFIG) {
 		char filePath[MAXPATHLEN];
 		snprintf(filePath, sizeof(filePath), "%s/%s", g_fileSavePath, fileName);
 		File *fp = 0;
@@ -293,7 +293,8 @@ File *fileOpen(const char *fileName, int *fileSize, int fileType, bool errorIfNo
 		case kFileType_SAVE:
 			fp = new GzipFile;
 			break;
-		case kFileType_SCREENSHOT:
+		case kFileType_SCREENSHOT_LOAD:
+		case kFileType_SCREENSHOT_SAVE:
 		case kFileType_CONFIG:
 			fp = new StdioFile;
 			break;
@@ -303,10 +304,8 @@ File *fileOpen(const char *fileName, int *fileSize, int fileType, bool errorIfNo
 		const char *mode = 0;
 		switch (fileType) {
 		case kFileType_LOAD:
+		case kFileType_SCREENSHOT_LOAD:
 			mode = "rb";
-			break;
-		case kFileType_SCREENSHOT:
-			mode = "ab+";
 			break;
 		default:
 			mode = "wb";

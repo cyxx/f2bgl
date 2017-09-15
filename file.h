@@ -18,7 +18,8 @@ enum FileType {
 	kFileType_RUNTIME,
 	kFileType_LOAD,
 	kFileType_SAVE,
-	kFileType_SCREENSHOT,
+	kFileType_SCREENSHOT_LOAD,
+	kFileType_SCREENSHOT_SAVE,
 	kFileType_CONFIG,
 };
 

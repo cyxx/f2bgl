@@ -71,7 +71,8 @@ void Game::initMenu() {
 			char filename[32];
 			snprintf(filename, sizeof(filename), kMenuFnTga_s, i);
 			_saveLoadSlots[i].texture.data = loadTGA(filename, &_saveLoadSlots[i].texture.w, &_saveLoadSlots[i].texture.h);
-			_render->prepareTextureRgb(_saveLoadSlots[i].texture.data, _saveLoadSlots[i].texture.w, _saveLoadSlots[i].texture.h, kSaveLoadTexKey + texIndexLut[i]);
+			if (_saveLoadSlots[i].texture.data && _saveLoadSlots[i].texture.w > 0 && _saveLoadSlots[i].texture.h > 0) {
+				_render->prepareTextureRgb(_saveLoadSlots[i].texture.data, _saveLoadSlots[i].texture.w, _saveLoadSlots[i].texture.h, kSaveLoadTexKey + texIndexLut[i]);				}
 		} else {
 			memset(&_saveLoadSlots[i].texture, 0, sizeof(_saveLoadSlots[i].texture));
 		}

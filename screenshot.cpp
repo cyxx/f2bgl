@@ -62,7 +62,7 @@ void saveBMP(const char *filepath, const uint8_t *rgb, int w, int h) {
 			offset += alignedWidth;
 		}
 
-		File *f = fileOpen(filepath, 0, kFileType_SCREENSHOT);
+		File *f = fileOpen(filepath, 0, kFileType_SCREENSHOT_SAVE);
 		if (f) {
 			fileWrite(f, buffer, bufferSize);
 			fileClose(f);
@@ -92,7 +92,7 @@ void saveTGA(const char *filepath, const uint8_t *rgba, int w, int h) {
 	buffer[16]           = 24; // Pixel Depth
 	buffer[17]           = 0;  // Descriptor
 
-	File *f = fileOpen(filepath, 0, kFileType_SCREENSHOT);
+	File *f = fileOpen(filepath, 0, kFileType_SCREENSHOT_SAVE);
 	if (f) {
 		fileWrite(f, buffer, sizeof(buffer));
 		if (kImageType == kTgaImageTypeUncompressedTrueColor) {
@@ -133,7 +133,7 @@ void saveTGA(const char *filepath, const uint8_t *rgba, int w, int h) {
 uint8_t *loadTGA(const char *filepath, int *w, int *h) {
 	*w = *h = 0;
 	uint8_t *buffer = 0;
-	File *f = fileOpen(filepath, 0, kFileType_SCREENSHOT);
+	File *f = fileOpen(filepath, 0, kFileType_SCREENSHOT_LOAD);
 	if (f) {
 		uint8_t header[TGA_HEADER_SIZE];
 		fileRead(f, header, sizeof(header));
