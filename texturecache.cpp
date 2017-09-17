@@ -224,7 +224,7 @@ Texture *TextureCache::createTexture(const uint8_t *data, int w, int h, bool rgb
 			uint16_t *p = texData;
 			for (int y = 0; y < h; ++y) {
 				for (int x = 0; x < w; ++x) {
-					p[x] = _formats[_fmt].convertColor(data[0], data[1], data[2]); data += 3;
+					p[x] = _formats[_fmt].convertColor(data[0], data[1], data[2]); data += 4;
 				}
 				p += t->texW;
 			}

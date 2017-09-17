@@ -615,11 +615,10 @@ void Render::drawOverlay() {
 
 const uint8_t *Render::captureScreen(int *w, int *h) {
 	if (!_screenshotBuf) {
-		_screenshotBuf = (uint8_t *)calloc(_w * _h, 3);
+		_screenshotBuf = (uint8_t *)calloc(_w * _h, 4);
 	}
 	if (_screenshotBuf) {
-                glPixelStorei(GL_PACK_ALIGNMENT, 1);
-                glReadPixels(0, 0, _w, _h, GL_RGB, GL_UNSIGNED_BYTE, _screenshotBuf);
+		glReadPixels(0, 0, _w, _h, GL_RGBA, GL_UNSIGNED_BYTE, _screenshotBuf);
 		*w = _w;
 		*h = _h;
 	}

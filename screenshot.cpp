@@ -76,7 +76,7 @@ void saveBMP(const char *filepath, const uint8_t *rgb, int w, int h) {
 
 static const int TGA_HEADER_SIZE = 18;
 
-void saveTGA(const char *filepath, const uint8_t *rgb, int w, int h) {
+void saveTGA(const char *filepath, const uint8_t *rgba, int w, int h) {
 	static const uint8_t kImageType = kTgaImageTypeRunLengthEncodedTrueColor;
 	uint8_t buffer[TGA_HEADER_SIZE];
 	buffer[0]            = 0; // ID Length
@@ -97,17 +97,17 @@ void saveTGA(const char *filepath, const uint8_t *rgb, int w, int h) {
 		fileWrite(f, buffer, sizeof(buffer));
 		if (kImageType == kTgaImageTypeUncompressedTrueColor) {
 			for (int i = 0; i < w * h; ++i) {
-				fileWriteByte(f, rgb[2]);
-				fileWriteByte(f, rgb[1]);
-				fileWriteByte(f, rgb[0]);
-				rgb += 3;
+				fileWriteByte(f, rgba[2]);
+				fileWriteByte(f, rgba[1]);
+				fileWriteByte(f, rgba[0]);
+				rgba += 4;
 			}
 		} else {
 			assert(kImageType == kTgaImageTypeRunLengthEncodedTrueColor);
-			int prevColor = rgb[0] + (rgb[1] << 8) + (rgb[2] << 16); rgb += 3;
+			int prevColor = rgba[0] + (rgba[1] << 8) + (rgba[2] << 16); rgba += 4;
 			int count = 0;
 			for (int i = 1; i < w * h; ++i) {
-				int color = rgb[0] + (rgb[1] << 8) + (rgb[2] << 16); rgb += 3;
+				int color = rgba[0] + (rgba[1] << 8) + (rgba[2] << 16); rgba += 4;
 				if (prevColor == color && count < 127) {
 					++count;
 					continue;
@@ -139,7 +139,7 @@ uint8_t *loadTGA(const char *filepath, int *w, int *h) {
 		fileRead(f, header, sizeof(header));
 		const int hdrW = READ_LE_UINT16(header + 12);
 		const int hdrH = READ_LE_UINT16(header + 14);
-		const int bufferSize = hdrW * hdrH * 3;
+		const int bufferSize = hdrW * hdrH * 4;
 		buffer = (uint8_t *)calloc(bufferSize, 1);
 		if (buffer) {
 			// This is not a generic TGA loader and only support decoding the output of saveTGA
@@ -154,6 +154,7 @@ uint8_t *loadTGA(const char *filepath, int *w, int *h) {
 						buffer[offset++] = r;
 						buffer[offset++] = g;
 						buffer[offset++] = b;
+						buffer[offset++] = 255;
 					}
 				}
 				*w = hdrW;
