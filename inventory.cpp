@@ -20,6 +20,43 @@ static bool _inventoryVoicePlayed;
 
 static bool _3dObj;
 
+enum {
+	kInventoryActionCategory1, // Gun
+	kInventoryActionCategory2, // Use
+	kInventoryActionCategory3, // Proj
+	kInventoryActionCategory4, // Scan
+	kInventoryActionCategory5, // Shield
+	kInventoryActionCategory6, // Message
+	kInventoryActionUp,
+	kInventoryActionDown,
+	kInventoryActionObj1,
+	kInventoryActionObj2,
+	kInventoryActionObj3,
+	kInventoryActionObj4,
+	kInventoryActionObj5,
+	kInventoryActionToggle3dObj,
+};
+
+static const struct {
+	int x, y, w, h;
+	int action;
+} _mouseHotspots[] = {
+	{ 49, 5, 32, 23, kInventoryActionCategory1 },
+	{ 87, 5, 32, 23, kInventoryActionCategory2 },
+	{ 125, 5, 32, 23, kInventoryActionCategory3 },
+	{ 163, 5, 32, 23, kInventoryActionCategory4 },
+	{ 201, 5, 32, 23, kInventoryActionCategory5 },
+	{ 239, 5, 32, 23, kInventoryActionCategory6 },
+	{ 137, 33, 40, 14, kInventoryActionUp },
+	{ 137, 99, 40, 14, kInventoryActionUp },
+	{ 39, 52, 46, 32, kInventoryActionObj1 },
+	{ 88, 52, 46, 32, kInventoryActionObj2 },
+	{ 137, 52, 46, 32, kInventoryActionObj3 },
+	{ 186, 52, 46, 32, kInventoryActionObj4 },
+	{ 235, 52, 46, 32, kInventoryActionObj5 },
+	{ 137, 129, 45, 20, kInventoryActionToggle3dObj },
+};
+
 bool Game::initInventory() {
 	if (_res._levelDescriptionsTable[_level].inventory) {
 		const int num = _objectsPtrTable[kObjPtrConrad]->specialData[1][20] & 15;
@@ -62,6 +99,62 @@ void Game::closeInventory() {
 }
 
 void Game::updateInventoryInput() {
+	if (inp.pointers[0].down) {
+		for (int j = 0; j < ARRAYSIZE(_mouseHotspots); ++j) {
+			if (inp.pointers[0].x < _mouseHotspots[j].x || inp.pointers[0].x > _mouseHotspots[j].x + _mouseHotspots[j].w - 1) {
+				continue;
+			}
+			if (inp.pointers[0].y < _mouseHotspots[j].y || inp.pointers[0].y > _mouseHotspots[j].y + _mouseHotspots[j].h - 1) {
+				continue;
+			}
+			inp.pointers[0].down = false;
+
+			switch (_mouseHotspots[j].action) {
+			case kInventoryActionCategory1:
+			case kInventoryActionCategory2:
+			case kInventoryActionCategory3:
+			case kInventoryActionCategory4:
+			case kInventoryActionCategory5:
+			case kInventoryActionCategory6:
+				_inventoryCategoryObj = _objectsPtrTable[kObjPtrInventaire]->o_child;
+				_inventoryCategoryNum = 0;
+				for (int i = 0; i < _mouseHotspots[j].action - kInventoryActionCategory1; ++i) {
+					_inventoryCategoryObj = _inventoryCategoryObj->o_next;
+					++_inventoryCategoryNum;
+				}
+				_inventoryCurrentObj = _inventoryCategoryObj->o_child;
+				_inventoryCurrentNum = 0;
+				_snd.playSfx(_objectsPtrTable[kObjPtrWorld]->objKey, _res._sndKeysTable[4]);
+				break;
+			case kInventoryActionUp:
+				inp.dirMask |= kInputDirUp;
+				break;
+			case kInventoryActionDown:
+				inp.dirMask |= kInputDirDown;
+				break;
+			case kInventoryActionObj1:
+			case kInventoryActionObj2:
+			case kInventoryActionObj3:
+			case kInventoryActionObj4:
+			case kInventoryActionObj5:
+				_inventoryCurrentObj = _inventoryCategoryObj->o_child;
+				_inventoryCurrentNum = 0;
+				for (int i = 0; i < _mouseHotspots[j].action - kInventoryActionObj1; ++i) {
+					if (!_inventoryCurrentObj->o_next) {
+						break;
+					}
+					_inventoryCurrentObj = _inventoryCurrentObj->o_next;
+					++_inventoryCurrentNum;
+				}
+				_snd.playSfx(_objectsPtrTable[kObjPtrWorld]->objKey, _res._sndKeysTable[5]);
+				break;
+			case kInventoryActionToggle3dObj:
+				inp.shiftKey = true;
+				break;
+			}
+		}
+	}
+
 	if (inp.tabKey && !_3dObj) {
 		inp.tabKey = false;
 		if (inp.shiftKey) {
@@ -75,7 +168,7 @@ void Game::updateInventoryInput() {
 			_inventoryCurrentNum = 0;
 			_snd.playSfx(_objectsPtrTable[kObjPtrWorld]->objKey, _res._sndKeysTable[4]);
 		} else {
-			_inventoryCategoryObj = getNextObject (_inventoryCategoryObj);
+			_inventoryCategoryObj = getNextObject(_inventoryCategoryObj);
 			if (_inventoryCategoryObj != _objectsPtrTable[kObjPtrInventaire]->o_child) {
 				_inventoryCategoryNum++;
 			} else {
@@ -87,6 +180,7 @@ void Game::updateInventoryInput() {
 		}
 	}
 	if ((inp.dirMask & kInputDirUp) != 0 && !_3dObj) {
+		inp.dirMask &= ~kInputDirUp;
 		if (_inventoryCurrentNum >= 5) {
 			_inventoryCurrentNum -= 5;
 			for (int i = 0; i < 5; ++i) {
@@ -96,6 +190,7 @@ void Game::updateInventoryInput() {
 		}
 	}
 	if ((inp.dirMask & kInputDirDown) != 0 && !_3dObj) {
+		inp.dirMask &= ~kInputDirDown;
 		const int lastObj = _inventoryCurrentNum + 5;
 		const int firstObj = lastObj - lastObj % 5;
 		GameObject *tmpObj = _inventoryCurrentObj;
@@ -129,7 +224,7 @@ void Game::updateInventoryInput() {
 		}
 	}
 	if (inp.shiftKey) {
-		inp.shiftKey = 0;
+		inp.shiftKey = false;
 		if (_inventoryCurrentObj) {
 			_3dObj = !_3dObj;
 			if (_3dObj) {

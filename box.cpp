@@ -68,24 +68,24 @@ void Game::doBox() {
 			inp.dirMask &= ~kInputDirRight;
 			setBoxItem(getNextObject(_boxItemObj));
 		}
-		for (int i = 0; i < kPlayerInputPointersCount; ++i) {
-			if (inp.pointers[i].down) {
-				for (int j = 0; j < _iconsCount; ++j) {
-					if (!_iconsTable[j].isCursorOver(inp.pointers[i].x, inp.pointers[i].y)) {
-						continue;
-					}
-					switch (_iconsTable[j].action) {
-					case kIconActionHand:
-						inp.spaceKey = true;
-						break;
-					case kIconActionDirLeft:
-						setBoxItem(getPreviousObject(_boxItemObj));
-						break;
-					case kIconActionDirRight:
-						setBoxItem(getNextObject(_boxItemObj));
-						break;
-					}
-                                }
+		if (inp.pointers[0].down) {
+			for (int j = 0; j < _iconsCount; ++j) {
+				if (!_iconsTable[j].isCursorOver(inp.pointers[0].x, inp.pointers[0].y)) {
+					continue;
+				}
+				inp.pointers[0].down = false;
+
+				switch (_iconsTable[j].action) {
+				case kIconActionHand:
+					inp.spaceKey = true;
+					break;
+				case kIconActionDirLeft:
+					setBoxItem(getPreviousObject(_boxItemObj));
+					break;
+				case kIconActionDirRight:
+					setBoxItem(getNextObject(_boxItemObj));
+					break;
+				}
 			}
 		}
 	}
