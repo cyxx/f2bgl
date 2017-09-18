@@ -218,7 +218,7 @@ Texture *TextureCache::createTexture(const uint8_t *data, int w, int h, bool rgb
 	t->u = w / (float)t->texW;
 	t->v = h / (float)t->texH;
 	glGenTextures(1, &t->id);
-	uint16_t *texData = (uint16_t *)malloc(t->texW * t->texH * sizeof(uint16_t));
+	uint16_t *texData = (uint16_t *)calloc(t->texW * t->texH, sizeof(uint16_t));
 	if (texData) {
 		if (rgb) {
 			uint16_t *p = texData;
@@ -282,7 +282,7 @@ void TextureCache::destroyTexture(Texture *texture) {
 void TextureCache::updateTexture(Texture *t, const uint8_t *data, int w, int h) {
 	assert(t->bitmapW == w && t->bitmapH == h);
 	memcpy(t->bitmapData, data, w * h);
-	uint16_t *texData = (uint16_t *)malloc(t->texW * t->texH * sizeof(uint16_t));
+	uint16_t *texData = (uint16_t *)calloc(t->texW * t->texH, sizeof(uint16_t));
 	if (texData) {
 		convertTexture(t->bitmapData, t->bitmapW, t->bitmapH, _clut, texData, t->texW);
 		glBindTexture(GL_TEXTURE_2D, t->id);
@@ -315,7 +315,7 @@ void TextureCache::setPalette(const uint8_t *pal, bool updateTextures) {
 				// skip rgb textures
 				continue;
 			}
-			uint16_t *texData = (uint16_t *)malloc(t->texW * t->texH * sizeof(uint16_t));
+			uint16_t *texData = (uint16_t *)calloc(t->texW * t->texH, sizeof(uint16_t));
 			if (texData) {
 				convertTexture(t->bitmapData, t->bitmapW, t->bitmapH, _clut, texData, t->texW);
 				glBindTexture(GL_TEXTURE_2D, t->id);
