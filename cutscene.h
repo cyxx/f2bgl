@@ -68,6 +68,8 @@ struct Cutscene {
 	int _msgsCount;
 	int _playQueue[kCutscenePlaybackQueueSize];
 	int _playQueueSize;
+	uint32_t _updateTicks;
+	uint32_t _frameTicks;
 
 	Cutscene(Render *render, Game *g, Sound *snd);
 	~Cutscene();
@@ -82,6 +84,7 @@ struct Cutscene {
 	void unload();
 	bool play();
 	void drawFrame();
+	bool update(uint32_t ticks);
 	bool isInterrupted() const;
 	void queue(int num, int counter = 0);
 	int dequeue();

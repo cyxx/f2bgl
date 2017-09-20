@@ -21,6 +21,8 @@ Cutscene::Cutscene(Render *render, Game *g, Sound *snd)
 		_playQueue[i] = -1;
 	}
 	_playQueueSize = 0;
+	_updateTicks = 0;
+	_frameTicks = 0;
 }
 
 Cutscene::~Cutscene() {
@@ -399,6 +401,7 @@ bool Cutscene::load(int num) {
 	_frameCounter = 0;
 	_msgsCount = 0;
 	memset(&_msgs, 0, sizeof(_msgs));
+	_frameTicks = 0;
 	return true;
 }
 
@@ -444,6 +447,19 @@ void Cutscene::drawFrame() {
 		_render->clearScreen();
 		const int y = (kCutsceneDisplayHeight - _fileHdr.videoFrameHeight) / 2;
 		_render->copyToOverlay(0, y, _frameBuffers[0], _fileHdr.videoFrameWidth, _fileHdr.videoFrameWidth, _fileHdr.videoFrameHeight);
+	}
+}
+
+bool Cutscene::update(uint32_t ticks) {
+	_frameTicks += ticks - _updateTicks;
+	const bool pause = (_frameTicks < kCutsceneFrameDelay);
+	_updateTicks = ticks;
+	_frameTicks %= kCutsceneFrameDelay;
+	if (pause) {
+		drawFrame();
+		return true;
+	} else {
+		return play();
 	}
 }
 

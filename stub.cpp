@@ -116,8 +116,6 @@ struct GameStub_F2B : GameStub {
 	FileLanguage  _fileLanguage, _fileVoice;
 	int _displayMode;
 	int _state, _nextState;
-	int _dt;
-	bool _skip;
 	int _slotState;
 	bool _loadState, _saveState;
 	char *_soundFont;
@@ -328,8 +326,6 @@ struct GameStub_F2B : GameStub {
 		_state = -1;
 		setState(_nextState);
 		_nextState = _state;
-		_dt = 0;
-		_skip = false;
 		_slotState = 0;
 		_loadState = _saveState = false;
 		return 0;
@@ -432,16 +428,6 @@ struct GameStub_F2B : GameStub {
 			_g->inp.pointers[pointer].down = down != 0;
 		}
 	}
-	bool syncTicks(unsigned int ticks, int tickDuration) {
-		static int previousTicks = ticks;
-		_dt += ticks - previousTicks;
-		const bool ret = (_dt < tickDuration);
-		previousTicks = ticks;
-		while (_dt >= tickDuration) {
-			_dt -= tickDuration;
-		}
-		return ret;
-	}
 	virtual void doTick(unsigned int ticks) {
 		if (_nextState != _state) {
 			setState(_nextState);
@@ -449,10 +435,7 @@ struct GameStub_F2B : GameStub {
 		_nextState = _state;
 		switch (_state) {
 		case kStateCutscene:
-			_skip = syncTicks(ticks, kCutsceneFrameDelay);
-			if (_skip) {
-				_g->_cut.drawFrame();
-			} else if (!_g->_cut.play()) {
+			if (!_g->_cut.update(ticks)) {
 				_g->_cut.unload();
 				if (!_g->_cut.isInterrupted()) {
 					do {
