@@ -478,10 +478,10 @@ void Render::resizeOverlay(int w, int h) {
 		_textureCache.destroyTexture(_overlay.tex);
 		_overlay.tex = 0;
 	}
-	if (w == 0 && h == 0) {
+	if (w == 0 || h == 0) {
 		return;
 	}
-	assert(w <= kOverlayWidth && h <= kOverlayHeight);
+	assert(w * h <= kOverlayWidth * kOverlayHeight);
 	memset(_overlay.buf, 0, kOverlayWidth * kOverlayHeight);
 	_overlay.tex = _textureCache.createTexture(_overlay.buf, w, h);
 }
@@ -536,13 +536,6 @@ void Render::clearScreen() {
 }
 
 void Render::setupProjection(int mode) {
-	if (_fog) {
-		if (mode == kProjGame) {
-			glEnable(GL_FOG);
-		} else {
-			glDisable(GL_FOG);
-		}
-	}
 	if (mode == kProj2D) {
 		glMatrixMode(GL_PROJECTION);
 		glLoadIdentity();
@@ -584,6 +577,11 @@ void Render::setupProjection(int mode) {
 	glScalef(1., -.5, -1.);
 	glRotatef(_cameraPitch, 0., 1., 0.);
 	glTranslatef(-_cameraPos.x, _cameraPos.y, -_cameraPos.z);
+	if (_fog) {
+		glEnable(GL_FOG);
+	} else {
+		glDisable(GL_FOG);
+	}
 }
 
 void Render::drawOverlay() {
