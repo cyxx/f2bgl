@@ -290,6 +290,15 @@ void Game::updateGameInput() {
 			}
 		}
 	}
+	bool ctrlKey = inp.ctrlKey;
+	if ((_cheats & kCheatUseButtonToShoot) != 0) {
+		if (isConradInShootingPos()) {
+			if (inp.spaceKey) {
+				inp.ctrlKey = true;
+				inp.spaceKey = false;
+			}
+		}
+	}
 	bool enterKey = inp.enterKey;
 	if ((_cheats & kCheatAutoReloadGun) != 0) {
 		if (_objectsPtrTable[kObjPtrGun]->customData[0] == 0) {
@@ -303,6 +312,7 @@ void Game::updateGameInput() {
 		updateMouseInput();
 	}
 	updateInput();
+	inp.ctrlKey = ctrlKey;
 	inp.enterKey = enterKey;
 }
 

@@ -49,11 +49,11 @@ Defaults can be changed using command line switches :
 In-game hotkeys :
 
     Arrow Keys     move Conrad
-    Alt / V        use gun
+    Alt / V        toggle gun mode
     Shift          walk
     Ctrl / B       shoot
-    Enter          recharge
-    Space          open
+    Enter          reload gun
+    Space          activate
     Tab            skip cutscene
     Escape         save/load menu
     I              inventory menu

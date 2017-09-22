@@ -14,7 +14,7 @@
 Game::Game(Render *render, const GameParams *params)
 	: _cut(render, this, &_snd), _snd(&_res), _render(render), _params(*params) {
 
-	_cheats = kCheatAutoReloadGun;
+	_cheats = kCheatAutoReloadGun | kCheatUseButtonToShoot;
 	_gameStateMsg = 0;
 
 	memset(&_drawCharBuf, 0, sizeof(_drawCharBuf));
