@@ -425,7 +425,8 @@ struct GameStub_F2B : GameStub {
 		if (pointer >= 0 && pointer < kPlayerInputPointersCount) {
 			_g->inp.pointers[pointer].x = x;
 			_g->inp.pointers[pointer].y = y;
-			_g->inp.pointers[pointer].down = down != 0;
+			_g->inp.pointers[pointer].down[1] = _g->inp.pointers[pointer].down[0];
+			_g->inp.pointers[pointer].down[0] = down != 0;
 		}
 	}
 	virtual void doTick(unsigned int ticks) {
@@ -510,6 +511,9 @@ struct GameStub_F2B : GameStub {
 			_g->doInstaller();
 			// _nextState = kStateGame
 			break;
+		}
+		for (int pointer = 0; pointer < kPlayerInputPointersCount; ++pointer) {
+			_g->inp.pointers[pointer].down[1] = false;
 		}
 	}
 	virtual void initGL(int w, int h, float *ar) {

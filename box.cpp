@@ -68,12 +68,11 @@ void Game::doBox() {
 			inp.dirMask &= ~kInputDirRight;
 			setBoxItem(getNextObject(_boxItemObj));
 		}
-		if (inp.pointers[0].down) {
+		if (!inp.pointers[0].down[0] && inp.pointers[0].down[1]) {
 			for (int j = 0; j < _iconsCount; ++j) {
 				if (!_iconsTable[j].isCursorOver(inp.pointers[0].x, inp.pointers[0].y)) {
 					continue;
 				}
-				inp.pointers[0].down = false;
 
 				switch (_iconsTable[j].action) {
 				case kIconActionHand:

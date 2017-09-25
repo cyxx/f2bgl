@@ -404,7 +404,7 @@ struct PlayerInput {
 	uint8_t lookAtDir;
 	struct {
 		int x, y;
-		bool down;
+		bool down[2];
 	} pointers[kPlayerInputPointersCount];
 };
 

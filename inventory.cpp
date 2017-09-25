@@ -99,7 +99,7 @@ void Game::closeInventory() {
 }
 
 void Game::updateInventoryInput() {
-	if (inp.pointers[0].down) {
+	if (!inp.pointers[0].down[0] && inp.pointers[0].down[1]) {
 		for (int j = 0; j < ARRAYSIZE(_mouseHotspots); ++j) {
 			if (inp.pointers[0].x < _mouseHotspots[j].x || inp.pointers[0].x > _mouseHotspots[j].x + _mouseHotspots[j].w - 1) {
 				continue;
@@ -107,7 +107,6 @@ void Game::updateInventoryInput() {
 			if (inp.pointers[0].y < _mouseHotspots[j].y || inp.pointers[0].y > _mouseHotspots[j].y + _mouseHotspots[j].h - 1) {
 				continue;
 			}
-			inp.pointers[0].down = false;
 
 			switch (_mouseHotspots[j].action) {
 			case kInventoryActionCategory1:
