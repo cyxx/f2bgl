@@ -387,8 +387,11 @@ void Render::drawParticle(const Vertex *pos, int color) {
 	glColor4f(1., 1., 1., 1.);
 }
 
-void Render::drawSprite(int x, int y, const uint8_t *texData, int texW, int texH, int primitive, int16_t texKey) {
+void Render::drawSprite(int x, int y, const uint8_t *texData, int texW, int texH, int primitive, int16_t texKey, int transparentScale) {
 	glDisable(GL_DEPTH_TEST);
+	if (transparentScale != 256) {
+		glColor4f(1., 1., 1., transparentScale / 256.);
+	}
 	glEnable(GL_TEXTURE_2D);
 	Texture *t = _textureCache.getCachedTexture(texKey, texData, texW, texH);
 	glBindTexture(GL_TEXTURE_2D, t->id);
@@ -418,6 +421,9 @@ void Render::drawSprite(int x, int y, const uint8_t *texData, int texW, int texH
 		break;
 	}
 	glDisable(GL_TEXTURE_2D);
+	if (transparentScale != 256) {
+		glColor4f(1., 1., 1., 1.);
+	}
 	glEnable(GL_DEPTH_TEST);
 }
 
