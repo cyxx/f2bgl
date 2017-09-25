@@ -109,16 +109,14 @@ enum {
 };
 
 enum {
-	kIconActionStatic,
 	kIconActionRun,
-	kIconActionWalk,
 	kIconActionJump,
 	kIconActionDuck,
 	kIconActionLoad,
 	kIconActionGun,
 	kIconActionHand,
 	kIconActionHandUse,
-	kIconActionDirHalfTurn,
+	kIconActionDirTurn180,
 	kIconActionDirUp,
 	kIconActionDirDown,
 	kIconActionDirLeft,
@@ -357,14 +355,15 @@ struct Font {
 
 struct Icon {
 	int x, y;
+	int xMargin, yMargin;
 	SpriteImage spr;
 	int action;
 
 	bool isCursorOver(int xCursor, int yCursor) const {
-		if (xCursor < x || xCursor > x + spr.w - 1) {
+		if (xCursor < x - xMargin || xCursor > x + spr.w - 1 + xMargin) {
 			return false;
 		}
-		if (yCursor < y || yCursor > y + spr.h - 1) {
+		if (yCursor < y - yMargin || yCursor > y + spr.h - 1 + yMargin) {
 			return false;
 		}
 		return true;

@@ -13,7 +13,7 @@ enum {
 	kIconLoad,
 	kIconLookBack,
 	kIconLookLeft,
-	kIconHalfTurn,
+	kIconTurn180,
 	kIconCameraFix,
 	kIconDuck,
 	kIconStepLeft,
@@ -57,19 +57,17 @@ struct IconsInitTable {
 };
 
 static const IconsInitTable _iconsGroupMoveTable[] = {
-	{ kIconConradStatic, 0, 0, kIconActionStatic },
-	{ kIconConradRun, 18, 0, kIconActionRun },
-	{ kIconConradWalk, 36, 0, kIconActionWalk },
-	{ kIconConradJump, 54, 0, kIconActionJump },
-	{ kIconConradDuck, 72, 0, kIconActionDuck },
-	{ kIconConradLoad, 90, 0, kIconActionLoad },
-	{ kIconConradGun, 108, 0, kIconActionGun },
-	{ kIconConradHand, 126, 10, kIconActionHand },
-	{ kIconConradHandUse, 126, -10, kIconActionHandUse },
+	{ kIconConradRun, 0, 0, kIconActionRun },
+	{ kIconConradJump, 18, 0, kIconActionJump },
+	{ kIconConradDuck, 36, 0, kIconActionDuck },
+	{ kIconConradLoad, 54, 0, kIconActionLoad },
+	{ kIconConradGun, 72, 0, kIconActionGun },
+	{ kIconConradHand, 90, 10, kIconActionHand },
+	{ kIconConradHandUse, 90, -10, kIconActionHandUse },
 };
 
 static const IconsInitTable _iconsGroupStepTable[] = {
-	{ kIconHalfTurn, 0, 0, kIconActionDirHalfTurn },
+	{ kIconTurn180, 0, 0, kIconActionDirTurn180 },
 	{ kIconMapUp, 0, -12, kIconActionDirUp },
 	{ kIconMapDown, 0, 12, kIconActionDirDown },
 	{ kIconMapLeft, -12, 0, kIconActionDirLeft },
@@ -99,6 +97,8 @@ void Game::loadIcon(int16_t key, int num, int x, int y, int action) {
 
 	icon->x = x;
 	icon->y = y;
+	icon->xMargin = 2;
+	icon->yMargin = 2;
 	icon->action = action;
 	++_iconsCount;
 }

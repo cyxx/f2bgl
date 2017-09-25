@@ -130,14 +130,8 @@ void Game::updateMouseInput() {
 					continue;
 				}
 				switch (_iconsTable[j].action) {
-				case kIconActionStatic:
-					_inputButtonMouse |= 1;
-					break;
 				case kIconActionRun:
 					_inputDirMouse |= 8;
-					break;
-				case kIconActionWalk:
-					_inputButtonMouse |= 2;
 					break;
 				case kIconActionJump:
 					inp.jumpKey = true;
@@ -157,7 +151,7 @@ void Game::updateMouseInput() {
 				case kIconActionHandUse:
 					inp.spaceKey = true;
 					break;
-				case kIconActionDirHalfTurn:
+				case kIconActionDirTurn180:
 					// shift+down
 					_inputButtonMouse |= 2;
 					_inputDirMouse |= 4;
