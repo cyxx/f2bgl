@@ -85,6 +85,24 @@ static const IconsInitTable _iconsGroupCabTable[] = {
 	{ kIconInventoryLeft, -12, 0, kIconActionDirLeft },
 };
 
+// return false if the icon should not be presented
+static bool canUseIcon(int level, int action) {
+	if (level == 12) {
+		switch (action) {
+		case kIconActionRun:
+		case kIconActionJump:
+		case kIconActionDuck:
+		case kIconActionLoad:
+		case kIconActionGun:
+		case kIconActionHand:
+		case kIconActionHandUse:
+		case kIconActionDirTurn180:
+			return false;
+		}
+	}
+	return true;
+}
+
 void Game::loadIcon(int16_t key, int num, int x, int y, int action) {
 	assert(_iconsCount < ARRAYSIZE(_iconsTable));
 	Icon *icon = &_iconsTable[_iconsCount];
@@ -106,7 +124,7 @@ void Game::loadIcon(int16_t key, int num, int x, int y, int action) {
 static void loadIconGroup(Game *g, int16_t *aniKeys, const IconsInitTable *icons, int iconsCount, int xPos, int yPos) {
 	for (int i = 0; i < iconsCount; ++i) {
 		const int16_t key = aniKeys[icons[i].num];
-		if (key != 0) {
+		if (key != 0 && canUseIcon(g->_level, icons[i].action)) {
 			g->loadIcon(key, icons[i].num, icons[i].x + xPos, icons[i].y + yPos, icons[i].action);
 		}
 	}
@@ -127,9 +145,6 @@ void Game::initIcons(int iconMode) {
 			loadIconGroup(this, aniKeys, _iconsGroupCabTable, ARRAYSIZE(_iconsGroupCabTable), _res._userConfig.iconLrCabX, _res._userConfig.iconLrCabY);
 			break;
 		case kIconModeGame:
-			if (_level == 12) {
-				break;
-			}
 			loadIconGroup(this, aniKeys, _iconsGroupMoveTable, ARRAYSIZE(_iconsGroupMoveTable), _res._userConfig.iconLrMoveX, _res._userConfig.iconLrMoveY);
 			loadIconGroup(this, aniKeys, _iconsGroupStepTable, ARRAYSIZE(_iconsGroupStepTable), _res._userConfig.iconLrStepX, _res._userConfig.iconLrStepY);
 			loadIconGroup(this, aniKeys, _iconsGroupToolsTable, ARRAYSIZE(_iconsGroupToolsTable), _res._userConfig.iconLrToolsX, _res._userConfig.iconLrToolsY);
