@@ -1236,7 +1236,7 @@ void Game::initLevel(bool keepInventoryObjects) {
 	_zPosViewpoint = _z0PosViewpoint = _currentObject->zPosParent + _currentObject->zPos;
 	_cameraState = 0;
 	_cameraViewKey = _currentObject->objKey;
-	_currentObject->specialData[1][18] = 2000;
+	_currentObject->specialData[1][18] = _varsTable[kVarConradLife];
 	setCameraObject(_currentObject, &_cameraViewObj);
 	_varsTable[31] = _cameraViewKey;
 }
