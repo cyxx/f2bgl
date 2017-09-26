@@ -1211,7 +1211,7 @@ void Game::initLevel(bool keepInventoryObjects) {
 		loadInventoryObjects();
 	}
 	initFonts();
-	if (_params.mouseMode) {
+	if (_params.mouseMode || _params.touchMode) {
 		initIcons(kIconModeGame);
 	}
 	setupInventoryObjects();
@@ -2590,8 +2590,10 @@ void Game::doTick() {
 	}
 	clearObjectsDrawList();
 	_render->setupProjection(kProj2D);
-	drawInfoPanel();
-	if (_params.mouseMode) {
+	if (!_params.touchMode) {
+		drawInfoPanel();
+	}
+	if (_params.mouseMode || _params.touchMode) {
 		drawIcons();
 	}
 	if (_mainLoopCurrentMode == 0) {

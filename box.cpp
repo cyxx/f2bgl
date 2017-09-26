@@ -14,7 +14,7 @@ void Game::initBox() {
 
 void Game::finiBox() {
 	// restore game mode icons
-	if (_params.mouseMode) {
+	if (_params.mouseMode || _params.touchMode) {
 		initIcons(kIconModeGame);
 	}
 }
@@ -68,9 +68,9 @@ void Game::doBox() {
 			inp.dirMask &= ~kInputDirRight;
 			setBoxItem(getNextObject(_boxItemObj));
 		}
-		if (!inp.pointers[0].down[0] && inp.pointers[0].down[1]) {
+		if (!inp.pointers[0][0].down && inp.pointers[0][1].down) {
 			for (int j = 0; j < _iconsCount; ++j) {
-				if (!_iconsTable[j].isCursorOver(inp.pointers[0].x, inp.pointers[0].y)) {
+				if (!_iconsTable[j].isCursorOver(inp.pointers[0][0].x, inp.pointers[0][0].y)) {
 					continue;
 				}
 

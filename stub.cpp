@@ -196,6 +196,7 @@ struct GameStub_F2B : GameStub {
 				{ "texturefilter", required_argument, 0, 14 },
 				{ "texturescaler", required_argument, 0, 15 },
 				{ "mouse",     no_argument,       0, 16 },
+				{ "touch",     no_argument,       0, 17 },
 #ifdef F2B_DEBUG
 				{ "xpos_conrad",    required_argument, 0, 100 },
 				{ "zpos_conrad",    required_argument, 0, 101 },
@@ -269,6 +270,9 @@ struct GameStub_F2B : GameStub {
 			case 16:
 				_params.mouseMode = true;
 				break;
+			case 17:
+				_params.touchMode = true;
+				break;
 #ifdef F2B_DEBUG
 			case 100:
 				_params.xPosConrad = atoi(optarg);
@@ -312,7 +316,7 @@ struct GameStub_F2B : GameStub {
 		return _displayMode;
 	}
 	virtual bool hasCursor() {
-		return _params.mouseMode;
+		return _params.mouseMode || _params.touchMode;
 	}
 	virtual int init() {
 		if (!fileInit(_fileLanguage, _fileVoice, _dataPath ? _dataPath : ".", _savePath ? _savePath : ".")) {
@@ -423,10 +427,10 @@ struct GameStub_F2B : GameStub {
 	}
 	void queueTouchInput(int pointer, int x, int y, int down) {
 		if (pointer >= 0 && pointer < kPlayerInputPointersCount) {
-			_g->inp.pointers[pointer].x = x;
-			_g->inp.pointers[pointer].y = y;
-			_g->inp.pointers[pointer].down[1] = _g->inp.pointers[pointer].down[0];
-			_g->inp.pointers[pointer].down[0] = down != 0;
+			_g->inp.pointers[pointer][1] = _g->inp.pointers[pointer][0];
+			_g->inp.pointers[pointer][0].x = x;
+			_g->inp.pointers[pointer][0].y = y;
+			_g->inp.pointers[pointer][0].down = down != 0;
 		}
 	}
 	virtual void doTick(unsigned int ticks) {
@@ -513,7 +517,7 @@ struct GameStub_F2B : GameStub {
 			break;
 		}
 		for (int pointer = 0; pointer < kPlayerInputPointersCount; ++pointer) {
-			_g->inp.pointers[pointer].down[1] = false;
+			_g->inp.pointers[pointer][1].down = false;
 		}
 	}
 	virtual void initGL(int w, int h, float *ar) {

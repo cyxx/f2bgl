@@ -99,12 +99,12 @@ void Game::closeInventory() {
 }
 
 void Game::updateInventoryInput() {
-	if (!inp.pointers[0].down[0] && inp.pointers[0].down[1]) {
+	if (!inp.pointers[0][0].down && inp.pointers[0][1].down) {
 		for (int j = 0; j < ARRAYSIZE(_mouseHotspots); ++j) {
-			if (inp.pointers[0].x < _mouseHotspots[j].x || inp.pointers[0].x > _mouseHotspots[j].x + _mouseHotspots[j].w - 1) {
+			if (inp.pointers[0][0].x < _mouseHotspots[j].x || inp.pointers[0][0].x > _mouseHotspots[j].x + _mouseHotspots[j].w - 1) {
 				continue;
 			}
-			if (inp.pointers[0].y < _mouseHotspots[j].y || inp.pointers[0].y > _mouseHotspots[j].y + _mouseHotspots[j].h - 1) {
+			if (inp.pointers[0][0].y < _mouseHotspots[j].y || inp.pointers[0][0].y > _mouseHotspots[j].y + _mouseHotspots[j].h - 1) {
 				continue;
 			}
 

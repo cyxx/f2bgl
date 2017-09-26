@@ -441,7 +441,7 @@ bool Cutscene::play() {
 	// skip all cutscenes
 	_interrupted = inp.spaceKey || inp.enterKey;
 	// skip current cutscene
-	const bool stop = inp.escapeKey || (!inp.pointers[0].down[0] && inp.pointers[0].down[1]);
+	const bool stop = inp.escapeKey || (!inp.pointers[0][0].down && inp.pointers[0][1].down);
 	return !_interrupted && !stop;
 }
 

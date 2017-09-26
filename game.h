@@ -358,6 +358,7 @@ struct Icon {
 	int xMargin, yMargin;
 	SpriteImage spr;
 	int action;
+	uint8_t *scaledSprData;
 
 	bool isCursorOver(int xCursor, int yCursor) const {
 		if (xCursor < x - xMargin || xCursor > x + spr.w - 1 + xMargin) {
@@ -404,8 +405,8 @@ struct PlayerInput {
 	uint8_t lookAtDir;
 	struct {
 		int x, y;
-		bool down[2];
-	} pointers[kPlayerInputPointersCount];
+		bool down;
+	} pointers[kPlayerInputPointersCount][2];
 };
 
 struct DrawBuffer {
@@ -423,13 +424,14 @@ struct DrawNumber {
 struct Render;
 
 struct GameParams {
-	GameParams() : playDemo(false), levelNum(0), xPosConrad(0), zPosConrad(0), subtitles(false), sf2(0), mouseMode(false) {}
+	GameParams() : playDemo(false), levelNum(0), xPosConrad(0), zPosConrad(0), subtitles(false), sf2(0), mouseMode(false), touchMode(false) {}
 	bool playDemo;
 	int levelNum;
 	int xPosConrad, zPosConrad;
 	bool subtitles;
 	const char *sf2;
 	bool mouseMode;
+	bool touchMode;
 };
 
 struct Game {

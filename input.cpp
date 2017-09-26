@@ -124,11 +124,11 @@ void Game::updateMouseInput() {
 	inp.footStepKey = false;
 	inp.backStepKey = false;
 	for (int i = 0; i < kPlayerInputPointersCount; ++i) {
-		if (inp.pointers[i].down) {
-			for (int j = 0; j < _iconsCount; ++j) {
-				if (!_iconsTable[j].isCursorOver(inp.pointers[i].x, inp.pointers[i].y)) {
-					continue;
-				}
+		if (!inp.pointers[i][0].down) {
+			continue;
+		}
+		for (int j = 0; j < _iconsCount; ++j) {
+			if (_iconsTable[j].isCursorOver(inp.pointers[i][0].x, inp.pointers[i][0].y)) {
 				switch (_iconsTable[j].action) {
 				case kIconActionRun:
 					_inputDirMouse |= 8;
@@ -284,6 +284,9 @@ void Game::updateGameInput() {
 			}
 		}
 	}
+	if (_params.mouseMode || _params.touchMode) {
+		updateMouseInput();
+	}
 	bool ctrlKey = inp.ctrlKey;
 	if ((_cheats & kCheatUseButtonToShoot) != 0) {
 		if (isConradInShootingPos()) {
@@ -301,9 +304,6 @@ void Game::updateGameInput() {
 				inp.ctrlKey = false;
 			}
 		}
-	}
-	if (_params.mouseMode) {
-		updateMouseInput();
 	}
 	updateInput();
 	inp.ctrlKey = ctrlKey;
