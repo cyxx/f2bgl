@@ -143,6 +143,17 @@ static int getSaveSlot(int pitch) {
 	return ((pitch + 512) & 1023) / (1024 / kSaveLoadSlots);
 }
 
+static bool pointerTap(const PlayerInput &inp, int x, int y, int w, int h) {
+	if (!inp.pointers[0][0].down && inp.pointers[0][1].down) {
+		if (inp.pointers[0][0].x >= x && inp.pointers[0][0].x < x + w) {
+			if (inp.pointers[0][0].y >= y && inp.pointers[0][0].y < y + h) {
+				return true;
+			}
+		}
+	}
+	return false;
+}
+
 bool Game::doMenu() {
 	_render->clearScreen();
 	_render->setupProjection(kProjMenu);
@@ -154,14 +165,21 @@ bool Game::doMenu() {
 
 	_render->setupProjection(kProj2D);
 
+	GameObject *o = _objectsPtrTable[kObjPtrSaveloadOption];
+
 	if (getMessage(_objectsPtrTable[kObjPtrWorld]->objKey, _currentOption == kOptionLoad ? kMsgMenuLoad : kMsgMenuSave, &_tmpMsg)) {
 		memset(&_drawCharBuf, 0, sizeof(_drawCharBuf));
 		int w, h;
 		getStringRect((const char *)_tmpMsg.data, _tmpMsg.font, &w, &h);
-		drawString((kScreenWidth - w) / 2, 8, (const char *)_tmpMsg.data, _tmpMsg.font, 0);
+		const int x = (kScreenWidth - w) / 2;
+		const int y = 8;
+		drawString(x, y, (const char *)_tmpMsg.data, _tmpMsg.font, 0);
+		if (pointerTap(inp, x, y, w, h)) {
+			toggleOption(o);
+			loadMenuObjectMesh(o, o->anim.currentAnimKey);
+		}
 	}
 
-	GameObject *o = _objectsPtrTable[kObjPtrSaveloadOption];
 	if (_rotateDirection != 0) {
 		so->pitch += o->specialData[1][9] * _rotateDirection;
 		so->pitch &= 1023;
@@ -169,11 +187,11 @@ bool Game::doMenu() {
 			_rotateDirection = 0;
 		}
 	} else {
-		if (inp.dirMask & kInputDirLeft) {
+		if ((inp.dirMask & kInputDirLeft) || pointerTap(inp, 0, 50, 64, 100)) {
 			_rotateDirection = 1;
 			_rotateTargetPitch = (so->pitch + 128) & 1023;
 		}
-		if (inp.dirMask & kInputDirRight) {
+		if ((inp.dirMask & kInputDirRight) || pointerTap(inp, 256, 50, 64, 100)) {
 			_rotateDirection = -1;
 			_rotateTargetPitch = (so->pitch - 128) & 1023;
 		}
@@ -197,12 +215,22 @@ bool Game::doMenu() {
 		if (getMessage(_objectsPtrTable[kObjPtrWorld]->objKey, kMsgMenuCancel, &_tmpMsg)) {
 			int w, h;
 			getStringRect((const char *)_tmpMsg.data, _tmpMsg.font, &w, &h);
-			drawString((kScreenWidth - w) / 2, kScreenHeight / 2 + 80, (const char *)_tmpMsg.data, _tmpMsg.font, 0);
+			const int x = (kScreenWidth - w) / 2;
+			const int y = kScreenHeight / 2 + 80;
+			drawString(x, y, (const char *)_tmpMsg.data, _tmpMsg.font, 0);
+			if (pointerTap(inp, x, y, w, h)) {
+				inp.enterKey = true;
+			}
 		}
 	} else {
 		int w, h;
 		getStringRect(_saveLoadSlots[saveSlot].description, kFontNormale, &w, &h);
-		drawString((kScreenWidth - w) / 2, kScreenHeight / 2 + 80, _saveLoadSlots[saveSlot].description, kFontNormale, 0);
+		const int x = (kScreenWidth - w) / 2;
+		const int y = kScreenHeight / 2 + 80;
+		drawString(x, y, _saveLoadSlots[saveSlot].description, kFontNormale, 0);
+		if (pointerTap(inp, x, y, w, h)) {
+			inp.enterKey = true;
+		}
 	}
 
 	if (inp.enterKey) {
