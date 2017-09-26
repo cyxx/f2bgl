@@ -446,8 +446,8 @@ bool Cutscene::play() {
 }
 
 void Cutscene::drawFrame() {
+	_render->clearScreen();
 	if (_frameCounter != 0) {
-		_render->clearScreen();
 		const int y = (kCutsceneDisplayHeight - _fileHdr.videoFrameHeight) / 2;
 		_render->copyToOverlay(0, y, _frameBuffers[0], _fileHdr.videoFrameWidth, _fileHdr.videoFrameWidth, _fileHdr.videoFrameHeight);
 	}
