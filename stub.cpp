@@ -442,6 +442,7 @@ struct GameStub_F2B : GameStub {
 		case kStateCutscene:
 			if (!_g->_cut.update(ticks)) {
 				_g->_cut.unload();
+				int cutsceneNum = _g->_cut._numToPlay;
 				if (!_g->_cut.isInterrupted()) {
 					do {
 						int num = _g->_cut.dequeue();
@@ -455,7 +456,7 @@ struct GameStub_F2B : GameStub {
 				}
 				if (_g->_cut._numToPlay < 0) {
 					_nextState = kStateGame;
-					if (_g->_level == kLevelGameOver) {
+					if (_g->_level == kLevelGameOver || (g_isDemo && cutsceneNum == 43)) {
 						// restart
 						_g->_changeLevel = false;
 						_g->_level = 0;
