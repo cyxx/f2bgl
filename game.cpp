@@ -2593,9 +2593,6 @@ void Game::doTick() {
 	if (!_params.touchMode) {
 		drawInfoPanel();
 	}
-	if (_params.mouseMode || _params.touchMode) {
-		drawIcons();
-	}
 	if (_mainLoopCurrentMode == 0) {
 		updateScreen();
 	} else if (_mainLoopCurrentMode == 1) {
@@ -4071,6 +4068,9 @@ void Game::updateScreen() {
 	displayTarget(kScreenWidth / 2, kScreenHeight / 2);
 	if (_mainLoopCurrentMode == 1) {
 		printGameMessages();
+	}
+	if (_params.mouseMode || _params.touchMode) {
+		drawIcons();
 	}
 	if (_updatePalette) {
 		updatePalette();
