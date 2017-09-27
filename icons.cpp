@@ -153,6 +153,7 @@ void Game::loadIcon(int16_t key, int num, int x, int y, int action) {
 	int16_t sprKey = READ_LE_UINT16(p_anifram);
 	initSprite(kResType_SPR, sprKey, &icon->spr);
 	icon->spr.data = _spriteCache.getData(sprKey, icon->spr.data);
+	_res.unload(kResType_SPR, sprKey);
 
 	if (_params.touchMode) {
 		icon->scaledSprData = icon->spr.data = magnifyIcon2x(icon->spr.data, icon->spr.w, icon->spr.h);
@@ -165,6 +166,8 @@ void Game::loadIcon(int16_t key, int num, int x, int y, int action) {
 	icon->xMargin = 2;
 	icon->yMargin = 2;
 	icon->action = action;
+	icon->num = num;
+	icon->visible = false;
 	++_iconsCount;
 }
 
@@ -180,7 +183,7 @@ static void loadIconGroup(Game *g, int16_t *aniKeys, const IconsInitTable *icons
 				case kIconInventoryRight:
 				case kIconInventoryLeft:
 					x = icons[i].x * 2 + xPos - 6;
-					y = icons[i].y * 2 + yPos - 6;
+					y = icons[i].y * 2 + yPos - 8;
 					break;
 				}
 			}
@@ -190,33 +193,40 @@ static void loadIconGroup(Game *g, int16_t *aniKeys, const IconsInitTable *icons
 }
 
 void Game::initIcons(int iconMode) {
-	_iconsCount = 0;
-	GameObject *o = _objectsPtrTable[kObjPtrIconesSouris];
-	if (o) {
-		int16_t key = _res.getChild(kResType_ANI, o->anim.currentAnimKey);
-		int16_t aniKeys[kIconTableSize];
-		for (int i = 0; key != 0 && i < ARRAYSIZE(aniKeys); ++i) {
-			aniKeys[i] = key;
-			key = _res.getNext(kResType_ANI, key);
-		}
-		switch (iconMode) {
-		case kIconModeCabinet:
+	if (_iconsCount == 0) {
+		GameObject *o = _objectsPtrTable[kObjPtrIconesSouris];
+		if (o) {
+			int16_t key = _res.getChild(kResType_ANI, o->anim.currentAnimKey);
+			int16_t aniKeys[kIconTableSize];
+			for (int i = 0; key != 0 && i < ARRAYSIZE(aniKeys); ++i) {
+				aniKeys[i] = key;
+				key = _res.getNext(kResType_ANI, key);
+			}
 			loadIconGroup(this, aniKeys, _iconsGroupCabTable, ARRAYSIZE(_iconsGroupCabTable), _res._userConfig.iconLrCabX, _res._userConfig.iconLrCabY);
-			break;
-		case kIconModeGame:
 			if (_params.touchMode) {
 				loadIconGroup(this, aniKeys, _iconsTouchTable, ARRAYSIZE(_iconsTouchTable), 0, 0);
-				break;
+			} else {
+				loadIconGroup(this, aniKeys, _iconsGroupMoveTable, ARRAYSIZE(_iconsGroupMoveTable), _res._userConfig.iconLrMoveX, _res._userConfig.iconLrMoveY);
+				loadIconGroup(this, aniKeys, _iconsGroupStepTable, ARRAYSIZE(_iconsGroupStepTable), _res._userConfig.iconLrStepX, _res._userConfig.iconLrStepY);
+				loadIconGroup(this, aniKeys, _iconsGroupToolsTable, ARRAYSIZE(_iconsGroupToolsTable), _res._userConfig.iconLrToolsX, _res._userConfig.iconLrToolsY);
 			}
-			loadIconGroup(this, aniKeys, _iconsGroupMoveTable, ARRAYSIZE(_iconsGroupMoveTable), _res._userConfig.iconLrMoveX, _res._userConfig.iconLrMoveY);
-			loadIconGroup(this, aniKeys, _iconsGroupStepTable, ARRAYSIZE(_iconsGroupStepTable), _res._userConfig.iconLrStepX, _res._userConfig.iconLrStepY);
-			loadIconGroup(this, aniKeys, _iconsGroupToolsTable, ARRAYSIZE(_iconsGroupToolsTable), _res._userConfig.iconLrToolsX, _res._userConfig.iconLrToolsY);
+		}
+	}
+	for (int i = 0; i < _iconsCount; ++i) {
+		switch (_iconsTable[i].num) {
+		case kIconInventoryHand:
+		case kIconInventoryRight:
+		case kIconInventoryLeft:
+			_iconsTable[i].visible = (iconMode == kIconModeCabinet);
+			break;
+		default:
+			_iconsTable[i].visible = (iconMode == kIconModeGame);
 			break;
 		}
 	}
 }
 
-static bool iconPressed(const PlayerInput &inp, const Icon *icon) {
+static bool pointerDown(const PlayerInput &inp, const Icon *icon) {
 	for (int i = 0; i < kPlayerInputPointersCount; ++i) {
 		if (inp.pointers[i][0].down && icon->isCursorOver(inp.pointers[i][0].x, inp.pointers[i][0].y)) {
 			return true;
@@ -229,9 +239,11 @@ void Game::drawIcons() {
 	int transparentScale = 256;
 	for (int i = 0; i < _iconsCount; ++i) {
 		const Icon *icon = &_iconsTable[i];
-		if (_params.touchMode) {
-			transparentScale = iconPressed(inp, icon) ? 256 : 128;
+		if (icon->visible) {
+			if (_params.touchMode) {
+				transparentScale = pointerDown(inp, icon) ? 256 : 128;
+			}
+			_render->drawSprite(icon->x, icon->y, icon->spr.data, icon->spr.w, icon->spr.h, 0, icon->spr.key, transparentScale);
 		}
-		_render->drawSprite(icon->x, icon->y, icon->spr.data, icon->spr.w, icon->spr.h, 0, icon->spr.key, transparentScale);
 	}
 }

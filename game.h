@@ -359,6 +359,8 @@ struct Icon {
 	SpriteImage spr;
 	int action;
 	uint8_t *scaledSprData;
+	int num;
+	bool visible;
 
 	bool isCursorOver(int xCursor, int yCursor) const {
 		if (xCursor < x - xMargin || xCursor > x + spr.w - 1 + xMargin) {
@@ -511,7 +513,7 @@ struct Game {
 	int16_t _scannerBackgroundKey;
 	int _scannerCounter;
 	int _iconsCount;
-	Icon _iconsTable[32];
+	Icon _iconsTable[20];
 
 	PlayerInput inp;
 	int _inputsCount;
