@@ -526,7 +526,7 @@ uint8_t *Resource::getData(int type, int16_t key, const char *name) {
 	debug(kDebug_RESOURCE, "Resource::getData() type %d key %d/%d name '%s'", type, key, _treesTableCount[type], name ? name : "()");
 	assert(key != 0 && key < _treesTableCount[type]);
 	uint8_t *data = _treesTable[type][key].data;
-	assert(type == kResType_ANI || (data && _treesTable[type][key].dataSize != 0));
+	assert(type == kResType_ANI || type == kResType_P3D || (data && _treesTable[type][key].dataSize != 0));
 	if (strcmp(name, "CAMDATA") == 0) {
 		offset = READ_LE_UINT32(data + 12) * 52 + 98368;
 	} else if (data) {

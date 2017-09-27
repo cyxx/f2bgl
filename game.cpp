@@ -2752,8 +2752,16 @@ get_envani:
 	}
 	*polygonsData = _res.getData(kResType_P3D, envKey, "P3DDATA");
 	p_poly3d = _res.getData(kResType_P3D, envKey, "POLY3D");
+	if (!*polygonsData || !p_poly3d) {
+		warning("initMesh() no polygons data, envKey %d", envKey);
+		return 0;
+	}
 	if (env && *env != 0) {
 		p = _res.getData(kResType_P3D, polyKey, "POLY3D");
+		if (!p) {
+			warning("initMesh() no polygons data, polyKey %d", polyKey);
+			return 0;
+		}
 		if (READ_LE_UINT32(p) != READ_LE_UINT32(p_poly3d)) {
 			if (o->specialData[0][20]) {
 				*env = o->specialData[0][20];
@@ -2785,7 +2793,10 @@ bool Game::addSceneObjectToList(int xPos, int yPos, int zPos, GameObject *o) {
 	if (p_anifram[2] == 9) {
 		uint8_t *p_poly3d;
 		uint8_t *p_form3d = initMesh(kResType_F3D, READ_LE_UINT16(p_anifram), &so->verticesData, &so->polygonsData, o, &p_poly3d, &o->specialData[1][20]);
-		assert(p_form3d != 0);
+		if (!p_form3d) {
+			warning("Game::addSceneObjectToList() failed loading mesh for '%s'", o->name);
+			return false;
+		}
 		so->verticesCount = READ_LE_UINT16(p_form3d + 18);
 		assert(so->verticesCount != 0);
 		so->xmin = READ_LE_UINT32(p_form3d);
