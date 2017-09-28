@@ -1021,8 +1021,8 @@ void Game::updateSceneAnimations() {
 					getSceneAnimationTexture(sa, 0, 0, &_sceneAnimationsTextureTable[i]);
 					nextKey = _res.getNext(kResType_ANI, sa->frmKey);
 					if (nextKey == 0 && sa->ticksCount == 1) {
-						sa->type = sa->typeInit;
-						sa->frameNum = sa->frameNumInit | 0x20;
+						sa->type = sa->typeInit | 0x20;
+						sa->frameNum = sa->frameNumInit;
 						sa->frameIndex = 0;
 						sa->frmKey = _res.getChild(kResType_ANI, sa->aniKey);
 					}
@@ -1042,11 +1042,11 @@ void Game::updateSceneAnimations() {
 				sa->type &= ~0x10;
 			}
 			sa->type &= ~0x20;
-			bool needTextureupdate = true;
+			bool updateTexture = true;
 			if (sa->framesCount > 1 && sa->aniKey > 0) {
-				needTextureupdate = updateSceneAnimationsKeyFrame(rnd, i, sa, sas);
+				updateTexture = updateSceneAnimationsKeyFrame(rnd, i, sa, sas);
 			}
-			if (needTextureupdate) {
+			if (updateTexture) {
 				getSceneAnimationTexture(sa, 0, 0, &_sceneAnimationsTextureTable[i]);
 			}
 		}
