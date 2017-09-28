@@ -39,7 +39,6 @@ void warning(const char *msg, ...);
 void error(const char *msg, ...);
 uint32_t getStringHash(const char *s);
 
-void saveBMP(const char *filepath, const uint8_t *rgb, int w, int h);
 void saveTGA(const char *filepath, const uint8_t *rgb, int w, int h);
 uint8_t *loadTGA(const char *filepath, int *w, int *h);
 
