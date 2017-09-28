@@ -2,6 +2,24 @@
 #include "util.h"
 #include "file.h"
 
+static uint8_t *resizeThumbnail(const uint8_t *rgba, int w, int h, int *rw, int *rh) {
+	const int thumbW = 320;
+	const int thumbH = h * thumbW / w;
+	uint8_t *buffer = (uint8_t *)malloc(thumbW * thumbH * 4);
+	if (buffer) {
+		for (int y = 0; y < thumbH; ++y) {
+			const int ty = y * h / thumbH;
+			for (int x = 0; x < thumbW; ++x) {
+				const int tx = x * w / thumbW;
+				memcpy(buffer + (y * thumbW + x) * 4, rgba + (ty * w + tx) * 4, 4);
+			}
+		}
+		*rw = thumbW;
+		*rh = thumbH;
+	}
+	return buffer;
+}
+
 static void TO_LE16(uint8_t *dst, uint16_t value) {
 	for (int i = 0; i < 2; ++i) {
 		dst[i] = value & 255;
@@ -15,6 +33,15 @@ static void TO_LE16(uint8_t *dst, uint16_t value) {
 static const int TGA_HEADER_SIZE = 18;
 
 void saveTGA(const char *filepath, const uint8_t *rgba, int w, int h) {
+
+	int thumbW, thumbH;
+	uint8_t *thumbBuffer = resizeThumbnail(rgba, w, h, &thumbW, &thumbH);
+	if (thumbBuffer) {
+		rgba = thumbBuffer;
+		w = thumbW;
+		h = thumbH;
+	}
+
 	static const uint8_t kImageType = kTgaImageTypeRunLengthEncodedTrueColor;
 	uint8_t buffer[TGA_HEADER_SIZE];
 	buffer[0]            = 0; // ID Length
@@ -66,6 +93,8 @@ void saveTGA(const char *filepath, const uint8_t *rgba, int w, int h) {
 		}
 		fileClose(f);
 	}
+
+	free(thumbBuffer);
 }
 
 uint8_t *loadTGA(const char *filepath, int *w, int *h) {
