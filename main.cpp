@@ -13,6 +13,7 @@ static const float kAspectRatio = 4 / 3.;
 
 static const int kDefaultW = 640;
 static const int kDefaultH = kDefaultW / kAspectRatio;
+//static const int kDefaultH = kDefaultW / (16 / 9.);
 
 static int gWindowW = kDefaultW;
 static int gWindowH = kDefaultH;
@@ -172,7 +173,7 @@ int main(int argc, char *argv[]) {
 	_aspectRatio[1] = 0.;
 	_aspectRatio[2] = 1.;
 	_aspectRatio[3] = 1.;
-	if (displayMode == kDisplayModeFullscreenAr) {
+	if (displayMode != kDisplayModeFullscreenStretch) {
 		setAspectRatio(gWindowW, gWindowH);
 	}
 	SDL_GLContext glcontext = SDL_GL_CreateContext(window);

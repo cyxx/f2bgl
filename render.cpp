@@ -142,6 +142,7 @@ static GLfloat _cameraPitch;
 
 Render::Render(const RenderParams *params) {
 	memset(_clut, 0, sizeof(_clut));
+	_aspectRatio = 1.;
 	_screenshotBuf = 0;
 	_overlay.buf = (uint8_t *)calloc(kOverlayWidth * kOverlayHeight, sizeof(uint8_t));
 	_overlay.tex = 0;
@@ -184,10 +185,11 @@ void Render::resizeScreen(int w, int h, float *p) {
 	glAlphaFunc(GL_NOTEQUAL, 0.);
 	_w = w;
 	_h = h;
-	_viewport.x = int(w * p[0]);
-	_viewport.y = int(h * p[1]);
-	_viewport.w = int(w * p[2]);
-	_viewport.h = int(h * p[3]);
+	_aspectRatio = p[2] / p[3];
+	_viewport.x = 0;
+	_viewport.y = 0;
+	_viewport.w = w;
+	_viewport.h = h;
 	_viewport.changed = true;
 	free(_screenshotBuf);
 	_screenshotBuf = 0;
@@ -545,12 +547,14 @@ void Render::setupProjection(int mode) {
 	if (mode == kProj2D) {
 		glMatrixMode(GL_PROJECTION);
 		glLoadIdentity();
-		glOrtho(0, kOverlayWidth, kOverlayHeight, 0, 0, 1);
+		glOrtho(-1. / _aspectRatio, 1. / _aspectRatio, kOverlayHeight, 0, 0, 1);
 		glMatrixMode(GL_MODELVIEW);
 		glLoadIdentity();
+		glTranslatef(-1., 0., 0.);
+		glScalef(2. / kOverlayWidth, 1., 1.);
 		return;
 	}
-	const GLfloat aspect = 1.5;
+	const GLfloat aspect = 1.5 * _aspectRatio;
 	if (mode == kProjMenu) {
 		glMatrixMode(GL_PROJECTION);
 		glLoadIdentity();
@@ -559,8 +563,7 @@ void Render::setupProjection(int mode) {
 		glMatrixMode(GL_MODELVIEW);
 		glLoadIdentity();
 		glScalef(1., -.5, 1.);
-		glTranslatef(0., 16., 0.);
-		glTranslatef(0., 0., -72.);
+		glTranslatef(0., 14. * _aspectRatio, -72.);
 		return;
 	}
 	if (mode == kProjInstall) {
@@ -595,7 +598,7 @@ void Render::drawOverlay() {
 		_textureCache.updateTexture(_overlay.tex, _overlay.buf, _overlay.tex->bitmapW, _overlay.tex->bitmapH);
 		glMatrixMode(GL_PROJECTION);
 		glLoadIdentity();
-		glOrtho(0, _w, 0, _h, 0, 1);
+		glOrtho(-1. / _aspectRatio, 1. / _aspectRatio, 0, _h, 0, 1);
 		glMatrixMode(GL_MODELVIEW);
 		glLoadIdentity();
 		glDisable(GL_DEPTH_TEST);
@@ -605,13 +608,13 @@ void Render::drawOverlay() {
 		const GLfloat tV = _overlay.tex->v;
 		assert(tU != 0. && tV != 0.);
 		GLfloat uv[] = { 0., 0., tU, 0., tU, tV, 0., tV };
-		emitQuadTex2i(0, 0, _w, _h, uv);
+		emitQuadTex2i(-1, 0, 2, _h, uv);
 		glEnable(GL_DEPTH_TEST);
 		glDisable(GL_TEXTURE_2D);
 	}
 	if (_overlay.r != 255 || _overlay.g != 255 || _overlay.b != 255) {
 		glColor4f(_overlay.r / 255., _overlay.g / 255., _overlay.b / 255., .8);
-		emitQuad2i(0, 0, _w, _h);
+		emitQuad2i(-1, 0, 2, _h);
 		glColor4f(1., 1., 1., 1.);
 		_overlay.r = _overlay.g = _overlay.b = 255;
 	}

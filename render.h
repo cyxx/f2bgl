@@ -37,6 +37,7 @@ struct Render {
 	uint8_t _clut[256 * 3];
 	float _pixelColorMap[4][256];
 	int _w, _h;
+	float _aspectRatio;
 	uint8_t *_screenshotBuf;
 	struct {
 		uint8_t *buf;
