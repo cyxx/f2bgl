@@ -7,7 +7,7 @@
 
 void point1x(uint16_t *dst, int dstPitch, const uint16_t *src, int srcPitch, int w, int h) {
 	while (h--) {
-		memcpy(dst, src, w * 2);
+		memcpy(dst, src, w * sizeof(uint16_t));
 		dst += dstPitch;
 		src += srcPitch;
 	}
@@ -15,14 +15,11 @@ void point1x(uint16_t *dst, int dstPitch, const uint16_t *src, int srcPitch, int
 
 void point2x(uint16_t *dst, int dstPitch, const uint16_t *src, int srcPitch, int w, int h) {
 	while (h--) {
-		int i;
 		uint16_t *p = dst;
-		for (i = 0; i < w; ++i, p += 2) {
-			uint16_t c = *(src + i);
-			*(p) = c;
-			*(p + 1) = c;
-			*(p + dstPitch) = c;
-			*(p + dstPitch + 1) = c;
+		for (int i = 0; i < w; ++i, p += 2) {
+			const uint16_t color = *(src + i);
+			p[0] = p[1] = color;
+			p[dstPitch] = p[dstPitch + 1] = color;
 		}
 		dst += dstPitch * 2;
 		src += srcPitch;
@@ -31,19 +28,12 @@ void point2x(uint16_t *dst, int dstPitch, const uint16_t *src, int srcPitch, int
 
 void point3x(uint16_t *dst, int dstPitch, const uint16_t *src, int srcPitch, int w, int h) {
 	while (h--) {
-		int i;
 		uint16_t *p = dst;
-		for (i = 0; i < w; ++i, p += 3) {
-			uint16_t c = *(src + i);
-			*(p) = c;
-			*(p + 1) = c;
-			*(p + 2) = c;
-			*(p + dstPitch) = c;
-			*(p + dstPitch + 1) = c;
-			*(p + dstPitch + 2) = c;
-			*(p + 2 * dstPitch) = c;
-			*(p + 2 * dstPitch + 1) = c;
-			*(p + 2 * dstPitch + 2) = c;
+		for (int i = 0; i < w; ++i, p += 3) {
+			const uint16_t color = *(src + i);
+			p[0] = p[1] = p[2] = color;
+			p[dstPitch] = p[dstPitch + 1] = p[dstPitch + 2] = color;
+			p[dstPitch * 2] = p[dstPitch * 2 + 1] = p[dstPitch * 2 + 2] = color;
 		}
 		dst += dstPitch * 3;
 		src += srcPitch;
@@ -55,10 +45,10 @@ void scale2x(uint16_t *dst, int dstPitch, const uint16_t *src, int srcPitch, int
 		uint16_t *p = dst;
 		for (int x = 0; x < w; ++x, p += 2) {
 			const uint16_t E = *(src + x);
-			uint16_t B = (y == 0) ? E : *(src + x - srcPitch);
-			uint16_t D = (x == 0) ? E : *(src + x - 1);
-			uint16_t F = (x == w - 1) ? E : *(src + x + 1);
-			uint16_t H = (y == h - 1) ? E : *(src + x + srcPitch);
+			const uint16_t B = (y == 0) ? E : *(src + x - srcPitch);
+			const uint16_t D = (x == 0) ? E : *(src + x - 1);
+			const uint16_t F = (x == w - 1) ? E : *(src + x + 1);
+			const uint16_t H = (y == h - 1) ? E : *(src + x + srcPitch);
 			if (B != H && D != F) {
 				*(p) = D == B ? D : E;
 				*(p + 1) = B == F ? F : E;
@@ -128,3 +118,25 @@ void scale3x(uint16_t *dst, int dstPitch, const uint16_t *src, int srcPitch, int
 	}
 }
 
+void eagle2x(uint16_t *dst, int dstPitch, const uint16_t *src, int srcPitch, int w, int h) {
+	for (int y = 0; y < h; ++y) {
+		uint16_t *p = dst;
+		for (int x = 0; x < w; ++x, p += 2) {
+			const uint16_t C = *(src + x);
+			const uint16_t S = (y == 0 || x == 0) ? C : *(src + x - 1 - srcPitch);
+			const uint16_t T = (y == 0) ? C : *(src + x - srcPitch);
+			const uint16_t U = (y == 0 || x == w - 1) ? C : *(src + x + 1 - srcPitch);
+			const uint16_t V = (x == 0) ? C : *(src + x - 1);
+			const uint16_t X = (x == 0 || y == h - 1) ? C : *(src + x - 1 + srcPitch);
+			const uint16_t W = (x == w - 1) ? C : *(src + x + 1);
+			const uint16_t Y = (y == h - 1) ? C : *(src + x + srcPitch);
+			const uint16_t Z = (x == w - 1 || y == h - 1) ? C : *(src + x + 1 + srcPitch);
+			*(p) = (V == S && S == T) ? S : C;
+			*(p + 1) = (T == U && U == W) ? U : C;
+			*(p + dstPitch) = (V == X && X == Y) ? X : C;
+			*(p + dstPitch + 1) = (W == Z && Z == Y) ? Z : C;
+		}
+		dst += dstPitch * 2;
+		src += srcPitch;
+	}
+}

@@ -55,6 +55,7 @@ static const struct {
 	{ point1x, "point1x", 1 },
 	{ point2x, "point2x", 2 },
 	{ scale2x, "scale2x", 2 },
+	{ eagle2x, "eagle2x", 2 },
 	{ point3x, "point3x", 3 },
 	{ scale3x, "scale3x", 3 },
 	{ 0, 0, 0 },
