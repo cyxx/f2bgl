@@ -53,6 +53,7 @@ struct Render {
 	bool _paletteGreyScale;
 	int _paletteRgbScale;
 	bool _fog;
+	bool _drawObjectIgnoreDepth;
 
 	Render(const RenderParams *params);
 	~Render();
@@ -73,7 +74,7 @@ struct Render {
 	void drawSprite(int x, int y, const uint8_t *texData, int texW, int texH, int primitive, int16_t texKey, int transparentScale = 256);
 	void drawRectangle(int x, int y, int w, int h, int color);
 
-	void beginObjectDraw(int x, int y, int z, int ry, int shift = 0);
+	void beginObjectDraw(int x, int y, int z, int ry, int shift = 0, bool ignoreDepth = false);
 	void endObjectDraw();
 
 	void setOverlayBlendColor(int r, int g, int b);

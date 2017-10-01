@@ -154,6 +154,7 @@ Render::Render(const RenderParams *params) {
 	_paletteGreyScale = false;
 	_paletteRgbScale = 256;
 	_fog = params->fog;
+	_drawObjectIgnoreDepth = false;
 }
 
 Render::~Render() {
@@ -463,16 +464,24 @@ void Render::copyToOverlay(int x, int y, const uint8_t *data, int pitch, int w, 
 	}
 }
 
-void Render::beginObjectDraw(int x, int y, int z, int ry, int shift) {
+void Render::beginObjectDraw(int x, int y, int z, int ry, int shift, bool ignoreDepth) {
 	glPushMatrix();
 	const GLfloat div = 1 << shift;
 	glTranslatef(x / div, y / div, z / div);
 	glRotatef(ry * 360 / 1024., 0., 1., 0.);
 	glScalef(1 / 8., 1 / 2., 1 / 8.);
+	if (ignoreDepth) {
+		_drawObjectIgnoreDepth = true;
+		glDisable(GL_DEPTH_TEST);
+	}
 }
 
 void Render::endObjectDraw() {
 	glPopMatrix();
+	if (_drawObjectIgnoreDepth) {
+		_drawObjectIgnoreDepth = false;
+		glEnable(GL_DEPTH_TEST);
+	}
 }
 
 void Render::setOverlayBlendColor(int r, int g, int b) {

@@ -2813,18 +2813,15 @@ bool Game::addSceneObjectToList(int xPos, int yPos, int zPos, GameObject *o) {
 		GameObject *o_parent = o->o_parent;
 		const uint8_t *p_anikeyf = o_parent->anim.anikeyfData;
 		if (o_parent && p_anikeyf && o == _objectsPtrTable[kObjPtrTarget]) {
-			const int xo = (((int8_t)p_anikeyf[16]) * 8 + (int16_t)READ_LE_UINT16(p_anikeyf + 2)) << 10;
-			const int zo = (((int8_t)p_anikeyf[17]) * 8 + (int16_t)READ_LE_UINT16(p_anikeyf + 6)) << 10;
-			int cosy =  g_cos[o_parent->pitch & 1023];
-			int siny = -g_sin[o_parent->pitch & 1023];
-			const int xr = fixedMul(cosy, xo, kPosShift) - fixedMul(siny, zo, kPosShift);
-			so->x = o->xPosParent + o->xPos;
-			so->x += xr;
-			so->y = o->yPosParent + o->yPos;
-			so->y += ((int16_t)READ_LE_UINT16(p_anikeyf + 14)) << 11;
-			const int zr = fixedMul(siny, xo, kPosShift) + fixedMul(cosy, zo, kPosShift);
-			so->z = o->zPosParent + o->zPos;
-			so->z += zr;
+			const int xb = (((int8_t)p_anikeyf[16]) * 8 + (int16_t)READ_LE_UINT16(p_anikeyf + 2)) << 10;
+			const int zb = (((int8_t)p_anikeyf[17]) * 8 + (int16_t)READ_LE_UINT16(p_anikeyf + 6)) << 10;
+			const int cosy =  g_cos[o_parent->pitch & 1023];
+			const int siny = -g_sin[o_parent->pitch & 1023];
+			const int xr = fixedMul(cosy, xb, kPosShift) - fixedMul(siny, zb, kPosShift);
+			const int zr = fixedMul(siny, xb, kPosShift) + fixedMul(cosy, zb, kPosShift);
+			so->x = o->xPosParent + o->xPos + xr;
+			so->y = o->yPosParent + o->yPos + (((int16_t)READ_LE_UINT16(p_anikeyf + 14)) << 11);
+			so->z = o->zPosParent + o->zPos + zr;
 		} else {
 			so->x = xPos;
 			so->y = yPos;
@@ -2896,6 +2893,8 @@ void Game::addObjectsToScene() {
 	}
 	SceneObject *translucentObjects[kSceneObjectsTableSize];
 	int translucentObjectsCount = 0;
+	SceneObject *bitmapObjects[kSceneObjectsTableSize];
+	int bitmapObjectsCount = 0;
 	// draw opaque objects
 	for (int i = 0; i < _sceneObjectsCount; ++i) {
 		SceneObject *so = &_sceneObjectsTable[i];
@@ -2903,27 +2902,13 @@ void Game::addObjectsToScene() {
 			translucentObjects[translucentObjectsCount] = so;
 			++translucentObjectsCount;
 		} else {
-			const int flags = so->o->flags[1];
 			if (so->verticesCount != 0) {
 				_render->beginObjectDraw(so->x, so->y, so->z, so->pitch, kPosShift);
-				drawSceneObjectMesh(so, flags);
+				drawSceneObjectMesh(so, so->o->flags[1]);
 				_render->endObjectDraw();
 			} else {
-				SpriteImage *spr = &so->spr;
-				const uint8_t *texData = _spriteCache.getData(spr->key, spr->data);
-				const int scale = (flags & 0x20000) != 0 ? 2 : 1;
-				const int x0 = -scale * spr->w / 2;
-				const int y0 = -scale * spr->h / 2;
-				const int x1 = x0 + scale * spr->w;
-				const int y1 = y0 + scale * spr->h;
-				Vertex v[4];
-				v[0].x = x0; v[0].y = y0; v[0].z = 0;
-				v[1].x = x1; v[1].y = y0; v[1].z = 0;
-				v[2].x = x1; v[2].y = y1; v[2].z = 0;
-				v[3].x = x0; v[3].y = y1; v[3].z = 0;
-				_render->beginObjectDraw(so->x, (kGroundY << kPosShift) + so->y, so->z, _yInvRotObserver, kPosShift);
-				_render->drawPolygonTexture(v, 4, 0, texData, spr->w, spr->h, spr->key);
-				_render->endObjectDraw();
+				bitmapObjects[bitmapObjectsCount] = so;
+				++bitmapObjectsCount;
 			}
 		}
 	}
@@ -2943,9 +2928,28 @@ void Game::addObjectsToScene() {
 	// draw transparent
 	for (int i = 0; i < translucentObjectsCount; ++i) {
 		SceneObject *so = translucentObjects[i];
-		const int flags = so->o->flags[1];
 		_render->beginObjectDraw(so->x, so->y, so->z, so->pitch, kPosShift);
-		drawSceneObjectMesh(so, flags);
+		drawSceneObjectMesh(so, so->o->flags[1]);
+		_render->endObjectDraw();
+	}
+	// draw bitmap
+	for (int i = 0; i < bitmapObjectsCount; ++i) {
+		SceneObject *so = bitmapObjects[i];
+		const int flags = so->o->flags[1];
+		SpriteImage *spr = &so->spr;
+		const uint8_t *texData = _spriteCache.getData(spr->key, spr->data);
+		const int scale = (flags & 0x20000) != 0 ? 2 : 1;
+		const int x0 = -scale * spr->w / 2;
+		const int y0 = -scale * spr->h / 2;
+		const int x1 = x0 + scale * spr->w;
+		const int y1 = y0 + scale * spr->h;
+		Vertex v[4];
+		v[0].x = x0; v[0].y = y0; v[0].z = 0;
+		v[1].x = x1; v[1].y = y0; v[1].z = 0;
+		v[2].x = x1; v[2].y = y1; v[2].z = 0;
+		v[3].x = x0; v[3].y = y1; v[3].z = 0;
+		_render->beginObjectDraw(so->x, (kGroundY << kPosShift) + so->y, so->z, _yInvRotObserver, kPosShift, true);
+		_render->drawPolygonTexture(v, 4, 0, texData, spr->w, spr->h, spr->key);
 		_render->endObjectDraw();
 	}
 }
@@ -4609,12 +4613,12 @@ int Game::getShootPos(int16_t objKey, int *x, int *y, int *z) {
 		return 0;
 	}
 	p_anikeyf = _res.getData(kResType_ANI, anim->currentAnimKey, "ANIKEYF");
-	const int xb = ((((int8_t)p_anikeyf[16]) * 8) + (int16_t)READ_LE_UINT16(p_anikeyf + 2)) << 10;
-	const int zb = ((((int8_t)p_anikeyf[17]) * 8) + (int16_t)READ_LE_UINT16(p_anikeyf + 6)) << 10;
-	int cosy =  g_cos[o->pitch & 1023];
-	int siny = -g_sin[o->pitch & 1023];
-	const int rx = fixedMul(cosy, xb, 15) - fixedMul(siny, zb, 15);
-	const int rz = fixedMul(siny, xb, 15) + fixedMul(cosy, zb, 15);
+	const int xb = (((int8_t)p_anikeyf[16]) * 8 + (int16_t)READ_LE_UINT16(p_anikeyf + 2)) << 10;
+	const int zb = (((int8_t)p_anikeyf[17]) * 8 + (int16_t)READ_LE_UINT16(p_anikeyf + 6)) << 10;
+	const int cosy =  g_cos[o->pitch & 1023];
+	const int siny = -g_sin[o->pitch & 1023];
+	const int rx = fixedMul(cosy, xb, kPosShift) - fixedMul(siny, zb, kPosShift);
+	const int rz = fixedMul(siny, xb, kPosShift) + fixedMul(cosy, zb, kPosShift);
 	*x = o->xPosParent + o->xPos + rx;
 	*y = o->yPosParent + o->yPos + (((int16_t)READ_LE_UINT16(p_anikeyf + 14)) << 11);
 	*z = o->zPosParent + o->zPos + rz;
