@@ -2822,6 +2822,12 @@ bool Game::addSceneObjectToList(int xPos, int yPos, int zPos, GameObject *o) {
 			so->x = o->xPosParent + o->xPos + xr;
 			so->y = o->yPosParent + o->yPos + (((int16_t)READ_LE_UINT16(p_anikeyf + 14)) << 11);
 			so->z = o->zPosParent + o->zPos + zr;
+			if (g_isDemo) {
+				// TODO: anikeyf.shoot_x / .shoot_z look wrong for the target object, setting their value to zero
+				// seem to match the original executable display behaviour.
+				so->x -= xr;
+				so->z -= zr;
+			}
 		} else {
 			so->x = xPos;
 			so->y = yPos;
@@ -4608,11 +4614,14 @@ int Game::getShootPos(int16_t objKey, int *x, int *y, int *z) {
 		return 0;
 	}
 	GameObjectAnimation *anim = &o->anim;
-	uint8_t *p_anikeyf = anim->anikeyfData;
-	if (anim->currentAnimKey == 0) {
-		return 0;
+	const uint8_t *p_anikeyf = anim->anikeyfData;
+	if (!p_anikeyf) {
+		if (anim->currentAnimKey == 0) {
+			return 0;
+		}
+		p_anikeyf = _res.getData(kResType_ANI, anim->currentAnimKey, "ANIKEYF");
+		assert(p_anikeyf);
 	}
-	p_anikeyf = _res.getData(kResType_ANI, anim->currentAnimKey, "ANIKEYF");
 	const int xb = (((int8_t)p_anikeyf[16]) * 8 + (int16_t)READ_LE_UINT16(p_anikeyf + 2)) << 10;
 	const int zb = (((int8_t)p_anikeyf[17]) * 8 + (int16_t)READ_LE_UINT16(p_anikeyf + 6)) << 10;
 	const int cosy =  g_cos[o->pitch & 1023];
