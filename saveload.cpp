@@ -13,7 +13,8 @@ static const int kHeaderSize = 96;
 // 22 - persists GameObject.text
 // 23 - remove Game._sceneCameraPosTable (read-only data)
 // 24 - lookup _musicKey index
-static const int kSaveVersion = 24;
+// 25 - add level.obj crc32
+static const int kSaveVersion = 25;
 
 static const char *kLevels[] = { "1", "2a", "2b", "2c", "3", "4a", "4b", "4c", "5a", "5b", "5c", "6a", "6b" };
 
@@ -526,10 +527,11 @@ bool Game::saveGameState(int num) {
 	if (!fp) {
 		return false;
 	}
-	char header[kHeaderSize];
+	char header[kHeaderSize - sizeof(uint32_t)];
 	memset(header, 0, sizeof(header));
 	snprintf(header, sizeof(header), "PC__%4d : %s", kSaveVersion, kSaveText);
 	fileWrite(fp, header, sizeof(header));
+	fileWriteUint32LE(fp, g_level1ObjCrc);
 	_saveVersion = kSaveVersion;
 	// 160x100 thumbnail
 	persist<kModeSave>(fp, _level);
@@ -552,6 +554,14 @@ bool Game::loadGameState(int num) {
 	char header[kHeaderSize];
 	fileRead(fp, header, sizeof(header));
 	if (sscanf(header, "PC__%4d", &_saveVersion) == 1 && _saveVersion >= 21) {
+		if (_saveVersion >= 25) {
+			const uint32_t level1ObjCrc = READ_LE_UINT32(header + kHeaderSize - 4);
+			if (level1ObjCrc != g_level1ObjCrc) {
+				warning("Invalid datafiles CRC 0x%08x (0x%08x) for savegame #%d", level1ObjCrc, g_level1ObjCrc, num);
+				fileClose(fp);
+				return false;
+			}
+		}
 		int level = -1;
 		persist<kModeLoad>(fp, level);
 		debug(kDebug_SAVELOAD, "level %d currentLevel %d", level, _level);
@@ -562,6 +572,8 @@ bool Game::loadGameState(int num) {
 		persistGameState<kModeLoad>(fp, *this);
 		_updatePalette = true;
 		playMusic(_snd._musicMode);
+	} else {
+		warning("Unexpected savegame #%d version %d", num, _saveVersion);
 	}
 	fileClose(fp);
 	return true;

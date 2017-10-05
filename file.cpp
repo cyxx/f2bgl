@@ -189,6 +189,7 @@ struct FileSystem {
 };
 
 bool g_isDemo = false;
+uint32_t g_level1ObjCrc;
 static int _fileLanguage;
 static int _fileVoice;
 const char *g_fileDataPath;
@@ -275,7 +276,12 @@ bool fileInit(int language, int voice, const char *dataPath, const char *savePat
 	if (ret) {
 		g_isDemo = fileExists("ddtitle.cin", kFileType_DATA);
 	}
-	debug(kDebug_FILE, "fileInit() dataPath '%s' isDemo %d", g_fileDataPath, g_isDemo);
+	File *fp = fileOpen("level1.obj", 0, kFileType_DATA, true);
+	if (fp) {
+		g_level1ObjCrc = fileCrc32(fp);
+		fileClose(fp);
+	}
+	debug(kDebug_FILE, "fileInit() dataPath '%s' isDemo %d level1Crc 0x%08x", g_fileDataPath, g_isDemo, g_level1ObjCrc);
 	return ret;
 }
 
@@ -393,6 +399,18 @@ void fileSetPos(File *fp, uint32_t pos, int origin) {
 
 int fileEof(File *fp) {
 	return fp->eof();
+}
+
+uint32_t fileCrc32(File *fp) {
+	uint32_t crc = 0;
+	const uint32_t pos = fp->seek(0, SEEK_SET);
+	int count;
+	uint8_t buf[4096];
+	while ((count = fp->read(buf, sizeof(buf))) > 0) {
+		crc = crc32(crc, buf, count);
+	}
+	fp->seek(pos, SEEK_SET);
+	return crc;
 }
 
 void fileWrite(File *fp, const void *buf, int size) {

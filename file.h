@@ -39,6 +39,7 @@ enum FilePosition {
 struct File;
 
 extern bool g_isDemo;
+extern uint32_t g_level1ObjCrc; // crc for savegame states
 extern const char *g_fileDataPath;
 extern const char *g_fileSavePath;
 
@@ -54,6 +55,7 @@ uint32_t fileReadUint32LE(File *fp);
 uint32_t fileGetPos(File *fp);
 void fileSetPos(File *fp, uint32_t pos, int origin);
 int fileEof(File *fp);
+uint32_t fileCrc32(File *fp);
 void fileWrite(File *fp, const void *buf, int size);
 void fileWriteByte(File *fp, uint8_t value);
 void fileWriteUint16LE(File *fp, uint16_t value);
