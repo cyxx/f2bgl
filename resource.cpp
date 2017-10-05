@@ -292,11 +292,21 @@ static uint8_t *convertANI(uint8_t *p, uint32_t *size) {
 		*size = 16;
 		break;
 	case 20: { // "ANIKEYF"
-			uint8_t tmp[6];
-			memcpy(tmp, p + 14, 6);
-			memcpy(p + 14, tmp + 2, 2); // shootY
-			p[16] = tmp[0]; // shootX
-			p[17] = tmp[4]; // shootY
+			const int16_t anikeyf_dx = (int16_t)READ_LE_UINT16(p + 2);
+			const int16_t anikeyf_dz = (int16_t)READ_LE_UINT16(p + 6);
+
+			// from: int16_t shootX, shootY, shootZ;
+			// to: int16_t shootY; int8_t shootX, shootZ;
+
+			const int16_t shoot_x = (int16_t)READ_LE_UINT16(p + 14);
+			const int16_t shoot_y = (int16_t)READ_LE_UINT16(p + 16);
+			const int16_t shoot_z = (int16_t)READ_LE_UINT16(p + 18);
+
+			p[14] = shoot_y & 255; // shootY
+			p[15] = shoot_y >> 8;
+
+			p[16] = (shoot_x - anikeyf_dx) / 8; // shootX
+			p[17] = (shoot_z - anikeyf_dz) / 8; // shootZ
 		}
 		*size = 18;
 		break;

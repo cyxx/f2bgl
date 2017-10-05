@@ -2822,12 +2822,6 @@ bool Game::addSceneObjectToList(int xPos, int yPos, int zPos, GameObject *o) {
 			so->x = o->xPosParent + o->xPos + xr;
 			so->y = o->yPosParent + o->yPos + (((int16_t)READ_LE_UINT16(p_anikeyf + 14)) << 11);
 			so->z = o->zPosParent + o->zPos + zr;
-			if (g_isDemo) {
-				// TODO: anikeyf.shoot_x / .shoot_z look wrong for the target object, setting their value to zero
-				// seem to match the original executable display behaviour.
-				so->x -= xr;
-				so->z -= zr;
-			}
 		} else {
 			so->x = xPos;
 			so->y = yPos;
