@@ -585,7 +585,7 @@ void Game::saveScreenshot(int num) {
 	if (p) {
 		char filename[32];
 		snprintf(filename, sizeof(filename), kFn_s, kLevels[_level], num, "tga");
-		saveTGA(filename, p, w, h);
+		saveTGA(filename, p, w, h, false);
 	}
 }
 

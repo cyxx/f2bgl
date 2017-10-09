@@ -2,16 +2,46 @@
 #include "util.h"
 #include "file.h"
 
+static const bool kLinearResize = true; // bilinear resampling of screenshot bitmap
+
+static uint32_t qlerp(uint32_t a, uint32_t b, uint32_t c, uint32_t d, int u, int v) {
+	return (a * (256 - u) * (256 - v) + b * u * (256 - v) + c * (256 - u) * v + c * u * v) >> 16;
+}
+
 static uint8_t *resizeThumbnail(const uint8_t *rgba, int w, int h, int *rw, int *rh) {
 	const int thumbW = 320;
 	const int thumbH = h * thumbW / w;
 	uint8_t *buffer = (uint8_t *)malloc(thumbW * thumbH * 4);
 	if (buffer) {
-		for (int y = 0; y < thumbH; ++y) {
-			const int ty = y * h / thumbH;
-			for (int x = 0; x < thumbW; ++x) {
-				const int tx = x * w / thumbW;
-				memcpy(buffer + (y * thumbW + x) * 4, rgba + (ty * w + tx) * 4, 4);
+		if (!kLinearResize) {
+			for (int y = 0; y < thumbH; ++y) {
+				const int ty = y * h / thumbH;
+				for (int x = 0; x < thumbW; ++x) {
+					const int tx = x * w / thumbW;
+					memcpy(buffer + (y * thumbW + x) * 4, rgba + (ty * w + tx) * 4, 4);
+				}
+			}
+		} else {
+			for (int y = 0; y < thumbH; ++y) {
+				const int ty = y * (h - 1) / thumbH;
+				const int v = ((y * (h - 1)) % thumbH) * 256 / (thumbH - 1);
+				for (int x = 0; x < thumbW; ++x) {
+					const int tx = x * (w - 1) / thumbW;
+					const int u = ((x * (w - 1)) % thumbW) * 256 / (thumbW - 1);
+					// A B
+					// C D
+					const uint32_t *p = (uint32_t *)(rgba + (ty * w + tx) * 4);
+					const uint32_t A = p[0];
+					const uint32_t B = p[1];
+					const uint32_t C = p[w];
+					const uint32_t D = p[w + 1];
+					// interpolate ARGB colors
+					const uint32_t a = qlerp( A >> 24,         B >> 24,         C >> 24,         D >> 24,        u, v);
+					const uint32_t b = qlerp((A >> 16) & 255, (B >> 16) & 255, (C >> 16) & 255, (D >> 16) & 255, u, v);
+					const uint32_t g = qlerp((A >>  8) & 255, (B >>  8) & 255, (C >>  8) & 255, (D >>  8) & 255, u, v);
+					const uint32_t r = qlerp( A & 255,         B & 255,         C & 255,         D & 255,        u, v);
+					*(uint32_t *)(buffer + (y * thumbW + x) * 4) = (a << 24) | (b << 16) | (g << 8) | r;
+				}
 			}
 		}
 		*rw = thumbW;
@@ -32,14 +62,18 @@ static void TO_LE16(uint8_t *dst, uint16_t value) {
 
 static const int TGA_HEADER_SIZE = 18;
 
-void saveTGA(const char *filepath, const uint8_t *rgba, int w, int h) {
+void saveTGA(const char *filepath, const uint8_t *rgba, int w, int h, bool thumbnail) {
 
-	int thumbW, thumbH;
-	uint8_t *thumbBuffer = resizeThumbnail(rgba, w, h, &thumbW, &thumbH);
-	if (thumbBuffer) {
-		rgba = thumbBuffer;
-		w = thumbW;
-		h = thumbH;
+	uint8_t *thumbBuffer = 0;
+
+	if (thumbnail) {
+		int thumbW, thumbH;
+		thumbBuffer = resizeThumbnail(rgba, w, h, &thumbW, &thumbH);
+		if (thumbBuffer) {
+			rgba = thumbBuffer;
+			w = thumbW;
+			h = thumbH;
+		}
 	}
 
 	static const uint8_t kImageType = kTgaImageTypeRunLengthEncodedTrueColor;

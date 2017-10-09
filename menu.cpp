@@ -245,7 +245,7 @@ bool Game::doMenu() {
 					saveGameState(_saveLoadSlots[saveSlot].num);
 					char filename[32];
 					snprintf(filename, sizeof(filename), kMenuFnTga_s, saveSlot);
-					saveTGA(filename, _saveLoadTexture.data, _saveLoadTexture.w, _saveLoadTexture.h);
+					saveTGA(filename, _saveLoadTexture.data, _saveLoadTexture.w, _saveLoadTexture.h, true);
 					// game state saved, return to the game
 					setGameStateSave(saveSlot);
 					return false;
