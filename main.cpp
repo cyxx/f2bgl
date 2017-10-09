@@ -9,6 +9,8 @@
 
 const char *g_caption = "Fade2Black/OpenGL";
 
+static const char *kIconBmp = "icon.bmp";
+
 static const float kAspectRatio = 4 / 3.;
 
 static const int kDefaultW = 640;
@@ -167,6 +169,11 @@ int main(int argc, char *argv[]) {
 	SDL_Window *window = SDL_CreateWindow(g_caption, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, gWindowW, gWindowH, flags);
 	if (!window) {
 		return -1;
+	}
+	SDL_Surface *icon = SDL_LoadBMP(kIconBmp);
+	if (icon) {
+		SDL_SetWindowIcon(window, icon);
+		SDL_FreeSurface(icon);
 	}
 	SDL_GetWindowSize(window, &gWindowW, &gWindowH);
 	_aspectRatio[0] = 0.;
