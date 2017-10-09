@@ -29,7 +29,7 @@ $(ICON).o: $(ICON)
 	$(WINDRES) -i $^ -o $@
 
 clean:
-	rm -f *.o *.d
+	rm -f *.o *.d $(ICON).o
 
 -include $(DEPS)
 
