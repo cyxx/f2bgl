@@ -97,15 +97,14 @@ static const int kButtons_y0 = 172;
 static const IconsInitTable _iconsTouchTable[] = {
 	{ kIconInventory, kOptions_x0,      kOptions_y0,      kIconActionInventory },
 	{ kIconOptions,   kOptions_x0,      kOptions_y0 + 24, kIconActionOptions },
-	{ kIconTurn180,   kDpad_x0,         kDpad_y0,         kIconActionDirTurn180 },
 	{ kIconMapUp,     kDpad_x0,         kDpad_y0 - 24,    kIconActionDirUp },
 	{ kIconMapDown,   kDpad_x0,         kDpad_y0 + 24,    kIconActionDirDown },
 	{ kIconMapLeft,   kDpad_x0 - 24,    kDpad_y0,         kIconActionDirLeft },
 	{ kIconMapRight , kDpad_x0 + 24,    kDpad_y0,         kIconActionDirRight },
 	{ kIconJump,      kButtons_x0,      kButtons_y0,      kIconActionJump },
 	{ kIconGun,       kButtons_x0 + 32, kButtons_y0,      kIconActionGun },
-	{ kIconAction,    kButtons_x0 + 64, kButtons_y0,      kIconActionHandUse },
-	{ kIconRun,       kButtons_x0 + 96, kButtons_y0,      kIconActionRun },
+	{ kIconRun,       kButtons_x0 + 64, kButtons_y0,      kIconActionRun },
+	{ kIconAction,    kButtons_x0 + 96, kButtons_y0,      kIconActionHandUse },
 };
 
 // return false if the icon should not be presented
