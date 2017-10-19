@@ -105,7 +105,7 @@ struct GameStub_F2B : GameStub {
 		kStateCutscene,
 		kStateGame,
 		kStateInventory,
-		kStateBox,
+		kStateCabinet,
 		kStateMenu,
 		kStateInstaller,
 	};
@@ -140,8 +140,8 @@ struct GameStub_F2B : GameStub {
 			_render->resizeOverlay(0, 0);
 			_render->setPalette(_g->_screenPalette, 0, 256);
 			break;
-		case kStateBox:
-			_g->finiBox();
+		case kStateCabinet:
+			_g->finiCabinet();
 			break;
 		case kStateMenu:
 			_g->finiMenu();
@@ -160,8 +160,8 @@ struct GameStub_F2B : GameStub {
 				return;
 			}
 			break;
-		case kStateBox:
-			_g->initBox();
+		case kStateCabinet:
+			_g->initCabinet();
 			break;
 		case kStateMenu:
 			_g->initMenu();
@@ -483,8 +483,8 @@ struct GameStub_F2B : GameStub {
 				_nextState = kStateMenu;
 			} else if (_g->_cut._numToPlay >= 0 && _g->_cut._numToPlayCounter == 0) {
 				_nextState = kStateCutscene;
-			} else if (_g->_boxItemCount != 0) {
-				_nextState = kStateBox;
+			} else if (_g->_cabinetItemCount != 0) {
+				_nextState = kStateCabinet;
 			}
 			break;
 		case kStateInventory:
@@ -497,9 +497,9 @@ struct GameStub_F2B : GameStub {
 				_nextState = kStateGame;
 			}
 			break;
-		case kStateBox:
-			_g->doBox();
-			if (_g->_boxItemCount == 0) {
+		case kStateCabinet:
+			_g->doCabinet();
+			if (_g->_cabinetItemCount == 0) {
 				_nextState = kStateGame;
 			}
 			break;

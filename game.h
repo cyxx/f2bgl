@@ -485,8 +485,8 @@ struct Game {
 	int _collidingObjectsCount;
 	GameObject *_collidingObjectsTable[kCollidingObjectsTableSize];
 	int32_t _conradEnvAni;
-	int _boxItemCount;
-	GameObject *_boxItemObj;
+	int _cabinetItemCount;
+	GameObject *_cabinetItemObj;
 
 	int _roomsTableCount;
 	GameRoom _roomsTable[kRoomsTableSize];
@@ -622,11 +622,11 @@ struct Game {
 		_gameStateMsg = kMsgGameSave;
 	}
 
-	// box.cpp
-	void initBox();
-	void finiBox();
-	void setBoxItem(GameObject *o);
-	void doBox();
+	// cabinet.cpp
+	void initCabinet();
+	void finiCabinet();
+	void setCabinetItem(GameObject *o);
+	void doCabinet();
 
 	// game.cpp
 	void clearGlobalData();
@@ -834,7 +834,7 @@ struct Game {
 	int op_getProjObject(int argc, int32_t *argv);
 	int op_setObjectParent(int argc, int32_t *argv);
 	int op_removeObjectMessage(int argc, int32_t *argv);
-	int op_setBoxItem(int argc, int32_t *argv);
+	int op_setCabinetItem(int argc, int32_t *argv);
 	int op_isObjectMoving(int argc, int32_t *argv);
 	int op_getMessageInfo(int argc, int32_t *argv);
 	int op_testObjectsRoom(int argc, int32_t *argv);

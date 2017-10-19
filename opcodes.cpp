@@ -919,18 +919,18 @@ int Game::op_removeObjectMessage(int argc, int32_t *argv) {
 	return -1;
 }
 
-int Game::op_setBoxItem(int argc, int32_t *argv) {
+int Game::op_setCabinetItem(int argc, int32_t *argv) {
 	assert(argc == 0);
-	debug(kDebug_OPCODES, "Game::op_setBoxItem() []");
-	_boxItemCount = 0;
-	_boxItemObj = _currentObject->o_child;
-	if (_boxItemObj) {
-		++_boxItemCount;
-		for (GameObject *o = _boxItemObj; o->o_next; o = o->o_next) {
-			++_boxItemCount;
+	debug(kDebug_OPCODES, "Game::op_setCabinetItem() []");
+	_cabinetItemCount = 0;
+	_cabinetItemObj = _currentObject->o_child;
+	if (_cabinetItemObj) {
+		++_cabinetItemCount;
+		for (GameObject *o = _cabinetItemObj; o->o_next; o = o->o_next) {
+			++_cabinetItemCount;
 		}
 	}
-	if (_boxItemCount == 0) {
+	if (_cabinetItemCount == 0) {
 		int32_t argv[] = { _objectsPtrTable[kObjPtrWorld]->objKey, 0 };
 		op_addObjectMessage(2, argv);
 	}

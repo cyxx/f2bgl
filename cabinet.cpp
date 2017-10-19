@@ -5,30 +5,30 @@
 
 #include "game.h"
 
-void Game::initBox() {
-	assert(_boxItemObj);
-	setPalette(_palKeysTable[_boxItemObj->pal]);
-	loadInventoryObjectMesh(_boxItemObj);
+void Game::initCabinet() {
+	assert(_cabinetItemObj);
+	setPalette(_palKeysTable[_cabinetItemObj->pal]);
+	loadInventoryObjectMesh(_cabinetItemObj);
 	initIcons(kIconModeCabinet);
 }
 
-void Game::finiBox() {
+void Game::finiCabinet() {
 	// restore game mode icons
 	if (_params.mouseMode || _params.touchMode) {
 		initIcons(kIconModeGame);
 	}
 }
 
-void Game::setBoxItem(GameObject *o) {
+void Game::setCabinetItem(GameObject *o) {
 	assert(o);
-	_boxItemObj = o;
-	setPalette(_palKeysTable[_boxItemObj->pal]);
-	loadInventoryObjectMesh(_boxItemObj);
+	_cabinetItemObj = o;
+	setPalette(_palKeysTable[_cabinetItemObj->pal]);
+	loadInventoryObjectMesh(_cabinetItemObj);
 }
 
-void Game::doBox() {
+void Game::doCabinet() {
 	_render->clearScreen();
-	if (_boxItemCount != 0) {
+	if (_cabinetItemCount != 0) {
 
 		SceneObject *so = &_sceneObjectsTable[0];
 		if (so->verticesCount != 0) {
@@ -41,17 +41,17 @@ void Game::doBox() {
 		}
 
 		_render->setupProjection(kProj2D);
-		const int num = (_boxItemCount == 1) ? 28 : 29;
+		const int num = (_cabinetItemCount == 1) ? 28 : 29;
 		if (getMessage(_objectsPtrTable[kObjPtrWorld]->objKey, num, &_tmpMsg)) {
 			char buf[128];
-			snprintf(buf, sizeof(buf), "%d %s", _boxItemCount, (const char *)_tmpMsg.data);
+			snprintf(buf, sizeof(buf), "%d %s", _cabinetItemCount, (const char *)_tmpMsg.data);
 			memset(&_drawCharBuf, 0, sizeof(_drawCharBuf));
 			int w, h;
 			getStringRect(buf, kFontNameInvent, &w, &h);
 			drawString((kScreenWidth - w) / 2, kScreenHeight - kScreenHeight / 10, buf, kFontNameInvent, 0);
 		}
 
-		if (getMessage(_boxItemObj->objKey, 1, &_tmpMsg)) {
+		if (getMessage(_cabinetItemObj->objKey, 1, &_tmpMsg)) {
 			memset(&_drawCharBuf, 0, sizeof(_drawCharBuf));
 			int w, h;
 			getStringRect((const char *)_tmpMsg.data, _tmpMsg.font, &w, &h);
@@ -59,14 +59,14 @@ void Game::doBox() {
 		}
 		drawIcons();
 	}
-	if (_boxItemCount > 1) {
+	if (_cabinetItemCount > 1) {
 		if (inp.dirMask & kInputDirLeft) {
 			inp.dirMask &= ~kInputDirLeft;
-			setBoxItem(getPreviousObject(_boxItemObj));
+			setCabinetItem(getPreviousObject(_cabinetItemObj));
 		}
 		if (inp.dirMask & kInputDirRight) {
 			inp.dirMask &= ~kInputDirRight;
-			setBoxItem(getNextObject(_boxItemObj));
+			setCabinetItem(getNextObject(_cabinetItemObj));
 		}
 		if (!inp.pointers[0][0].down && inp.pointers[0][1].down) {
 			for (int j = 0; j < _iconsCount; ++j) {
@@ -79,10 +79,10 @@ void Game::doBox() {
 					inp.spaceKey = true;
 					break;
 				case kIconActionDirLeft:
-					setBoxItem(getPreviousObject(_boxItemObj));
+					setCabinetItem(getPreviousObject(_cabinetItemObj));
 					break;
 				case kIconActionDirRight:
-					setBoxItem(getNextObject(_boxItemObj));
+					setCabinetItem(getNextObject(_cabinetItemObj));
 					break;
 				}
 			}
@@ -90,13 +90,13 @@ void Game::doBox() {
 	}
 	if (inp.spaceKey) {
 		inp.spaceKey = false;
-		if (_boxItemCount > 0) {
-			--_boxItemCount;
-			GameObject *nextItemObj = getNextObject(_boxItemObj);
-			GameObject *tmpObj = getObjectByKey(_boxItemObj->customData[0]);
+		if (_cabinetItemCount > 0) {
+			--_cabinetItemCount;
+			GameObject *nextItemObj = getNextObject(_cabinetItemObj);
+			GameObject *tmpObj = getObjectByKey(_cabinetItemObj->customData[0]);
 			const int num = tmpObj->specialData[1][22];
 			if (num == 2 || num == 8 || num == 16) {
-				setObjectParent(_boxItemObj, tmpObj);
+				setObjectParent(_cabinetItemObj, tmpObj);
 				if (!tmpObj->o_child) {
 					switch (num) {
 					case 2:
@@ -123,7 +123,7 @@ void Game::doBox() {
 					}
 				}
 			} else if (num == 32) {
-				setObjectParent(_boxItemObj, tmpObj);
+				setObjectParent(_cabinetItemObj, tmpObj);
 			} else {
 				if (tmpObj->o_parent->o_parent->specialData[1][21] != 128) {
 					if (num == 8192 || num == 16384 || num == 32768 || num == 65536) {
@@ -147,18 +147,18 @@ void Game::doBox() {
 					}
 				}
 				if (tmpObj->o_parent->specialData[1][22] == 1) {
-					tmpObj->customData[1] += _boxItemObj->specialData[1][18];
+					tmpObj->customData[1] += _cabinetItemObj->specialData[1][18];
 				} else {
-					tmpObj->customData[0] += _boxItemObj->specialData[1][18];
+					tmpObj->customData[0] += _cabinetItemObj->specialData[1][18];
 				}
-				setObjectParent(_boxItemObj, _objectsPtrTable[kObjPtrCimetiere]);
+				setObjectParent(_cabinetItemObj, _objectsPtrTable[kObjPtrCimetiere]);
 			}
-			setBoxItem(nextItemObj);
+			setCabinetItem(nextItemObj);
 			_snd.playSfx(_objectsPtrTable[kObjPtrWorld]->objKey, _res._sndKeysTable[8]);
 		}
 	}
 	if (inp.escapeKey) {
 		inp.escapeKey = false;
-		_boxItemCount = 0;
+		_cabinetItemCount = 0;
 	}
 }

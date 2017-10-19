@@ -72,8 +72,8 @@ void Game::clearGlobalData() {
 	_collidingObjectsCount = 0;
 	memset(_collidingObjectsTable, 0, sizeof(_collidingObjectsTable));
 	_conradEnvAni = 0;
-	_boxItemCount = 0;
-	_boxItemObj = 0;
+	_cabinetItemCount = 0;
+	_cabinetItemObj = 0;
 
 	memset(&inp, 0, sizeof(inp));
 	_inputsCount = 0;
@@ -1627,7 +1627,7 @@ static const Game::OpcodeProc _opcodeTable[kOpcodesCount] = {
 	&Game::op_setObjectParent,
 	&Game::op_removeObjectMessage,
 	// 28
-	&Game::op_setBoxItem,
+	&Game::op_setCabinetItem,
 	0, // &Game::op_fadePalette, // unused
 	&Game::op_isObjectMoving,
 	&Game::op_getMessageInfo,
