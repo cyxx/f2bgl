@@ -157,10 +157,12 @@ void Game::updateMouseInput() {
 					_inputDirMouse |= 4;
 					break;
 				case kIconActionDirUp:
-					inp.footStepKey = true;
+					// shift+up
+					_inputButtonMouse |= 2;
+					_inputDirMouse |= 8;
 					break;
 				case kIconActionDirDown:
-					inp.backStepKey = true;
+					_inputDirMouse |= 4;
 					break;
 				case kIconActionDirLeft:
 					_inputDirMouse |= 2;
