@@ -260,7 +260,24 @@ int Game::op_playSound(int argc, int32_t *argv) {
 	}
 	int pan = 64;
 	if (flags & 0x8000) {
-		flags &= 0x7ffff;
+
+		// flags &= 0x7FFFF;
+
+		// The flags are not correctly masked in the original engine.
+		// eg. masking 0x7FFFF instead of 0x7FFF. The sound system uses
+		// bits 1 and 2, so this was clearly an typo.
+		//
+		//  cseg01:00038F01   mov     cl, byte ptr [ebp+flags+1]
+		//  cseg01:00038F04   test    cl, 80h
+		//  cseg01:00038F07   jz      short loc_38F1F
+		//  cseg01:00038F09   mov     edx, [ebp+flags+2]
+		//  cseg01:00038F0C   xor     dh, dh
+		//  cseg01:00038F0E   and     dl, 7
+		//  cseg01:00038F16   mov     word ptr [ebp+flags+2], dx
+		//
+
+		flags &= 0x7FFF;
+
 	} else {
 		int diffangle = getAngleFromPos(o->xPosParent + o->xPos - _xPosObserver, o->zPosParent + o->zPos - _zPosObserver);
 		diffangle = (diffangle - (-_yRotObserver & 1023)) & 1023;
