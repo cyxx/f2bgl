@@ -39,6 +39,11 @@ struct Delta16Decoder {
 		: _firstSample(0), _delta(0) {
 	}
 
+	void reset() {
+		_firstSample = 0;
+		_delta = 0;
+	}
+
 	int decode(uint8_t data) {
 		switch (_firstSample) {
 		case 0:
@@ -125,6 +130,7 @@ struct MixerSound {
 	Delta16Decoder decoder;
 	int volumeL;
 	int volumeR;
+	int loopsCount;
 
 	bool read(int16_t *dst, int len) {
 		int sample;
@@ -146,7 +152,14 @@ struct MixerSound {
 				mix(&dst[i + 1], sample, volumeR);
 			}
 			if (readOffset >= data._bufSize) {
-				return false;
+				--loopsCount;
+				if (loopsCount <= 0) {
+					return false;
+				}
+				readOffset = 0;
+				if (compressed) {
+					decoder.reset();
+				}
 			}
 		}
 		return true;
@@ -254,6 +267,7 @@ void Mixer::playWav(File *fp, int dataSize, int volume, int pan, uint32_t id, bo
 		snd->volumeL = volume;
 		snd->volumeR = volume;
 	}
+	snd->loopsCount = 1;
 	MixerLock ml(_lock);
 	for (int i = 0; i < kMaxSoundsCount; ++i) {
 		if (!_soundsTable[i]) {
@@ -278,6 +292,14 @@ bool Mixer::isWavPlaying(uint32_t id) const {
 	MixerLock ml(_lock);
 	const int i = findIndexById(id);
 	return i != -1;
+}
+
+void Mixer::loopWav(uint32_t id, int count) {
+	MixerLock ml(_lock);
+	const int i = findIndexById(id);
+	if (i != -1 && _soundsTable[i]) {
+		_soundsTable[i]->loopsCount = count;
+	}
 }
 
 void Mixer::playQueue(int preloadSize) {

@@ -46,6 +46,7 @@ struct Mixer {
 	void playWav(File *, int dataSize, int volume, int pan, uint32_t id, bool isVoice, bool compressed = true);
 	void stopWav(uint32_t);
 	bool isWavPlaying(uint32_t) const;
+	void loopWav(uint32_t, int count);
 
 	void playQueue(int preloadSize);
 	void appendToQueue(const uint8_t *buf, int size);

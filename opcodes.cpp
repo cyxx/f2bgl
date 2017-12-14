@@ -310,17 +310,16 @@ int Game::op_playSound(int argc, int32_t *argv) {
 	} else {
 		_snd.setVolume(volume);
 		_snd.setPan(pan);
-		if (key > 0) {
-			_snd.playSfx(o->objKey, key);
-		} else {
-			if (key == 0 && _currentObject == _objectsPtrTable[kObjPtrTarget]) {
+		if (key <= 0) {
+			if (_currentObject == _objectsPtrTable[kObjPtrTarget]) {
 				_snd.setVolume(127);
 			}
 			key = READ_LE_UINT16(o->anim.aniheadData + 6);
-			if (key != 0) {
-				_snd.playSfx(o->objKey, key);
+			if (key <= 0) {
+				return -1;
 			}
 		}
+		_snd.playSfx(o->objKey, key, (flags & 2) != 0);
 	}
 	return -1;
 }

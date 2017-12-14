@@ -47,7 +47,7 @@ struct Sound {
 	void setVolume(int volume);
 	void setPan(int pan);
 
-	void playSfx(int16_t objKey, int16_t sndKey);
+	void playSfx(int16_t objKey, int16_t sndKey, bool loop = false);
 	void stopSfx(int16_t objKey, int16_t sndKey);
 
 	void playVoice(int16_t objKey, uint32_t crc);
