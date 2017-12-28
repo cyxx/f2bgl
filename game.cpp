@@ -1820,10 +1820,19 @@ int Game::executeObjectScript(GameObject *o) {
 	}
 	if (runScript || isScriptAnimFrameEnd()) {
 		int stopScript = 0;
+		int prevScriptCmdNum = -1;
 		_currentObject->scriptCondData = getStartScriptAnim();
 		while (_currentObject->scriptCondData && !stopScript) {
-			const int scriptCmdNum = READ_LE_UINT16(_currentObject->scriptCondData);
+			int scriptCmdNum = READ_LE_UINT16(_currentObject->scriptCondData);
 			debug(kDebug_OPCODES, "scriptCmdNum=%d object='%s' key=%d", scriptCmdNum, _currentObject->name, _currentObject->objKey);
+			if (0 && !g_isDemo && strcmp(_currentObject->name, "voiceconrad") == 0 && scriptCmdNum != _res._conradVoiceCmdNum) {
+				if (_res._conradVoiceCmdNum != -1 && prevScriptCmdNum == _res._conradVoiceCmdNum - 1) {
+					if (_rnd.getRandomNumber() <= 8192 / 10) {
+						int32_t argv[] = { 1, 176 }; // "Learn to shoot"
+						op_addObjectMessage(2, argv);
+					}
+				}
+			}
 			const uint8_t *scriptData = _res.getCmdData(scriptCmdNum);
 			int scriptRet = 1;
 			while (scriptRet) {
@@ -1858,6 +1867,7 @@ int Game::executeObjectScript(GameObject *o) {
 				}
 			}
 			if (!stopScript) {
+				prevScriptCmdNum = scriptCmdNum;
 				_currentObject->scriptCondData = getNextScriptAnim();
 			}
 		}

@@ -133,6 +133,7 @@ struct Resource {
 	ResDemoInput *_demoInputData;
 	ResUserConfig _userConfig;
 	char _gusPatches[kGusPatchesTableSize][16]; // bank0, drum0
+	int16_t _conradVoiceCmdNum;
 
 	Resource();
 	~Resource();
