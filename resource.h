@@ -134,6 +134,9 @@ struct Resource {
 	ResUserConfig _userConfig;
 	char _gusPatches[kGusPatchesTableSize][16]; // bank0, drum0
 	int16_t _conradVoiceCmdNum;
+	int16_t _lastObjectKey;
+	uint32_t _textIndexesTableCount;
+	uint32_t *_textIndexesTable; // offsets to .dtt indexed by (objKey - 1)
 
 	Resource();
 	~Resource();
@@ -161,6 +164,7 @@ struct Resource {
 	void loadKeyPaths(File *fp, int dataSize);
 	void loadObjectIndexes(File *fp, int dataSize);
 	void loadObjectText(File *fp, int dataSize);
+	void loadINM(const char *levelName);
 	void loadTrigo();
 	void loadDEM(File *fp, int dataSize);
 	void loadDelphineINI();

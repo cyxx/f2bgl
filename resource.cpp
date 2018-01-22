@@ -34,6 +34,9 @@ Resource::Resource() {
 	_demoInputData = 0;
 	memset(&_userConfig, 0, sizeof(_userConfig));
 	memset(_gusPatches, 0, sizeof(_gusPatches));
+	_lastObjectKey = -1;
+	_textIndexesTableCount = 0;
+	_textIndexesTable = 0;
 }
 
 Resource::~Resource() {
@@ -85,7 +88,7 @@ void Resource::loadENV(File *fp, int dataSize) {
 	fileRead(fp, _envAniData, dataSize);
 }
 
-static int rescompareIndexByObjectName(const void *p1, const void *p2) {
+static int resCompareIndexByObjectName(const void *p1, const void *p2) {
 	const ResObjectIndex *obj1 = (const ResObjectIndex *)p1;
 	const ResObjectIndex *obj2 = (const ResObjectIndex *)p2;
 	return strcmp(obj1->objectName, obj2->objectName);
@@ -104,7 +107,7 @@ void Resource::loadObjectIndexes(File *fp, int dataSize) {
 		objectIndex->objectKey = 0;
 		objectIndex->dataOffs = fileReadUint32LE(fp);
 	}
-	qsort(_objectIndexesTable, _objectIndexesTableCount, sizeof(ResObjectIndex), rescompareIndexByObjectName);
+	qsort(_objectIndexesTable, _objectIndexesTableCount, sizeof(ResObjectIndex), resCompareIndexByObjectName);
 }
 
 void Resource::loadObjectText(File *fp, int dataSize) {
@@ -114,7 +117,7 @@ void Resource::loadObjectText(File *fp, int dataSize) {
 	fileRead(fp, _objectTextData, dataSize);
 }
 
-static int rescompareKeyPaths(const void *p1, const void *p2) {
+static int resCompareKeyPaths(const void *p1, const void *p2) {
 	const ResKeyPath *obj1 = (const ResKeyPath *)p1;
 	const ResKeyPath *obj2 = (const ResKeyPath *)p2;
 	return strcmp(obj1->pathName, obj2->pathName);
@@ -148,7 +151,7 @@ void Resource::loadKeyPaths(File *fp, int dataSize) {
 	free(kpData);
 
 	debug(kDebug_RESOURCE, "_keyPathsTableCount %d", _keyPathsTableCount);
-	qsort(_keyPathsTable, _keyPathsTableCount, sizeof(ResKeyPath), rescompareKeyPaths);
+	qsort(_keyPathsTable, _keyPathsTableCount, sizeof(ResKeyPath), resCompareKeyPaths);
 }
 
 void Resource::loadINI(File *fp, int dataSize) {
@@ -264,6 +267,36 @@ void Resource::loadTrigo() {
 		g_atan[0] = 0;
 		for (int i = 1; i < 256; ++i) {
 			g_atan[i] = (int32_t)(atan(i / 256.) * (1024. / 2) / M_PI);
+		}
+	}
+}
+
+void Resource::loadINM(const char *levelName) {
+	_textIndexesTableCount = 0;
+	free(_textIndexesTable);
+	_textIndexesTable = 0;
+
+	char filename[32];
+	snprintf(filename, sizeof(filename), "%s.inm", levelName);
+	if (fileExists(filename, kFileType_TEXT)) {
+		int dataSize;
+		File *fp = fileOpen(filename, &dataSize, kFileType_TEXT);
+		_textIndexesTableCount = dataSize / sizeof(uint32_t);
+		_textIndexesTable = ALLOC<uint32_t>(_textIndexesTableCount);
+		for (uint32_t i = 0; i < _textIndexesTableCount; ++i) {
+			_textIndexesTable[i] = fileReadUint32LE(fp);
+		}
+		fileClose(fp);
+	} else {
+		_textIndexesTableCount = _lastObjectKey + 1;
+		_textIndexesTable = ALLOC<uint32_t>(_textIndexesTableCount);
+		for (uint32_t i = 0; i < _textIndexesTableCount; ++i) {
+			_textIndexesTable[i] = 0xFFFFFFFF;
+		}
+		for (uint32_t i = 0; i < _objectIndexesTableCount; ++i) {
+			int16_t key = _objectIndexesTable[i].objectKey;
+			assert(key > 0 && key < _textIndexesTableCount);
+			_textIndexesTable[key - 1] = _objectIndexesTable[i].dataOffs;
 		}
 	}
 }
@@ -418,6 +451,8 @@ void Resource::loadLevelData(const char *levelName, int levelNum) {
 	_conradVoiceCmdNum = -1;
 	patchCmdData(levelNum);
 
+	_lastObjectKey = -1;
+
 	snprintf(filename, sizeof(filename), "%s.env", levelName);
 	fp = fileOpen(filename, &dataSize, kFileType_DATA);
 	loadENV(fp, dataSize);
@@ -567,10 +602,17 @@ void Resource::setObjectKey(const char *objectName, int16_t objectKey) {
 	if (objectIndex) {
 		objectIndex->objectKey = objectKey;
 	}
+	if (_lastObjectKey < objectKey) {
+		_lastObjectKey = objectKey;
+	}
 }
 
 int Resource::getOffsetForObjectKey(int16_t objectKey) {
 	debug(kDebug_RESOURCE, "Resource::getOffsetForObjectKey() key %d", objectKey);
+	if (objectKey < _textIndexesTableCount) {
+		assert(objectKey > 0);
+		return (int32_t)_textIndexesTable[objectKey - 1];
+	}
 	for (int i = 0; i < _objectIndexesTableCount; ++i) {
 		ResObjectIndex *objectIndex = &_objectIndexesTable[i];
 		if (objectKey == objectIndex->objectKey) {

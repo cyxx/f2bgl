@@ -255,6 +255,13 @@ bool fileExists(const char *fileName, int fileType) {
 		struct stat st;
 		return stat(filePath, &st) == 0 && S_ISREG(st.st_mode);
 	}
+	if (g_isDemo) {
+		if (fileType == kFileType_VOICE) {
+			return false;
+		} else if (fileType == kFileType_TEXT) {
+			fileType = kFileType_DATA;
+		}
+	}
 	bool exists = false;
 	File *fp = fileOpenIntern(fileName, fileType);
 	if (fp) {
