@@ -654,7 +654,7 @@ bool Resource::getMessageDescription(ResMessageDescription *m, uint32_t value, u
 	int messagesCount = READ_LE_UINT32(p); p += 4;
 	for (int i = 0; i < messagesCount; ++i) {
 		uint32_t val = READ_LE_UINT32(p); p += 4;
-		uint32_t sz = READ_LE_UINT32(p); p += 4;
+		int32_t len = (int32_t)READ_LE_UINT32(p); p += 4;
 		if (val == value) {
 			m->frameSync = READ_LE_UINT16(p); p += 2;
 			m->duration = READ_LE_UINT16(p); p += 2;
@@ -664,7 +664,8 @@ bool Resource::getMessageDescription(ResMessageDescription *m, uint32_t value, u
 			m->data = p;
 			return true;
 		}
-		p += sz;
+		// last message has negative length
+		p += ABS(len);
 	}
 	return false;
 }
