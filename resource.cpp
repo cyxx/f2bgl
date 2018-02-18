@@ -424,17 +424,18 @@ void Resource::loadLevelData(const char *levelName, int levelNum) {
 			node->childKey = fileReadUint16LE(fp);
 			node->nextKey = fileReadUint16LE(fp);
 			node->dataOffset = 4 + count * 12 + offs;
-			if (size != 0) {
-				node->dataSize = size;
-				node->data = (uint8_t *)malloc(size);
+			node->dataSize = size;
+		}
+		for (uint32_t j = 0; j < count; ++j) {
+			ResTreeNode *node = &_treesTable[type][j];
+			if (node->dataSize != 0) {
+				node->data = (uint8_t *)malloc(node->dataSize);
 				if (node->data) {
-					const uint32_t pos = fileGetPos(fp);
 					fileSetPos(fp, node->dataOffset, kFilePosition_SET);
 					fileRead(fp, node->data, node->dataSize);
 					if (g_isDemo && _resLoadDataTable[i].convert) {
 						node->data = _resLoadDataTable[i].convert(node->data, &node->dataSize);
 					}
-					fileSetPos(fp, pos, kFilePosition_SET);
 				}
 			}
 		}
