@@ -119,6 +119,7 @@ static void emitTriFan3i(const Vertex *vertices, int count) {
 #else
 	glBegin(GL_TRIANGLE_FAN);
 		for (int i = 0; i < count; ++i) {
+			glNormal3i(vertices[i].nx, vertices[i].ny, vertices[i].nz);
 			glVertex3i(vertices[i].x, vertices[i].y, vertices[i].z);
 		}
         glEnd();
@@ -154,6 +155,7 @@ Render::Render(const RenderParams *params) {
 	_paletteGreyScale = false;
 	_paletteRgbScale = 256;
 	_fog = params->fog;
+	_lighting = params->gouraud;
 	_drawObjectIgnoreDepth = false;
 }
 
@@ -169,8 +171,24 @@ void Render::flushCachedTextures() {
 
 static const GLfloat _fogColor[4] = { .1, .1, .1, 1. };
 
+void Render::setupLight() {
+	GLfloat light_pos[] = { 0., .3, 0., 0. };
+	GLfloat light_ka[] = { .4, .4, .4, 1. };
+	GLfloat light_kd[] = { 1., 1., 1., 1. };
+	GLfloat light_ks[] = { 1., 1., 1., 1. };
+
+	glLightfv(GL_LIGHT0, GL_POSITION, light_pos);
+	glLightfv(GL_LIGHT0, GL_AMBIENT,  light_ka);
+	glLightfv(GL_LIGHT0, GL_DIFFUSE,  light_kd);
+	glLightfv(GL_LIGHT0, GL_SPECULAR, light_ks);
+
+	glShadeModel(GL_SMOOTH);
+
+	glEnable(GL_LIGHT0);
+}
+
 void Render::resizeScreen(int w, int h, float *p) {
-	glDisable(GL_LIGHTING);
+	glEnable(GL_NORMALIZE);
 	if (_fog) {
 		glEnable(GL_FOG);
 		glFogi(GL_FOG_MODE, GL_LINEAR);
@@ -224,6 +242,11 @@ void Render::releaseTexture(int16_t texKey) {
 }
 
 void Render::drawPolygonFlat(const Vertex *vertices, int verticesCount, int color) {
+	if (_lighting) {
+		glEnable(GL_LIGHTING);
+		glEnable(GL_COLOR_MATERIAL);
+		glColorMaterial(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE);
+	}
 	switch (color) {
 	case kFlatColorRed:
 		glColor4f(1., 0., 0., .5);
@@ -256,6 +279,10 @@ void Render::drawPolygonFlat(const Vertex *vertices, int verticesCount, int colo
 	}
 	emitTriFan3i(vertices, verticesCount);
 	glColor4f(1., 1., 1., 1.);
+	if (_lighting) {
+		glDisable(GL_COLOR_MATERIAL);
+		glDisable(GL_LIGHTING);
+	}
 }
 
 void Render::drawPolygonTexture(const Vertex *vertices, int verticesCount, int primitive, const uint8_t *texData, int texW, int texH, int16_t texKey) {
@@ -590,11 +617,16 @@ void Render::setupProjection(int mode) {
 	glLoadIdentity();
 	glFrustum(-.5, .5, -aspect / 2, 0., 1., 1024);
 	glTranslatef(0., 0., -16.);
+
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
+	if (_lighting) {
+		setupLight();
+	}
 	glScalef(1., -.5, -1.);
 	glRotatef(_cameraPitch, 0., 1., 0.);
 	glTranslatef(-_cameraPos.x, _cameraPos.y, -_cameraPos.z);
+
 	if (_fog) {
 		glEnable(GL_FOG);
 	} else {

@@ -29,6 +29,7 @@ struct Texture;
 
 struct RenderParams {
 	bool fog;
+	bool gouraud; // enable lighting
 	const char *textureFilter;
 	const char *textureScaler;
 };
@@ -53,6 +54,7 @@ struct Render {
 	bool _paletteGreyScale;
 	int _paletteRgbScale;
 	bool _fog;
+	bool _lighting;
 	bool _drawObjectIgnoreDepth;
 
 	Render(const RenderParams *params);
@@ -60,6 +62,7 @@ struct Render {
 
 	void flushCachedTextures();
 
+	void setupLight();
 	void setCameraPos(int x, int y, int z, int shift = 0);
 	void setCameraPitch(int a);
 

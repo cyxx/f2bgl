@@ -45,6 +45,7 @@ Defaults can be changed using command line switches :
     --texturefilter=FILTER      Texture filter (default 'linear')
     --texturescaler=NAME        Texture scaler (default 'scale2x')
     --mouse                     Enable mouse controls
+    --gouraud                   Enable gouraud rendering
 
 In-game hotkeys :
 
