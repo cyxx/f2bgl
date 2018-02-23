@@ -584,10 +584,13 @@ void Render::setupProjection(int mode) {
 		glMatrixMode(GL_PROJECTION);
 		glLoadIdentity();
 		glOrtho(-1. / _aspectRatio, 1. / _aspectRatio, kOverlayHeight, 0, 0, 1);
+
 		glMatrixMode(GL_MODELVIEW);
 		glLoadIdentity();
 		glTranslatef(-1., 0., 0.);
 		glScalef(2. / kOverlayWidth, 1., 1.);
+
+		glDisable(GL_FOG);
 		return;
 	}
 	const GLfloat aspect = 1.5 * _aspectRatio;
@@ -596,10 +599,16 @@ void Render::setupProjection(int mode) {
 		glLoadIdentity();
 		glFrustum(-.5, .5, -aspect / 2, 0., 1., 512.);
 		glTranslatef(0., 0., -20.);
+
 		glMatrixMode(GL_MODELVIEW);
 		glLoadIdentity();
+		if (_lighting) {
+			setupLight();
+		}
 		glScalef(1., -.5, 1.);
 		glTranslatef(0., 14. * _aspectRatio, -72.);
+
+		glDisable(GL_FOG);
 		return;
 	}
 	if (mode == kProjInstall) {
@@ -607,9 +616,12 @@ void Render::setupProjection(int mode) {
 		glLoadIdentity();
 		glFrustum(-.5, .5, -aspect / 2, 0., 1., 4096.);
 		glTranslatef(0., 0., -64.);
+
 		glMatrixMode(GL_MODELVIEW);
 		glLoadIdentity();
 		glTranslatef(0, -1024., -3092.);
+
+		glDisable(GL_FOG);
 		return;
 	}
 	assert(mode == kProjGame);
