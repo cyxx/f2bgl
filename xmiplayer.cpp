@@ -63,7 +63,17 @@ struct XmiPlayer_WildMidi : XmiPlayer {
 				fileClose(fp);
 			}
 		}
-		const int ret = WildMidi_Init(path, mixingRate, WM_MO_ENHANCED_RESAMPLING);
+		//
+		// Enabling 'enhanced resampling' option will make the WildMidi code
+		// occupying most of the CPU time when playing (tested on 0.4.2).
+		// Linear resampling (default) sounds good enough in my tests, so
+		// let's use that.
+		//
+		// 330,005,146  ???:WildMidi_GetOutput [/usr/lib/x86_64-linux-gnu/libWildMidi.so.2.0.0]
+		// 197,166,524  /build/glibc-MECilU/glibc-2.24/math/../sysdeps/ieee754/dbl-64/s_sin.c:__sin_avx [/lib/x86_64-linux-gnu/libm-2.24.so]
+		//
+		const int options = 0; // WM_MO_REVERB | WM_MO_ENHANCED_RESAMPLING;
+		const int ret = WildMidi_Init(path, mixingRate, options);
 		debug(kDebug_XMIDI, "WildMidi_Init() path '%s' ret %d", path, ret);
 		if (ret != 0) {
 			const char *err = WildMidi_GetError();
