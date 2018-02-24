@@ -204,7 +204,7 @@ struct GameStub_F2B : GameStub {
 #ifdef F2B_DEBUG
 				{ "xpos_conrad",  required_argument, 0, 100 },
 				{ "zpos_conrad",  required_argument, 0, 101 },
-				{ "init_state",   required_argument, 0, 103 },
+				{ "init_state",   required_argument, 0, 102 },
 #endif
 				{ 0, 0, 0, 0 }
 			};

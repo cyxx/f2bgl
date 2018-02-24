@@ -619,6 +619,9 @@ void Render::setupProjection(int mode) {
 
 		glMatrixMode(GL_MODELVIEW);
 		glLoadIdentity();
+		if (_lighting) {
+			setupLight();
+		}
 		glTranslatef(0, -1024., -3092.);
 
 		glDisable(GL_FOG);
