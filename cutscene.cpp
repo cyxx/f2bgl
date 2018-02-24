@@ -105,7 +105,7 @@ static void decodeRLE(const uint8_t *src, int srcSize, uint8_t *dst) {
 	const uint8_t *srcEnd = src + srcSize;
 	while (src < srcEnd) {
 		int len;
-		uint8_t code = *src++;
+		const int code = *src++;
 		if (code & 0x80) {
 			len = code - 0x7F;
 			memset(dst, *src++, len);
@@ -120,8 +120,8 @@ static void decodeRLE(const uint8_t *src, int srcSize, uint8_t *dst) {
 }
 
 static void decodeADD(const uint8_t *src, int srcSize, uint8_t *dst) {
-	while (srcSize--) {
-		*dst++ += *src++;
+	for (int i = 0; i < srcSize; ++i) {
+		dst[i] += src[i];
 	}
 }
 
