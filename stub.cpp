@@ -24,11 +24,11 @@ static const char *USAGE =
 	"  --fullscreen                Fullscreen display (stretched)\n"
 	"  --fullscreen-ar             Fullscreen display (4:3 aspect ratio)\n"
 	"  --soundfont=FILE            SoundFont (.sf2) file for music\n"
-	"  --fog                       Enable fog rendering\n"
 	"  --texturefilter=FILTER      Texture filter (default 'linear')\n"
 	"  --texturescaler=NAME        Texture scaler (default 'scale2x')\n"
 	"  --mouse                     Enable mouse controls\n"
-	"  --gouraud                   Enable gouraud rendering\n"
+	"  --no-fog                    Disable fog rendering\n"
+	"  --no-gouraud                Disable gouraud shading\n"
 ;
 
 static const struct {
@@ -130,6 +130,8 @@ struct GameStub_F2B : GameStub {
 		memset(&_params, 0, sizeof(_params));
 		_soundFont = 0;
 		memset(&_renderParams, 0, sizeof(_renderParams));
+		_renderParams.fog = true;
+		_renderParams.gouraud = true;
 		_textureFilter = 0;
 		_textureScaler = 0;
 	}
@@ -193,16 +195,16 @@ struct GameStub_F2B : GameStub {
 				{ "fullscreen-ar", no_argument,   0, 10 },
 				{ "alt-level", required_argument, 0, 11 },
 				{ "soundfont", required_argument, 0, 12 },
-				{ "fog",       no_argument,       0, 13 },
-				{ "texturefilter", required_argument, 0, 14 },
-				{ "texturescaler", required_argument, 0, 15 },
-				{ "mouse",     no_argument,       0, 16 },
-				{ "touch",     no_argument,       0, 17 },
-				{ "gouraud",   no_argument,       0, 18 },
+				{ "texturefilter", required_argument, 0, 13 },
+				{ "texturescaler", required_argument, 0, 14 },
+				{ "mouse",     no_argument,       0, 15 },
+				{ "touch",     no_argument,       0, 16 },
+				{ "no-fog",       no_argument,       0, 17 },
+				{ "no-gouraud",   no_argument,       0, 18 },
 #ifdef F2B_DEBUG
-				{ "xpos_conrad",    required_argument, 0, 100 },
-				{ "zpos_conrad",    required_argument, 0, 101 },
-				{ "init_state",     required_argument, 0, 103 },
+				{ "xpos_conrad",  required_argument, 0, 100 },
+				{ "zpos_conrad",  required_argument, 0, 101 },
+				{ "init_state",   required_argument, 0, 103 },
 #endif
 				{ 0, 0, 0, 0 }
 			};
@@ -259,24 +261,24 @@ struct GameStub_F2B : GameStub {
 				_params.sf2 = _soundFont;
 				break;
 			case 13:
-				_renderParams.fog = true;
-				break;
-			case 14:
 				_textureFilter = strdup(optarg);
 				_renderParams.textureFilter = _textureFilter;
 				break;
-			case 15:
+			case 14:
 				_textureScaler = strdup(optarg);
 				_renderParams.textureScaler = _textureScaler;
 				break;
-			case 16:
+			case 15:
 				_params.mouseMode = true;
 				break;
-			case 17:
+			case 16:
 				_params.touchMode = true;
 				break;
+			case 17:
+				_renderParams.fog = false;
+				break;
 			case 18:
-				_renderParams.gouraud = true;
+				_renderParams.gouraud = false;
 				break;
 #ifdef F2B_DEBUG
 			case 100:
