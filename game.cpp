@@ -3094,10 +3094,20 @@ void Game::drawSceneObjectMesh(SceneObject *so, int flags) {
 		if (fill == 8 || fill == 11 || fill == 12) {
 			const int texture = color & 255;
 			const int primitive = (color >> 13) & 7;
-			if (!_sceneTextureImagesBuffer[texture].data) {
+			SpriteImage *spr = &_sceneTextureImagesBuffer[texture];
+			if (!spr->data) {
 				debug(kDebug_GAME, "Game::drawSceneObjectMesh() no sprite for texture %d fill %d", texture, fill);
+			} else if (_level == 12 && so->o == _objectsPtrTable[kObjPtrConrad]) {
+				//
+				// the ship model references the delphine software logo as textures (9 and 12).
+				// we workaround that by ignoring all textures.
+				//
+				//   fill 8 texture 2 primitive 0 dim 19,35
+				//   fill 8 texture 9 primitive 0 dim 128,80
+				//   fill 8 texture 11 primitive 0 dim 128,80
+				//   fill 8 texture 12 primitive 0 dim 64,16
+				//
 			} else {
-				SpriteImage *spr = &_sceneTextureImagesBuffer[texture];
 				const uint8_t *texData = _spriteCache.getData(spr->key, spr->data);
 				_render->drawPolygonTexture(polygonPoints, count + 1, primitive, texData, spr->w, spr->h, spr->key);
 			}
