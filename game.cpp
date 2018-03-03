@@ -3174,6 +3174,10 @@ void Game::drawWall(const Vertex *vertices, int verticesCount, int texture) {
 		if (texture != 0 && texture != 1) {
 			SpriteImage *spr = &_sceneAnimationsTextureTable[texture];
 			if (spr->data) {
+				if (spr->w != 64 || (spr->h != 16 && spr->h != 64)) {
+					warning("Invalid wall sprite dimensions %d,%d key %d", spr->w, spr->h, spr->key);
+					return;
+				}
 				const uint8_t *texData = _spriteCache.getData(spr->key, spr->data);
 				_render->drawPolygonTexture(vertices, verticesCount, 0, texData, spr->w, spr->h, spr->key);
 			}
@@ -3342,36 +3346,37 @@ bool Game::redrawSceneGridCell(int x, int z, CellMap *cell) {
 
 		case 4: // door s-n
 		case 16:
-			dz = -(63 - cell->data[1]) / 4;
-			initVerticesE(quad, x, z, -kWallThick / 2, dz);
+			dz = -(63 - cell->data[1]);
+			initVerticesE(quad, x, z, -kWallThick / 2, dz / ((cell->texture[1] <= 0xFFF) ? 4 : 1));
 			drawWall(quad, 4, cell->texture[1]);
-			initVerticesE(quad, x, z, -kWallThick * 2, dz);
+			initVerticesE(quad, x, z, -kWallThick * 2, dz / ((cell->texture[0] <= 0xFFF) ? 4 : 1));
 			drawWall(quad, 4, cell->texture[0]);
 			break;
 		case 5: // door n-s
 		case 17:
-			dz = (63 - cell->data[1]) / 4;
-			initVerticesE(quad, x, z, -kWallThick / 2, dz);
+			dz = (63 - cell->data[1]);
+			initVerticesE(quad, x, z, -kWallThick / 2, dz / ((cell->texture[1] <= 0xFFF) ? 4 : 1));
 			drawWall(quad, 4, cell->texture[1]);
-			initVerticesE(quad, x, z, -kWallThick * 2, dz);
+			initVerticesE(quad, x, z, -kWallThick * 2, dz / ((cell->texture[0] <= 0xFFF) ? 4 : 1));
 			drawWall(quad, 4, cell->texture[0]);
 			break;
 		case 6: // door w-e
 		case 18:
-			dx = -(63 - cell->data[1]) / 4;
-			initVerticesS(quad, x, z, dx, (16 - kWallThick) / 2);
+			dx = -(63 - cell->data[1]);
+			initVerticesS(quad, x, z, dx / ((cell->texture[0] <= 0xFFF) ? 4 : 1), (16 - kWallThick) / 2);
 			drawWall(quad, 4, cell->texture[0]);
-			initVerticesS(quad, x, z, dx, 16 - (16 - kWallThick) / 2);
+			initVerticesS(quad, x, z, dx / ((cell->texture[1] <= 0xFFF) ? 4 : 1),  16 - (16 - kWallThick) / 2);
 			drawWall(quad, 4, cell->texture[1]);
 			break;
 		case 7: // door e-w
 		case 19:
-			dx = (63 - cell->data[1]) / 4;
-			initVerticesS(quad, x, z, dx, (16 - kWallThick) / 2);
+			dx = (63 - cell->data[1]);
+			initVerticesS(quad, x, z, dx / ((cell->texture[0] <= 0xFFF) ? 4 : 1), (16 - kWallThick) / 2);
 			drawWall(quad, 4, cell->texture[0]);
-			initVerticesS(quad, x, z, dx, 16 - (16 - kWallThick) / 2);
+			initVerticesS(quad, x, z, dx / ((cell->texture[1] <= 0xFFF) ? 4 : 1),  16 - (16 - kWallThick) / 2);
 			drawWall(quad, 4, cell->texture[1]);
 			break;
+
 #if 0
 		case 10: // grid n-s
                         initVerticesE(quad, x, z,  kWallThick / 2, 0);
@@ -3386,6 +3391,7 @@ bool Game::redrawSceneGridCell(int x, int z, CellMap *cell) {
                         drawWall(quad, 4, cell->texture[1]);
 			break;
 #endif
+
 		case 20: // decor
 			break;
 		case 32: // hole
