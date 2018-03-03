@@ -256,6 +256,9 @@ int main(int argc, char *argv[]) {
 					case SDLK_l:
 						stub->loadState(gSaveSlot);
 						break;
+					case SDLK_t:
+						stub->takeScreenshot();
+						break;
 					case SDLK_p:
 					case SDLK_PLUS:
 					case SDLK_KP_PLUS:

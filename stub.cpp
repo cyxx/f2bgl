@@ -119,6 +119,8 @@ struct GameStub_F2B : GameStub {
 	int _state, _nextState;
 	int _slotState;
 	bool _loadState, _saveState;
+	int _screenshot;
+	bool _takeScreenshot;
 	char *_soundFont;
 	RenderParams _renderParams;
 	char *_textureFilter;
@@ -339,6 +341,8 @@ struct GameStub_F2B : GameStub {
 		_nextState = _state;
 		_slotState = 0;
 		_loadState = _saveState = false;
+		_screenshot = 0;
+		_takeScreenshot = false;
 		return 0;
 	}
 	virtual void quit() {
@@ -545,12 +549,17 @@ struct GameStub_F2B : GameStub {
 		if (_saveState) {
 			if (_state == kStateGame) {
 				if (_g->saveGameState(_slotState)) {
-					_g->saveScreenshot(_slotState);
+					_g->saveScreenshot(true, _slotState);
 					_g->setGameStateSave(_slotState);
 					debug(kDebug_INFO, "Saved game state to slot %d", _slotState);
 				}
 			}
 			_saveState = false;
+		}
+		if (_takeScreenshot) {
+			_g->saveScreenshot(false, _screenshot);
+			_takeScreenshot = false;
+			debug(kDebug_INFO, "Saved screenshot %d", _screenshot);
 		}
 	}
 	virtual void saveState(int slot) {
@@ -560,6 +569,10 @@ struct GameStub_F2B : GameStub {
 	virtual void loadState(int slot) {
 		_slotState = slot;
 		_loadState = true;
+	}
+	virtual void takeScreenshot() {
+		++_screenshot;
+		_takeScreenshot = true;
 	}
 };
 

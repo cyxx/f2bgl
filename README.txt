@@ -63,6 +63,7 @@ In-game hotkeys :
     1 .. 5         use item #
     S              save game state
     L              load game state
+    T              take screenshot
     + and -        change game state slot
 
 

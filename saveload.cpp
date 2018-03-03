@@ -5,6 +5,7 @@
 
 static const char *kFn_s = "f2bgl-level%s-%02d.%s";
 static const char *kMenuFn_s = "f2bgl-freesav%d.%s";
+static const char *kScreenshotFn_s = "f2bgl-screenshot-%03d.%s";
 
 static const char *kSaveText = "1.00 Aug 25 1995  09:11:45 (c) 1995 Delphine Software, France";
 static const int kHeaderSize = 96;
@@ -579,12 +580,16 @@ bool Game::loadGameState(int num) {
 	return true;
 }
 
-void Game::saveScreenshot(int num) {
+void Game::saveScreenshot(bool saveState, int num) {
 	int w, h;
 	const uint8_t *p = _render->captureScreen(&w, &h);
 	if (p) {
 		char filename[32];
-		snprintf(filename, sizeof(filename), kFn_s, kLevels[_level], num, "tga");
+		if (saveState) {
+			snprintf(filename, sizeof(filename), kFn_s, kLevels[_level], num, "tga");
+		} else {
+			snprintf(filename, sizeof(filename), kScreenshotFn_s, num, "tga");
+		}
 		saveTGA(filename, p, w, h, false);
 	}
 }

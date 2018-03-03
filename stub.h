@@ -57,6 +57,7 @@ struct GameStub {
 	virtual void drawGL() = 0;
 	virtual void loadState(int slot) = 0;
 	virtual void saveState(int slot) = 0;
+	virtual void takeScreenshot() = 0;
 };
 
 extern "C" {

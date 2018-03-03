@@ -900,7 +900,7 @@ struct Game {
 	// saveload.cpp
 	bool saveGameState(int num);
 	bool loadGameState(int num);
-	void saveScreenshot(int num);
+	void saveScreenshot(bool saveState, int num);
 	const char *getLevelName(int level) const;
 	bool hasSavedGameState(int num) const;
 };
