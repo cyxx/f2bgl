@@ -77,6 +77,8 @@ enum {
 	kSaveLoadTexKey = 10000,
 	kSaveLoadSlots = 8,
 	kPlayerInputPointersCount = 4,
+	kTexKeyBlob = 20000,
+	kTexKeyWall = 30000,
 };
 
 enum {
@@ -700,7 +702,7 @@ struct Game {
 	void drawSceneObjectShadow(SceneObject *so);
 	void drawSceneObjectMesh(SceneObject *so, int flags = 0);
 	void redrawScene();
-	void drawWall(const Vertex *vertices, int verticesCount, int texture);
+	void drawWall(const Vertex *vertices, int verticesCount, int texture, int type);
 	bool redrawSceneGridCell(int x, int z, CellMap *cell);
 	void redrawSceneGroundWalls();
 	bool findRoom(const CollisionSlot *colSlot, int room1, int room2);

@@ -3167,18 +3167,31 @@ void Game::redrawScene() {
 	redrawSceneGroundWalls();
 }
 
-void Game::drawWall(const Vertex *vertices, int verticesCount, int texture) {
+void Game::drawWall(const Vertex *vertices, int verticesCount, int texture, int type) {
 	texture &= 4095;
 	if (texture >= 0  && texture < 512) {
 		_sceneAnimationsTable[texture].type |= 0x10;
 		if (texture != 0 && texture != 1) {
 			SpriteImage *spr = &_sceneAnimationsTextureTable[texture];
 			if (spr->data) {
+				const bool maskedWall = (type == 10 || type == 11); // GRID_NS, GRID_WE
 				if (spr->w != 64 || (spr->h != 16 && spr->h != 64)) {
 					warning("Invalid wall sprite dimensions %d,%d key %d", spr->w, spr->h, spr->key);
 					return;
 				}
 				const uint8_t *texData = _spriteCache.getData(spr->key, spr->data);
+				if (maskedWall) { // make every 4 pixels transparent
+					const int texSize = spr->h * spr->w;
+					uint8_t maskedTexData[texSize];
+					assert(((spr->h) & 7) == 0);
+					int offset = 0;
+					for (int y = 0; y < spr->h; y += 8) {
+						memcpy(maskedTexData + offset, texData + offset, spr->w * 4); offset += spr->w * 4;
+						memset(maskedTexData + offset, 0, spr->w * 4); offset += spr->w * 4;
+					}
+					_render->drawPolygonTexture(vertices, verticesCount, 0, maskedTexData, spr->w, spr->h, kTexKeyWall + spr->key);
+					return;
+				}
 				_render->drawPolygonTexture(vertices, verticesCount, 0, texData, spr->w, spr->h, spr->key);
 			}
 		}
@@ -3297,100 +3310,98 @@ bool Game::redrawSceneGridCell(int x, int z, CellMap *cell) {
 		switch (cell->type) {
 		case 1:
 			initVerticesW(quad, x, z, 0, 0);
-			drawWall(quad, 4, cell->west);
+			drawWall(quad, 4, cell->west, cell->type);
 			if (x > 0 && (_sceneCellMap[x - 1][z].type == 0 || _sceneCellMap[x - 1][z].type == 32)) {
 				for (int y = 0; y < kWallHeight; y += kGroundY) {
 					for (int i = 0; i < 4; ++i) {
 						quad[i].y += kGroundY;
 					}
-					drawWall(quad, 4, cell->west);
+					drawWall(quad, 4, cell->west, cell->type);
 				}
 			}
 			initVerticesS(quad, x, z, 0, 0);
-			drawWall(quad, 4, cell->south);
+			drawWall(quad, 4, cell->south, cell->type);
 			if (z > 0 && (_sceneCellMap[x][z - 1].type == 0 || _sceneCellMap[x][z - 1].type == 32)) {
 				for (int y = 0; y < kWallHeight; y += kGroundY) {
 					for (int i = 0; i < 4; ++i) {
 						quad[i].y += kGroundY;
 					}
-					drawWall(quad, 4, cell->south);
+					drawWall(quad, 4, cell->south, cell->type);
 				}
 			}
 			initVerticesE(quad, x, z, 0, 0);
-			drawWall(quad, 4, cell->east);
+			drawWall(quad, 4, cell->east, cell->type);
 			if (x < kMapSizeX && (_sceneCellMap[x + 1][z].type == 0 || _sceneCellMap[x + 1][z].type == 32)) {
 				for (int y = 0; y < kWallHeight; y += kGroundY) {
 					for (int i = 0; i < 4; ++i) {
 						quad[i].y += kGroundY;
 					}
-					drawWall(quad, 4, cell->east);
+					drawWall(quad, 4, cell->east, cell->type);
 				}
 			}
 			initVerticesN(quad, x, z, 0, 0);
-			drawWall(quad, 4, cell->north);
+			drawWall(quad, 4, cell->north, cell->type);
 			if (z < kMapSizeZ && (_sceneCellMap[x][z + 1].type == 0 || _sceneCellMap[x][z + 1].type == 32)) {
 				for (int y = 0; y < kWallHeight; y += kGroundY) {
 					for (int i = 0; i < 4; ++i) {
 						quad[i].y += kGroundY;
 					}
-					drawWall(quad, 4, cell->north);
+					drawWall(quad, 4, cell->north, cell->type);
 				}
 			}
 			break;
 		case 3: // w-e
 			initVerticesS(quad, x, z, 0, 0);
-			drawWall(quad, 4, cell->texture[1]);
+			drawWall(quad, 4, cell->texture[1], cell->type);
 			initVerticesS(quad, x, z, 0, -kWallThick);
-			drawWall(quad, 4, cell->texture[0]);
+			drawWall(quad, 4, cell->texture[0], cell->type);
 			break;
 
 		case 4: // door s-n
 		case 16:
 			dz = -(63 - cell->data[1]);
 			initVerticesE(quad, x, z, -kWallThick / 2, dz / ((cell->texture[1] <= 0xFFF) ? 4 : 1));
-			drawWall(quad, 4, cell->texture[1]);
+			drawWall(quad, 4, cell->texture[1], cell->type);
 			initVerticesE(quad, x, z, -kWallThick * 2, dz / ((cell->texture[0] <= 0xFFF) ? 4 : 1));
-			drawWall(quad, 4, cell->texture[0]);
+			drawWall(quad, 4, cell->texture[0], cell->type);
 			break;
 		case 5: // door n-s
 		case 17:
 			dz = (63 - cell->data[1]);
 			initVerticesE(quad, x, z, -kWallThick / 2, dz / ((cell->texture[1] <= 0xFFF) ? 4 : 1));
-			drawWall(quad, 4, cell->texture[1]);
+			drawWall(quad, 4, cell->texture[1], cell->type);
 			initVerticesE(quad, x, z, -kWallThick * 2, dz / ((cell->texture[0] <= 0xFFF) ? 4 : 1));
-			drawWall(quad, 4, cell->texture[0]);
+			drawWall(quad, 4, cell->texture[0], cell->type);
 			break;
 		case 6: // door w-e
 		case 18:
 			dx = -(63 - cell->data[1]);
 			initVerticesS(quad, x, z, dx / ((cell->texture[0] <= 0xFFF) ? 4 : 1), (16 - kWallThick) / 2);
-			drawWall(quad, 4, cell->texture[0]);
+			drawWall(quad, 4, cell->texture[0], cell->type);
 			initVerticesS(quad, x, z, dx / ((cell->texture[1] <= 0xFFF) ? 4 : 1),  16 - (16 - kWallThick) / 2);
-			drawWall(quad, 4, cell->texture[1]);
+			drawWall(quad, 4, cell->texture[1], cell->type);
 			break;
 		case 7: // door e-w
 		case 19:
 			dx = (63 - cell->data[1]);
 			initVerticesS(quad, x, z, dx / ((cell->texture[0] <= 0xFFF) ? 4 : 1), (16 - kWallThick) / 2);
-			drawWall(quad, 4, cell->texture[0]);
+			drawWall(quad, 4, cell->texture[0], cell->type);
 			initVerticesS(quad, x, z, dx / ((cell->texture[1] <= 0xFFF) ? 4 : 1),  16 - (16 - kWallThick) / 2);
-			drawWall(quad, 4, cell->texture[1]);
+			drawWall(quad, 4, cell->texture[1], cell->type);
 			break;
 
-#if 0
 		case 10: // grid n-s
-                        initVerticesE(quad, x, z,  kWallThick / 2, 0);
-                        drawWall(quad, 4, cell->texture[1]);
-                        initVerticesE(quad, x, z, -kWallThick / 2, 0);
-                        drawWall(quad, 4, cell->texture[0]);
+			initVerticesE(quad, x, z, -kWallThick / 2, 0);
+			drawWall(quad, 4, cell->texture[1], cell->type);
+			initVerticesE(quad, x, z, -kWallThick * 2, 0);
+			drawWall(quad, 4, cell->texture[0], cell->type);
 			break;
 		case 11: // grid w-e
-                        initVerticesN(quad, x, z, 0, -(16 - kWallThick) / 2);
-                        drawWall(quad, 4, cell->texture[0]);
-                        initVerticesS(quad, x, z, 0,  (16 - kWallThick) / 2);
-                        drawWall(quad, 4, cell->texture[1]);
+			initVerticesS(quad, x, z, 0, (16 - kWallThick) / 2);
+			drawWall(quad, 4, cell->texture[0], cell->type);
+			initVerticesS(quad, x, z, 0,  16 - (16 - kWallThick) / 2);
+			drawWall(quad, 4, cell->texture[1], cell->type);
 			break;
-#endif
 
 		case 20: // decor
 			break;
@@ -4033,7 +4044,6 @@ void Game::drawParticles() {
 				for (int i = 0; i < 16 * 16; ++i) {
 					tmpTex[i] = clut[blobTex[i]];
 				}
-				static const int kTexKeyBlob = 100000;
 				static const int kW = 2;
 				Vertex v[4];
 				v[0].x = -kW; v[0].y = -kW; v[0].z = 0;
