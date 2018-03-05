@@ -1206,6 +1206,7 @@ void Game::initLevel(bool keepInventoryObjects) {
 	for (int i = 0; i < kMusicKeyPathsTableSize; ++i) {
 		_res._musicKeysTable[i] = _res.getKeyFromPath(_res._musicKeyPathsTable[i]);
 	}
+	_res._textIndexesTableCount = 0;
 	setupObjects();
 	_res.loadINM(_res._levelDescriptionsTable[_level].name);
 	if (keepInventoryObjects) {
