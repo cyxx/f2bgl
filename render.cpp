@@ -242,11 +242,7 @@ void Render::releaseTexture(int16_t texKey) {
 }
 
 void Render::drawPolygonFlat(const Vertex *vertices, int verticesCount, int color) {
-	if (_lighting) {
-		glEnable(GL_LIGHTING);
-		glEnable(GL_COLOR_MATERIAL);
-		glColorMaterial(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE);
-	}
+	bool lightFlatColor = false;
 	switch (color) {
 	case kFlatColorRed:
 		glColor4f(1., 0., 0., .5);
@@ -271,6 +267,12 @@ void Render::drawPolygonFlat(const Vertex *vertices, int verticesCount, int colo
 		break;
 	default:
 		if (color >= 0 && color < 256) {
+			if (_lighting) {
+				glEnable(GL_LIGHTING);
+				glEnable(GL_COLOR_MATERIAL);
+				glColorMaterial(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE);
+				lightFlatColor = true;
+			}
 			glColor4f(_pixelColorMap[0][color], _pixelColorMap[1][color], _pixelColorMap[2][color], _pixelColorMap[3][color]);
 		} else {
 			warning("Render::drawPolygonFlat() unhandled color %d", color);
@@ -279,7 +281,7 @@ void Render::drawPolygonFlat(const Vertex *vertices, int verticesCount, int colo
 	}
 	emitTriFan3i(vertices, verticesCount);
 	glColor4f(1., 1., 1., 1.);
-	if (_lighting) {
+	if (_lighting && lightFlatColor) {
 		glDisable(GL_COLOR_MATERIAL);
 		glDisable(GL_LIGHTING);
 	}
