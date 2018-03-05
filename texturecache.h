@@ -39,7 +39,6 @@ struct TextureCache {
 
 	int _filter;
 	int _scaler;
-	int _fmt;
 	Texture *_texturesListHead, *_texturesListTail;
 	uint16_t _clut[256];
 	uint16_t *_texBuf;

@@ -60,8 +60,10 @@ static const struct {
 	{ 0, 0, 0 },
 };
 
+static const int _fmt = 0;
+
 TextureCache::TextureCache()
-	: _fmt(0), _texturesListHead(0), _texturesListTail(0) {
+	: _texturesListHead(0), _texturesListTail(0) {
 	memset(_clut, 0, sizeof(_clut));
 	_texBuf = 0;
 	_npotTex = false;
@@ -179,18 +181,18 @@ void TextureCache::convertTexture(const uint8_t *src, int w, int h, const uint16
 	if (_scalers[_scaler].factor == 1) {
 		for (int y = 0; y < h; ++y) {
 			for (int x = 0; x < w; ++x) {
-				dst[x] = clut[src[x]];
+				dst[x] = clut[*src++];
 			}
 			dst += dstPitch;
-			src += w;
 		}
 	} else {
 		assert(w * h <= kDefaultTexBufSize);
+		int offset = 0;
 		for (int y = 0; y < h; ++y) {
 			for (int x = 0; x < w; ++x) {
-				_texBuf[y * w + x] = clut[src[x]];
+				_texBuf[offset + x] = clut[*src++];
 			}
-			src += w;
+			offset += w;
 		}
 		_scalers[_scaler].proc(dst, dstPitch, _texBuf, w, w, h);
 	}
