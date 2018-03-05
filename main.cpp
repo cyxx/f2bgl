@@ -25,7 +25,7 @@ static float _aspectRatio[4];
 static int gScale = 2;
 static int gSaveSlot = 1;
 
-static const int kTickDuration = 40;
+static const int kTickDuration = 50;
 
 static const int kJoystickIndex = 0;
 static const int kJoystickCommitValue = 16384;
@@ -210,6 +210,7 @@ int main(int argc, char *argv[]) {
 		int w = gWindowW;
 		int h = gWindowH;
 		SDL_Event ev;
+		const uint32_t nextTick = SDL_GetTicks() + kTickDuration;
 		while (SDL_PollEvent(&ev)) {
 			switch (ev.type) {
 			case SDL_QUIT:
@@ -377,8 +378,11 @@ int main(int argc, char *argv[]) {
 			stub->doTick(ticks);
 			stub->drawGL();
 			SDL_GL_SwapWindow(window);
+			const int delayTick = nextTick - SDL_GetTicks();
+			SDL_Delay(delayTick < 16 ? 16 : delayTick);
+		} else {
+			SDL_Delay(kTickDuration);
 		}
-		SDL_Delay(kTickDuration);
 	}
 	SDL_PauseAudio(1);
 	stub->quit();
