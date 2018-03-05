@@ -9,6 +9,7 @@
 #include <SDL_opengl.h>
 #endif
 #include <math.h>
+#include <sys/time.h>
 #include "render.h"
 #include "texturecache.h"
 
@@ -140,6 +141,7 @@ static void emitPoint3f(const Vertex *pos) {
 static TextureCache _textureCache;
 static Vertex3f _cameraPos;
 static GLfloat _cameraPitch;
+struct timeval _frameTimeStamp;
 
 Render::Render(const RenderParams *params) {
 	memset(_clut, 0, sizeof(_clut));
@@ -157,6 +159,9 @@ Render::Render(const RenderParams *params) {
 	_fog = params->fog;
 	_lighting = params->gouraud;
 	_drawObjectIgnoreDepth = false;
+	gettimeofday(&_frameTimeStamp, 0);
+	_framesCount = 0;
+	_framesPerSec = 0;
 }
 
 Render::~Render() {
@@ -676,6 +681,18 @@ void Render::drawOverlay() {
 		glColor4f(1., 1., 1., 1.);
 		_overlay.r = _overlay.g = _overlay.b = 255;
 	}
+	++_framesCount;
+#ifdef F2B_DEBUG
+	if ((_framesCount & 31) == 0) {
+		struct timeval t1;
+		gettimeofday(&t1, 0);
+		const int msecs = (t1.tv_sec - _frameTimeStamp.tv_sec) * 1000 + (t1.tv_usec - _frameTimeStamp.tv_usec) / 1000;
+		_frameTimeStamp = t1;
+		if (msecs != 0) {
+			_framesPerSec = (int)(1000. * 32 / msecs);
+		}
+	}
+#endif
 }
 
 const uint8_t *Render::captureScreen(int *w, int *h) {

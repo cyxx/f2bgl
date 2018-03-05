@@ -56,6 +56,8 @@ struct Render {
 	bool _fog;
 	bool _lighting;
 	bool _drawObjectIgnoreDepth;
+	int _framesCount;
+	int _framesPerSec;
 
 	Render(const RenderParams *params);
 	~Render();

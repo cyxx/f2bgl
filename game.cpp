@@ -2666,6 +2666,8 @@ void Game::doTick() {
 			snprintf(buf, sizeof(buf), "camera.pos %d %d %d pitch %d", _xPosObserver >> kPosShift, _zPosObserver >> kPosShift, _yPosObserver >> kPosShift, _yRotObserver);
 			drawString(8, y, buf, kFontNormale, 0);
 			y += 8;
+			snprintf(buf, sizeof(buf), "%d fps", _render->_framesPerSec);
+			drawString(8, y, buf, kFontNormale, 0);
 		}
 #endif
 		if (_drawNumber.font != 0) {
