@@ -64,6 +64,7 @@ struct Cutscene {
 	struct {
 		const char *data;
 		int duration;
+		int linesCount;
 	} _msgs[kSubtitleMessagesCount];
 	int _msgsCount;
 	int _playQueue[kCutscenePlaybackQueueSize];

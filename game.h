@@ -782,7 +782,7 @@ struct Game {
 	void initFonts();
 	void drawChar(int x, int y, SpriteImage *spr, int color);
 	void drawString(int x, int y, const char *str, int font, int color);
-	void getStringRect(const char *str, int font, int *w, int *h);
+	int getStringRect(const char *str, int font, int *w, int *h);
 	void setStringPos(GamePlayerMessage *msg);
 
 	// input.cpp

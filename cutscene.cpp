@@ -166,8 +166,7 @@ void Cutscene::decodeImage(const uint8_t *frameData) {
 static int _drawSubCharRectHeight;
 
 static void drawSubChar(DrawBuffer *buf, int x, int y, int w, int h, const uint8_t *src) {
-	y = _drawSubCharRectHeight - 12 - y;
-	uint8_t *dst = buf->ptr + y * buf->pitch + x;
+	uint8_t *dst = buf->ptr + (_drawSubCharRectHeight - y) * buf->pitch + x;
 	src += h * w;
 	while (h--) {
 		src -= w;
@@ -178,6 +177,15 @@ static void drawSubChar(DrawBuffer *buf, int x, int y, int w, int h, const uint8
 		}
 		dst += buf->pitch;
 	}
+}
+
+static int countMessageLines(const char *data) {
+	const char *sep = strchr(data, '@');
+	int linesCount = 1;
+	for (const char *p = data; *p && (p = strchr(p, '|')) != 0 && (!sep || p < sep); ++p) {
+		++linesCount;
+	}
+	return linesCount;
 }
 
 void Cutscene::updateMessages() {
@@ -192,11 +200,13 @@ void Cutscene::updateMessages() {
 				const char *p = (const char *)msg->desc.data;
 				assert(p);
 				_msgs[0].data = p;
+				_msgs[0].linesCount = countMessageLines(p);
 				_msgsCount = 1;
 				while (*p && (p = strchr(p, '@')) != 0) {
 					++p;
 					assert(_msgsCount < kSubtitleMessagesCount);
 					_msgs[_msgsCount].data = p;
+					_msgs[_msgsCount].linesCount = countMessageLines(p);
 					++_msgsCount;
 				}
 				for (int i = 0; i < _msgsCount; ++i) {
@@ -211,17 +221,24 @@ void Cutscene::updateMessages() {
 	}
 	for (int i = 0; i < _msgsCount; ++i) {
 		if (_msgs[i].duration != 0) {
+			_game->_drawCharBuf.ptr = _frameBuffers[0];
+			_game->_drawCharBuf.w = _game->_drawCharBuf.pitch = _fileHdr.videoFrameWidth;
+			_game->_drawCharBuf.h = _fileHdr.videoFrameHeight;
+			_game->_drawCharBuf.draw = drawSubChar;
+			_drawSubCharRectHeight = _msgs[i].linesCount * _game->_fontsTable[kFontNameCineTypo].h - 12;
 			const char *str = _msgs[i].data;
-			int w, h;
-			_game->getStringRect(str, kFontNameCineTypo, &w, &h);
-			if (w < _fileHdr.videoFrameWidth && h < _fileHdr.videoFrameHeight) {
-				_game->_drawCharBuf.ptr = _frameBuffers[0];
-				_game->_drawCharBuf.w = _game->_drawCharBuf.pitch = _fileHdr.videoFrameWidth;
-				_game->_drawCharBuf.h = _fileHdr.videoFrameHeight;
-				_drawSubCharRectHeight = h;
-				_game->_drawCharBuf.draw = drawSubChar;
+			int y = 0;
+			while (1) {
+				int w, h;
+				const int offset = _game->getStringRect(str, kFontNameCineTypo, &w, &h);
+				assert(w < _fileHdr.videoFrameWidth && h < _fileHdr.videoFrameHeight);
 				const int x = (_fileHdr.videoFrameWidth - w) / 2;
-				_game->drawString(x, 0, _msgs[i].data, kFontNameCineTypo, 0);
+				_game->drawString(x, y, str, kFontNameCineTypo, 0);
+				if (str[offset] == 0 || str[offset] == '@') {
+					break;
+				}
+				y += h;
+				str += offset + 1; // skip new line character
 			}
 			--_msgs[i].duration;
 			if (_msgs[i].duration == 0 && i == _msgsCount - 1) {
