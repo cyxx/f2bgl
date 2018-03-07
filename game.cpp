@@ -3179,8 +3179,7 @@ void Game::drawWall(const Vertex *vertices, int verticesCount, int texture, int 
 			if (spr->data) {
 				const bool maskedWall = (type == 10 || type == 11); // GRID_NS, GRID_WE
 				if (spr->w != 64 || (spr->h != 16 && spr->h != 64)) {
-					warning("Invalid wall sprite dimensions %d,%d key %d", spr->w, spr->h, spr->key);
-					return;
+					warning("Unexpected wall sprite dimensions %d,%d key %d", spr->w, spr->h, spr->key);
 				}
 				const uint8_t *texData = _spriteCache.getData(spr->key, spr->data);
 				if (maskedWall) { // make every 4 pixels transparent
