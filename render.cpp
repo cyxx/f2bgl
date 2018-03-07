@@ -650,13 +650,22 @@ void Render::setupProjection(int mode) {
 }
 
 void Render::drawOverlay() {
-	if (_overlay.tex) {
+
+	const bool hasOverlayTexture = (_overlay.tex != 0);
+	const bool hasOverlayColor = (_overlay.r != 255 || _overlay.g != 255 || _overlay.b != 255);
+
+	if (!hasOverlayTexture && !hasOverlayColor) {
+		return;
+	}
+
+	glMatrixMode(GL_PROJECTION);
+	glLoadIdentity();
+	glOrtho(-1. / _aspectRatio, 1. / _aspectRatio, 0, _h, 0, 1);
+	glMatrixMode(GL_MODELVIEW);
+	glLoadIdentity();
+
+	if (hasOverlayTexture) {
 		_textureCache.updateTexture(_overlay.tex, _overlay.buf, _overlay.tex->bitmapW, _overlay.tex->bitmapH, _overlay.clut);
-		glMatrixMode(GL_PROJECTION);
-		glLoadIdentity();
-		glOrtho(-1. / _aspectRatio, 1. / _aspectRatio, 0, _h, 0, 1);
-		glMatrixMode(GL_MODELVIEW);
-		glLoadIdentity();
 		glDisable(GL_DEPTH_TEST);
 		glEnable(GL_TEXTURE_2D);
 		glBindTexture(GL_TEXTURE_2D, _overlay.tex->id);
@@ -668,12 +677,13 @@ void Render::drawOverlay() {
 		glEnable(GL_DEPTH_TEST);
 		glDisable(GL_TEXTURE_2D);
 	}
-	if (_overlay.r != 255 || _overlay.g != 255 || _overlay.b != 255) {
+	if (hasOverlayColor) {
 		glColor4f(_overlay.r / 255., _overlay.g / 255., _overlay.b / 255., .8);
 		emitQuad2i(-1, 0, 2, _h);
 		glColor4f(1., 1., 1., 1.);
 		_overlay.r = _overlay.g = _overlay.b = 255;
 	}
+
 	++_framesCount;
 #ifdef F2B_DEBUG
 	if ((_framesCount & 31) == 0) {
