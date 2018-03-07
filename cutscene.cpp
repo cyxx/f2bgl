@@ -72,7 +72,6 @@ void Cutscene::updatePalette(int palType, int colorsCount, const uint8_t *p) {
 			}
 		}
 	}
-	_render->setPalette(_palette, 0, 256);
 }
 
 static int decodeHuffman(const uint8_t *src, int srcSize, uint8_t *dst) {
@@ -466,7 +465,7 @@ void Cutscene::drawFrame() {
 	_render->clearScreen();
 	if (_frameCounter != 0) {
 		const int y = (kCutsceneDisplayHeight - _fileHdr.videoFrameHeight) / 2;
-		_render->copyToOverlay(0, y, _frameBuffers[0], _fileHdr.videoFrameWidth, _fileHdr.videoFrameWidth, _fileHdr.videoFrameHeight);
+		_render->copyToOverlay(0, y, _frameBuffers[0], _palette, _fileHdr.videoFrameWidth, _fileHdr.videoFrameHeight);
 	}
 }
 

@@ -281,12 +281,14 @@ void TextureCache::destroyTexture(Texture *texture) {
 	delete texture;
 }
 
-void TextureCache::updateTexture(Texture *t, const uint8_t *data, int w, int h) {
+void TextureCache::updateTexture(Texture *t, const uint8_t *data, int w, int h, const uint8_t *pal) {
 	assert(t->bitmapW == w && t->bitmapH == h);
 	memcpy(t->bitmapData, data, w * h);
 	uint16_t *texData = (uint16_t *)calloc(t->texW * t->texH, sizeof(uint16_t));
 	if (texData) {
-		convertTexture(t->bitmapData, t->bitmapW, t->bitmapH, _clut, texData, t->texW);
+		uint16_t clut[256];
+		convertPalette(pal, clut);
+		convertTexture(t->bitmapData, t->bitmapW, t->bitmapH, clut, texData, t->texW);
 		glBindTexture(GL_TEXTURE_2D, t->id);
 		glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, t->texW, t->texH, _formats[_fmt].format, _formats[_fmt].type, texData);
 		free(texData);

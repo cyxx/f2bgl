@@ -147,8 +147,8 @@ Render::Render(const RenderParams *params) {
 	memset(_clut, 0, sizeof(_clut));
 	_aspectRatio = 1.;
 	_screenshotBuf = 0;
+	memset(&_overlay, 0, sizeof(_overlay));
 	_overlay.buf = (uint8_t *)calloc(kOverlayWidth * kOverlayHeight, sizeof(uint8_t));
-	_overlay.tex = 0;
 	_overlay.r = _overlay.g = _overlay.b = 255;
 	_viewport.changed = true;
 	_viewport.pw = 256;
@@ -473,29 +473,22 @@ void Render::drawRectangle(int x, int y, int w, int h, int color) {
 	glEnable(GL_DEPTH_TEST);
 }
 
-void Render::copyToOverlay(int x, int y, const uint8_t *data, int pitch, int w, int h, int transparentColor) {
+void Render::copyToOverlay(int x, int y, const uint8_t *data, const uint8_t *pal, int w, int h) {
 	assert(_overlay.tex);
 	assert(x + w <= _overlay.tex->bitmapW);
 	assert(y + h <= _overlay.tex->bitmapH);
 	const int dstPitch = _overlay.tex->bitmapW;
 	uint8_t *dst = _overlay.buf + y * dstPitch + x;
-	if (transparentColor == -1) {
+	if (dstPitch == w) {
+		memcpy(dst, data, w * h);
+	} else {
 		while (h--) {
 			memcpy(dst, data, w);
 			dst += dstPitch;
-			data += pitch;
-		}
-	} else {
-		while (h--) {
-			for (int i = 0; i < w; ++i) {
-				if (data[i] != transparentColor) {
-					dst[i] = data[i];
-				}
-			}
-			dst += dstPitch;
-			data += pitch;
+			data += w;
 		}
 	}
+	_overlay.clut = pal;
 }
 
 void Render::beginObjectDraw(int x, int y, int z, int ry, int shift, bool ignoreDepth) {
@@ -658,7 +651,7 @@ void Render::setupProjection(int mode) {
 
 void Render::drawOverlay() {
 	if (_overlay.tex) {
-		_textureCache.updateTexture(_overlay.tex, _overlay.buf, _overlay.tex->bitmapW, _overlay.tex->bitmapH);
+		_textureCache.updateTexture(_overlay.tex, _overlay.buf, _overlay.tex->bitmapW, _overlay.tex->bitmapH, _overlay.clut);
 		glMatrixMode(GL_PROJECTION);
 		glLoadIdentity();
 		glOrtho(-1. / _aspectRatio, 1. / _aspectRatio, 0, _h, 0, 1);

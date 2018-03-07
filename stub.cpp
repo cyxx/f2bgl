@@ -143,7 +143,6 @@ struct GameStub_F2B : GameStub {
 		switch (_state) {
 		case kStateCutscene:
 			_render->resizeOverlay(0, 0);
-			_render->setPalette(_g->_screenPalette, 0, 256);
 			break;
 		case kStateCabinet:
 			_g->finiCabinet();

@@ -42,6 +42,7 @@ struct Render {
 	uint8_t *_screenshotBuf;
 	struct {
 		uint8_t *buf;
+		const uint8_t *clut;
 		Texture *tex;
 		int r, g, b;
 	} _overlay;
@@ -84,7 +85,7 @@ struct Render {
 
 	void setOverlayBlendColor(int r, int g, int b);
 	void resizeOverlay(int w, int h);
-	void copyToOverlay(int x, int y, const uint8_t *data, int pitch, int w, int h, int transparentColor = -1);
+	void copyToOverlay(int x, int y, const uint8_t *data, const uint8_t *clut, int w, int h);
 
 	void setPaletteScale(bool greyScale, int rgbScale);
 	void setPalette(const uint8_t *pal, int offset, int count);
