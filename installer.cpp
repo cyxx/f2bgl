@@ -218,6 +218,7 @@ struct Installer {
 	void update(const PlayerInput &inp) {
 		_render->clearScreen();
 		_render->setupProjection(kProjInstall);
+		_render->setIgnoreDepth(false);
 
 		_render->beginObjectDraw(0, 0, 0, _logoPitch, kPosShift);
 		drawInstallMeshF3D(&_meshesTable[kInstallMesh_LOGO]);

@@ -157,6 +157,7 @@ static bool pointerTap(const PlayerInput &inp, int x, int y, int w, int h) {
 bool Game::doMenu() {
 	_render->clearScreen();
 	_render->setupProjection(kProjMenu);
+	_render->setIgnoreDepth(false);
 
 	SceneObject *so = &_sceneObjectsTable[0];
 	_render->beginObjectDraw(so->x, so->y, so->z, so->pitch, kPosShift);

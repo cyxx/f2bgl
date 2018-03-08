@@ -174,7 +174,6 @@ Render::Render(const RenderParams *params) {
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	glEnable(GL_ALPHA_TEST);
 	glAlphaFunc(GL_NOTEQUAL, 0.);
-	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_NORMALIZE);
 	if (_fog) {
 		glEnable(GL_FOG);
@@ -426,7 +425,6 @@ void Render::drawParticle(const Vertex *pos, int color) {
 }
 
 void Render::drawSprite(int x, int y, const uint8_t *texData, int texW, int texH, int primitive, int16_t texKey, int transparentScale) {
-	glDisable(GL_DEPTH_TEST);
 	if (transparentScale != 256) {
 		glColor4f(1., 1., 1., transparentScale / 256.);
 	}
@@ -462,16 +460,13 @@ void Render::drawSprite(int x, int y, const uint8_t *texData, int texW, int texH
 	if (transparentScale != 256) {
 		glColor4f(1., 1., 1., 1.);
 	}
-	glEnable(GL_DEPTH_TEST);
 }
 
 void Render::drawRectangle(int x, int y, int w, int h, int color) {
-	glDisable(GL_DEPTH_TEST);
 	assert(color >= 0 && color < 256);
 	glColor4f(_pixelColorMap[0][color], _pixelColorMap[1][color], _pixelColorMap[2][color], _pixelColorMap[3][color]);
 	emitQuad2i(x, y, w, h);
 	glColor4f(1., 1., 1., 1.);
-	glEnable(GL_DEPTH_TEST);
 }
 
 void Render::copyToOverlay(int x, int y, const uint8_t *data, const uint8_t *pal, int w, int h) {
@@ -492,24 +487,27 @@ void Render::copyToOverlay(int x, int y, const uint8_t *data, const uint8_t *pal
 	_overlay.clut = pal;
 }
 
-void Render::beginObjectDraw(int x, int y, int z, int ry, int shift, bool ignoreDepth) {
+void Render::setIgnoreDepth(bool ignoreDepth) {
+	if (_drawObjectIgnoreDepth != ignoreDepth) {
+		if (ignoreDepth) {
+			glDisable(GL_DEPTH_TEST);
+		} else {
+			glEnable(GL_DEPTH_TEST);
+		}
+		_drawObjectIgnoreDepth = ignoreDepth;
+	}
+}
+
+void Render::beginObjectDraw(int x, int y, int z, int ry, int shift) {
 	glPushMatrix();
 	const GLfloat div = 1 << shift;
 	glTranslatef(x / div, y / div, z / div);
 	glRotatef(ry * 360 / 1024., 0., 1., 0.);
 	glScalef(1 / 8., 1 / 2., 1 / 8.);
-	if (ignoreDepth) {
-		_drawObjectIgnoreDepth = true;
-		glDisable(GL_DEPTH_TEST);
-	}
 }
 
 void Render::endObjectDraw() {
 	glPopMatrix();
-	if (_drawObjectIgnoreDepth) {
-		_drawObjectIgnoreDepth = false;
-		glEnable(GL_DEPTH_TEST);
-	}
 }
 
 void Render::setOverlayBlendColor(int r, int g, int b) {
@@ -677,7 +675,6 @@ void Render::drawOverlay() {
 
 	if (hasOverlayTexture) {
 		_textureCache.updateTexture(_overlay.tex, _overlay.buf, _overlay.tex->bitmapW, _overlay.tex->bitmapH, _overlay.clut);
-		glDisable(GL_DEPTH_TEST);
 		glEnable(GL_TEXTURE_2D);
 		glBindTexture(GL_TEXTURE_2D, _overlay.tex->id);
 		const GLfloat tU = _overlay.tex->u;
@@ -685,7 +682,6 @@ void Render::drawOverlay() {
 		assert(tU != 0. && tV != 0.);
 		GLfloat uv[] = { 0., 0., tU, 0., tU, tV, 0., tV };
 		emitQuadTex2i(-1, 0, 2, _h, uv);
-		glEnable(GL_DEPTH_TEST);
 		glDisable(GL_TEXTURE_2D);
 	}
 	if (hasOverlayColor) {

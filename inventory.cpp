@@ -292,6 +292,7 @@ void Game::doInventory() {
 
 	_render->clearScreen();
 	_render->setupProjection(kProj2D);
+	_render->setIgnoreDepth(true);
 	drawSprite(1, 1, _inventoryBackgroundKey);
 
 	if (!_3dObj) {
@@ -367,6 +368,7 @@ void Game::doInventory() {
 		const int type = _inventoryCurrentObj->specialData[1][22];
 		if (type != 32) {
 			_render->setupProjection(kProjMenu);
+			_render->setIgnoreDepth(false);
 			SceneObject *so = &_sceneObjectsTable[0];
 			_render->beginObjectDraw(so->x, so->y, so->z, so->pitch);
 			drawSceneObjectMesh(so);

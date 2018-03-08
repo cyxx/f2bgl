@@ -2602,6 +2602,7 @@ void Game::doTick() {
 	}
 	clearObjectsDrawList();
 	_render->setupProjection(kProj2D);
+	_render->setIgnoreDepth(true);
 	if (!_params.touchMode) {
 		drawInfoPanel();
 	}
@@ -2910,6 +2911,7 @@ void Game::addObjectsToScene() {
 	SceneObject *bitmapObjects[kSceneObjectsTableSize];
 	int bitmapObjectsCount = 0;
 	// draw opaque objects
+	_render->setIgnoreDepth(false);
 	for (int i = 0; i < _sceneObjectsCount; ++i) {
 		SceneObject *so = &_sceneObjectsTable[i];
 		if (isTranslucentSceneObject(so)) {
@@ -2947,6 +2949,7 @@ void Game::addObjectsToScene() {
 		_render->endObjectDraw();
 	}
 	// draw bitmap
+	_render->setIgnoreDepth(true);
 	for (int i = 0; i < bitmapObjectsCount; ++i) {
 		SceneObject *so = bitmapObjects[i];
 		const int flags = so->o->flags[1];
@@ -2962,7 +2965,7 @@ void Game::addObjectsToScene() {
 		v[1].x = x1; v[1].y = y0; v[1].z = 0;
 		v[2].x = x1; v[2].y = y1; v[2].z = 0;
 		v[3].x = x0; v[3].y = y1; v[3].z = 0;
-		_render->beginObjectDraw(so->x, (kGroundY << kPosShift) + so->y, so->z, _yInvRotObserver, kPosShift, true);
+		_render->beginObjectDraw(so->x, (kGroundY << kPosShift) + so->y, so->z, _yInvRotObserver, kPosShift);
 		_render->drawPolygonTexture(v, 4, 0, texData, spr->w, spr->h, spr->key);
 		_render->endObjectDraw();
 	}
@@ -3444,6 +3447,7 @@ void Game::redrawSceneGroundWalls() {
 		_render->drawSprite(w, 0, texData, w, h, 9, sprKey);
 	}
 	_render->setupProjection(kProjGame);
+	_render->setIgnoreDepth(false);
 	for (int x = 0; x < kMapSizeX; ++x) {
 		for (int z = 0; z < kMapSizeZ; ++z) {
 			CellMap *cell = &_sceneCellMap[x][z];

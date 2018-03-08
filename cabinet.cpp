@@ -33,6 +33,7 @@ void Game::doCabinet() {
 		SceneObject *so = &_sceneObjectsTable[0];
 		if (so->verticesCount != 0) {
 			_render->setupProjection(kProjMenu);
+			_render->setIgnoreDepth(false);
 			_render->beginObjectDraw(so->x, so->y, so->z, so->pitch);
 			drawSceneObjectMesh(so);
 			_render->endObjectDraw();
