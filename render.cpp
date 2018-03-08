@@ -16,6 +16,13 @@
 static const int kOverlayWidth = 320;
 static const int kOverlayHeight = 200;
 
+static const GLfloat _fogColor[4] = { .1, .1, .1, 1. };
+
+static const GLfloat _lightPosition[4] = { 0., .3, 0., 0. };
+static const GLfloat _lightAmbient[4]  = { .4, .4, .4, 1. };
+static const GLfloat _lightDiffuse[4]  = { 1., 1., 1., 1. };
+static const GLfloat _lightSpecular[4] = { 1., 1., 1., 1. };
+
 struct Vertex3f {
 	GLfloat x, y, z;
 };
@@ -162,6 +169,24 @@ Render::Render(const RenderParams *params) {
 	gettimeofday(&_frameTimeStamp, 0);
 	_framesCount = 0;
 	_framesPerSec = 0;
+
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	glEnable(GL_ALPHA_TEST);
+	glAlphaFunc(GL_NOTEQUAL, 0.);
+	glEnable(GL_DEPTH_TEST);
+	glEnable(GL_NORMALIZE);
+	if (_fog) {
+		glEnable(GL_FOG);
+		glFogi(GL_FOG_MODE, GL_LINEAR);
+		glFogfv(GL_FOG_COLOR, _fogColor);
+		glFogf(GL_FOG_DENSITY, .35);
+		glFogf(GL_FOG_START, 16.);
+		glFogf(GL_FOG_END, 256.);
+	}
+	if (_lighting) {
+		glShadeModel(GL_SMOOTH);
+	}
 }
 
 Render::~Render() {
@@ -174,39 +199,15 @@ void Render::flushCachedTextures() {
 	_overlay.tex = 0;
 }
 
-static const GLfloat _fogColor[4] = { .1, .1, .1, 1. };
-
 void Render::setupLight() {
-	GLfloat light_pos[] = { 0., .3, 0., 0. };
-	GLfloat light_ka[] = { .4, .4, .4, 1. };
-	GLfloat light_kd[] = { 1., 1., 1., 1. };
-	GLfloat light_ks[] = { 1., 1., 1., 1. };
-
-	glLightfv(GL_LIGHT0, GL_POSITION, light_pos);
-	glLightfv(GL_LIGHT0, GL_AMBIENT,  light_ka);
-	glLightfv(GL_LIGHT0, GL_DIFFUSE,  light_kd);
-	glLightfv(GL_LIGHT0, GL_SPECULAR, light_ks);
-
-	glShadeModel(GL_SMOOTH);
-
+	glLightfv(GL_LIGHT0, GL_POSITION, _lightPosition);
+	glLightfv(GL_LIGHT0, GL_AMBIENT,  _lightAmbient);
+	glLightfv(GL_LIGHT0, GL_DIFFUSE,  _lightDiffuse);
+	glLightfv(GL_LIGHT0, GL_SPECULAR, _lightSpecular);
 	glEnable(GL_LIGHT0);
 }
 
 void Render::resizeScreen(int w, int h, float *p) {
-	glEnable(GL_NORMALIZE);
-	if (_fog) {
-		glEnable(GL_FOG);
-		glFogi(GL_FOG_MODE, GL_LINEAR);
-		glFogfv(GL_FOG_COLOR, _fogColor);
-		glFogf(GL_FOG_DENSITY, .35);
-		glFogf(GL_FOG_START, 16.);
-		glFogf(GL_FOG_END, 256.);
-	}
-	glEnable(GL_BLEND);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	glEnable(GL_DEPTH_TEST);
-	glEnable(GL_ALPHA_TEST);
-	glAlphaFunc(GL_NOTEQUAL, 0.);
 	_w = w;
 	_h = h;
 	_aspectRatio = p[2] / p[3];
@@ -580,7 +581,10 @@ void Render::clearScreen() {
 }
 
 void Render::setupProjection(int mode) {
-	if (mode == kProj2D) {
+	const GLfloat aspect = 1.5 * _aspectRatio;
+
+	switch (mode) {
+	case kProj2D:
 		glMatrixMode(GL_PROJECTION);
 		glLoadIdentity();
 		glOrtho(-1. / _aspectRatio, 1. / _aspectRatio, kOverlayHeight, 0, 0, 1);
@@ -590,11 +594,12 @@ void Render::setupProjection(int mode) {
 		glTranslatef(-1., 0., 0.);
 		glScalef(2. / kOverlayWidth, 1., 1.);
 
-		glDisable(GL_FOG);
-		return;
-	}
-	const GLfloat aspect = 1.5 * _aspectRatio;
-	if (mode == kProjMenu) {
+		if (_fog) {
+			glDisable(GL_FOG);
+		}
+		break;
+
+	case kProjMenu:
 		glMatrixMode(GL_PROJECTION);
 		glLoadIdentity();
 		glFrustum(-.5, .5, -aspect / 2, 0., 1., 512.);
@@ -608,10 +613,12 @@ void Render::setupProjection(int mode) {
 		glScalef(1., -.5, 1.);
 		glTranslatef(0., 14. * _aspectRatio, -72.);
 
-		glDisable(GL_FOG);
-		return;
-	}
-	if (mode == kProjInstall) {
+		if (_fog) {
+			glDisable(GL_FOG);
+		}
+		break;
+
+	case kProjInstall:
 		glMatrixMode(GL_PROJECTION);
 		glLoadIdentity();
 		glFrustum(-.5, .5, -aspect / 2, 0., 1., 4096.);
@@ -624,28 +631,32 @@ void Render::setupProjection(int mode) {
 		}
 		glTranslatef(0, -1024., -3092.);
 
-		glDisable(GL_FOG);
-		return;
-	}
-	assert(mode == kProjGame);
-	glMatrixMode(GL_PROJECTION);
-	glLoadIdentity();
-	glFrustum(-.5, .5, -aspect / 2, 0., 1., 1024);
-	glTranslatef(0., 0., -16.);
+		if (_fog) {
+			glDisable(GL_FOG);
+		}
+		break;
 
-	glMatrixMode(GL_MODELVIEW);
-	glLoadIdentity();
-	if (_lighting) {
-		setupLight();
-	}
-	glScalef(1., -.5, -1.);
-	glRotatef(_cameraPitch, 0., 1., 0.);
-	glTranslatef(-_cameraPos.x, _cameraPos.y, -_cameraPos.z);
+	case kProjGame:
+		glMatrixMode(GL_PROJECTION);
+		glLoadIdentity();
+		glFrustum(-.5, .5, -aspect / 2, 0., 1., 1024);
+		glTranslatef(0., 0., -16.);
 
-	if (_fog) {
-		glEnable(GL_FOG);
-	} else {
-		glDisable(GL_FOG);
+		glMatrixMode(GL_MODELVIEW);
+		glLoadIdentity();
+		if (_lighting) {
+			setupLight();
+		}
+		glScalef(1., -.5, -1.);
+		glRotatef(_cameraPitch, 0., 1., 0.);
+		glTranslatef(-_cameraPos.x, _cameraPos.y, -_cameraPos.z);
+
+		if (_fog) {
+			glEnable(GL_FOG);
+		} else {
+			glDisable(GL_FOG);
+		}
+		break;
 	}
 }
 
