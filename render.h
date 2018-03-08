@@ -36,7 +36,6 @@ struct RenderParams {
 
 struct Render {
 	uint8_t _clut[256 * 3];
-	float _pixelColorMap[4][256];
 	int _w, _h;
 	float _aspectRatio;
 	uint8_t *_screenshotBuf;
@@ -77,7 +76,7 @@ struct Render {
 	void drawPolygonFlat(const Vertex *vertices, int verticesCount, int color);
 	void drawPolygonTexture(const Vertex *vertices, int verticesCount, int primitive, const uint8_t *texData, int texW, int texH, int16_t texKey);
 	void drawParticle(const Vertex *pos, int color);
-	void drawSprite(int x, int y, const uint8_t *texData, int texW, int texH, int primitive, int16_t texKey, int transparentScale = 256);
+	void drawSprite(int x, int y, const uint8_t *texData, int texW, int texH, int primitive, int16_t texKey, uint8_t transparentScale = 255);
 	void drawRectangle(int x, int y, int w, int h, int color);
 
 	void setIgnoreDepth(bool ignoreDepth);

@@ -250,25 +250,25 @@ void Render::drawPolygonFlat(const Vertex *vertices, int verticesCount, int colo
 	bool lightFlatColor = false;
 	switch (color) {
 	case kFlatColorRed:
-		glColor4f(1., 0., 0., .5);
+		glColor4ub(255, 0, 0, 127);
 		break;
 	case kFlatColorGreen:
-		glColor4f(0., 1., 0., .5);
+		glColor4ub(0, 255, 0, 127);
 		break;
 	case kFlatColorYellow:
-		glColor4f(1., 1., 0., .5);
+		glColor4ub(255, 255, 0, 127);
 		break;
 	case kFlatColorBlue:
-		glColor4f(0., 0., 1., .5);
+		glColor4ub(0, 0, 255, 127);
 		break;
 	case kFlatColorShadow:
-		glColor4f(0., 0., 0., .2);
+		glColor4ub(0, 0, 0, 63);
 		break;
 	case kFlatColorLight:
-		glColor4f(1., 1., 1., .2);
+		glColor4ub(255, 255, 255, 63);
 		break;
 	case kFlatColorLight9:
-		glColor4f(1., 1., 1., .5);
+		glColor4ub(255, 255, 255, 127);
 		break;
 	default:
 		if (color >= 0 && color < 256) {
@@ -278,14 +278,13 @@ void Render::drawPolygonFlat(const Vertex *vertices, int verticesCount, int colo
 				glColorMaterial(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE);
 				lightFlatColor = true;
 			}
-			glColor4f(_pixelColorMap[0][color], _pixelColorMap[1][color], _pixelColorMap[2][color], _pixelColorMap[3][color]);
+			glColor4ub(_clut[color * 3], _clut[color * 3 + 1], _clut[color * 3 + 2], color == 0 ? 0 : 255);
 		} else {
 			warning("Render::drawPolygonFlat() unhandled color %d", color);
 		}
 		break;
 	}
 	emitTriFan3i(vertices, verticesCount);
-	glColor4f(1., 1., 1., 1.);
 	if (_lighting && lightFlatColor) {
 		glDisable(GL_COLOR_MATERIAL);
 		glDisable(GL_LIGHTING);
@@ -294,6 +293,7 @@ void Render::drawPolygonFlat(const Vertex *vertices, int verticesCount, int colo
 
 void Render::drawPolygonTexture(const Vertex *vertices, int verticesCount, int primitive, const uint8_t *texData, int texW, int texH, int16_t texKey) {
 	assert(vertices && verticesCount >= 4);
+	glColor4ub(255, 255, 255, 255);
 	glEnable(GL_TEXTURE_2D);
 	Texture *t = _textureCache.getCachedTexture(texKey, texData, texW, texH);
 	glBindTexture(GL_TEXTURE_2D, t->id);
@@ -391,29 +391,29 @@ void Render::drawPolygonTexture(const Vertex *vertices, int verticesCount, int p
 void Render::drawParticle(const Vertex *pos, int color) {
 	switch (color) {
 	case kFlatColorRed:
-		glColor4f(1., 0., 0., .5);
+		glColor4ub(255, 0, 0, 127);
 		break;
 	case kFlatColorGreen:
-		glColor4f(0., 1., 0., .5);
+		glColor4ub(0, 255, 0, 127);
 		break;
 	case kFlatColorYellow:
-		glColor4f(1., 1., 0., .5);
+		glColor4ub(255, 255, 0, 127);
 		break;
 	case kFlatColorBlue:
-		glColor4f(0., 0., 1., .5);
+		glColor4ub(0, 0, 255, 127);
 		break;
 	case kFlatColorShadow:
-		glColor4f(0., 0., 0., .5);
+		glColor4ub(0, 0, 0, 127);
 		break;
 	case kFlatColorLight:
-		glColor4f(1., 1., 1., .2);
+		glColor4ub(255, 255, 255, 63);
 		break;
 	case kFlatColorLight9:
-		glColor4f(1., 1., 1., .5);
+		glColor4ub(255, 255, 255, 127);
 		break;
 	default:
 		if (color >= 0 && color < 256) {
-			glColor4f(_pixelColorMap[0][color], _pixelColorMap[1][color], _pixelColorMap[2][color], _pixelColorMap[3][color]);
+			glColor4ub(_clut[color * 3], _clut[color * 3 + 1], _clut[color * 3 + 2], color == 0 ? 0 : 255);
 		} else {
 			warning("Render::drawParticle() unhandled color %d", color);
 		}
@@ -421,13 +421,10 @@ void Render::drawParticle(const Vertex *pos, int color) {
 	glPointSize(4.);
 	emitPoint3f(pos);
 	glPointSize(1.);
-	glColor4f(1., 1., 1., 1.);
 }
 
-void Render::drawSprite(int x, int y, const uint8_t *texData, int texW, int texH, int primitive, int16_t texKey, int transparentScale) {
-	if (transparentScale != 256) {
-		glColor4f(1., 1., 1., transparentScale / 256.);
-	}
+void Render::drawSprite(int x, int y, const uint8_t *texData, int texW, int texH, int primitive, int16_t texKey, uint8_t transparentScale) {
+	glColor4ub(255, 255, 255, transparentScale);
 	glEnable(GL_TEXTURE_2D);
 	Texture *t = _textureCache.getCachedTexture(texKey, texData, texW, texH);
 	glBindTexture(GL_TEXTURE_2D, t->id);
@@ -457,16 +454,12 @@ void Render::drawSprite(int x, int y, const uint8_t *texData, int texW, int texH
 		break;
 	}
 	glDisable(GL_TEXTURE_2D);
-	if (transparentScale != 256) {
-		glColor4f(1., 1., 1., 1.);
-	}
 }
 
 void Render::drawRectangle(int x, int y, int w, int h, int color) {
 	assert(color >= 0 && color < 256);
-	glColor4f(_pixelColorMap[0][color], _pixelColorMap[1][color], _pixelColorMap[2][color], _pixelColorMap[3][color]);
+	glColor4ub(_clut[color * 3], _clut[color * 3 + 1], _clut[color * 3 + 2], color == 0 ? 0 : 255);
 	emitQuad2i(x, y, w, h);
-	glColor4f(1., 1., 1., 1.);
 }
 
 void Render::copyToOverlay(int x, int y, const uint8_t *data, const uint8_t *pal, int w, int h) {
@@ -535,10 +528,12 @@ void Render::setPaletteScale(bool greyScale, int rgbScale) {
 }
 
 void Render::setPalette(const uint8_t *pal, int offset, int count) {
+	int color = 3 * offset;
 	for (int i = 0; i < count; ++i) {
 		int r = pal[0];
 		int g = pal[1];
 		int b = pal[2];
+		pal += 3;
 		if (_paletteGreyScale) {
 			const int grey = (r * 30 + g * 59 + b * 11) / 100;
 			r = g = b = grey;
@@ -548,15 +543,10 @@ void Render::setPalette(const uint8_t *pal, int offset, int count) {
 			g = CLIP((g * _paletteRgbScale) >> 8, 0, 255);
 			b = CLIP((b * _paletteRgbScale) >> 8, 0, 255);
 		}
-		const int j = offset + i;
-		_clut[3 * j]     = r;
-		_clut[3 * j + 1] = g;
-		_clut[3 * j + 2] = b;
-		_pixelColorMap[0][j] = r / 255.;
-		_pixelColorMap[1][j] = g / 255.;
-		_pixelColorMap[2][j] = b / 255.;
-		_pixelColorMap[3][j] = (j == 0) ? 0. : 1.;
-		pal += 3;
+		_clut[color + 0] = r;
+		_clut[color + 1] = g;
+		_clut[color + 2] = b;
+		color += 3;
 	}
 	_textureCache.setPalette(_clut);
 }
@@ -675,6 +665,7 @@ void Render::drawOverlay() {
 
 	if (hasOverlayTexture) {
 		_textureCache.updateTexture(_overlay.tex, _overlay.buf, _overlay.tex->bitmapW, _overlay.tex->bitmapH, _overlay.clut);
+		glColor4ub(255, 255, 255, 255);
 		glEnable(GL_TEXTURE_2D);
 		glBindTexture(GL_TEXTURE_2D, _overlay.tex->id);
 		const GLfloat tU = _overlay.tex->u;
@@ -685,9 +676,8 @@ void Render::drawOverlay() {
 		glDisable(GL_TEXTURE_2D);
 	}
 	if (hasOverlayColor) {
-		glColor4f(_overlay.r / 255., _overlay.g / 255., _overlay.b / 255., .8);
+		glColor4ub(_overlay.r, _overlay.g, _overlay.b, 191);
 		emitQuad2i(-1, 0, 2, _h);
-		glColor4f(1., 1., 1., 1.);
 		_overlay.r = _overlay.g = _overlay.b = 255;
 	}
 

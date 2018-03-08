@@ -235,12 +235,12 @@ static bool pointerDown(const PlayerInput &inp, const Icon *icon) {
 }
 
 void Game::drawIcons() {
-	int transparentScale = 256;
+	uint8_t transparentScale = 255;
 	for (int i = 0; i < _iconsCount; ++i) {
 		const Icon *icon = &_iconsTable[i];
 		if (icon->visible) {
 			if (_params.touchMode) {
-				transparentScale = pointerDown(inp, icon) ? 256 : 128;
+				transparentScale = pointerDown(inp, icon) ? 255 : 127;
 			}
 			_render->drawSprite(icon->x, icon->y, icon->spr.data, icon->spr.w, icon->spr.h, 0, icon->spr.key, transparentScale);
 		}
