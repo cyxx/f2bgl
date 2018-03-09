@@ -134,13 +134,13 @@ static void emitTriFan3i(const Vertex *vertices, int count) {
 #endif
 }
 
-static void emitPoint3f(const Vertex *pos) {
+static void emitPoint3i(const Vertex *pos) {
 #ifdef USE_GLES
 	glVertexPointer(3, GL_FLOAT, 0, bufferVertex(pos, 1));
 	glDrawArrays(GL_POINTS, 0, 1);
 #else
 	glBegin(GL_POINTS);
-		glVertex3f(pos->x, pos->y, pos->z);
+		glVertex3i(pos->x, pos->y, pos->z);
 	glEnd();
 #endif
 }
@@ -419,7 +419,7 @@ void Render::drawParticle(const Vertex *pos, int color) {
 		}
 	}
 	glPointSize(4.);
-	emitPoint3f(pos);
+	emitPoint3i(pos);
 	glPointSize(1.);
 }
 
