@@ -133,6 +133,7 @@ void Game::clearLevelData() {
 
 	_rnd.reset();
 
+	finiIcons();
 	_spriteCache.flush();
 	_infoPanelSpr.data = 0;
 	_render->flushCachedTextures();

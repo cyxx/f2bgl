@@ -154,6 +154,11 @@ void Game::loadIcon(int16_t key, int num, int x, int y, int action) {
 	icon->spr.data = _spriteCache.getData(sprKey, icon->spr.data);
 	_res.unload(kResType_SPR, sprKey);
 
+	if (!icon->spr.data) {
+		warning("Sprite icon %d (key %d) not found", num, key);
+		return;
+	}
+
 	if (_params.touchMode) {
 		icon->scaledSprData = icon->spr.data = magnifyIcon2x(icon->spr.data, icon->spr.w, icon->spr.h);
 		icon->spr.w *= 2;
@@ -204,7 +209,7 @@ void Game::initIcons(int iconMode) {
 			loadIconGroup(this, aniKeys, _iconsGroupCabTable, ARRAYSIZE(_iconsGroupCabTable), _res._userConfig.iconLrCabX, _res._userConfig.iconLrCabY);
 			if (_params.touchMode) {
 				loadIconGroup(this, aniKeys, _iconsTouchTable, ARRAYSIZE(_iconsTouchTable), 0, 0);
-			} else {
+			} else if (_params.mouseMode) {
 				loadIconGroup(this, aniKeys, _iconsGroupMoveTable, ARRAYSIZE(_iconsGroupMoveTable), _res._userConfig.iconLrMoveX, _res._userConfig.iconLrMoveY);
 				loadIconGroup(this, aniKeys, _iconsGroupStepTable, ARRAYSIZE(_iconsGroupStepTable), _res._userConfig.iconLrStepX, _res._userConfig.iconLrStepY);
 				loadIconGroup(this, aniKeys, _iconsGroupToolsTable, ARRAYSIZE(_iconsGroupToolsTable), _res._userConfig.iconLrToolsX, _res._userConfig.iconLrToolsY);
@@ -212,17 +217,29 @@ void Game::initIcons(int iconMode) {
 		}
 	}
 	for (int i = 0; i < _iconsCount; ++i) {
-		switch (_iconsTable[i].num) {
+		Icon *icon = &_iconsTable[i];
+		switch (icon->num) {
 		case kIconInventoryHand:
 		case kIconInventoryRight:
 		case kIconInventoryLeft:
-			_iconsTable[i].visible = (iconMode == kIconModeCabinet);
+			icon->visible = (iconMode == kIconModeCabinet);
 			break;
 		default:
-			_iconsTable[i].visible = (iconMode == kIconModeGame);
+			icon->visible = (iconMode == kIconModeGame);
 			break;
 		}
 	}
+}
+
+void Game::finiIcons() {
+	for (int i = 0; i < _iconsCount; ++i) {
+		Icon *icon = &_iconsTable[i];
+		if (icon->scaledSprData != icon->spr.data) {
+			free(icon->scaledSprData);
+		}
+	}
+	memset(_iconsTable, 0, sizeof(_iconsTable));
+	_iconsCount = 0;
 }
 
 static bool pointerDown(const PlayerInput &inp, const Icon *icon) {

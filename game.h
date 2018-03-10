@@ -775,6 +775,7 @@ struct Game {
 	// icons.cpp
 	void loadIcon(int16_t key, int num, int x, int y, int action);
 	void initIcons(int iconMode);
+	void finiIcons();
 	void drawIcons();
 
 	// font.cpp
