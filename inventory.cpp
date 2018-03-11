@@ -238,8 +238,16 @@ void Game::updateInventoryInput() {
 			_snd.playSfx(_objectsPtrTable[kObjPtrWorld]->objKey, _res._sndKeysTable[6]);
 		}
 	}
-	if (inp.enterKey && !_3dObj) {
+	bool nextObject = false;
+	if (inp.ctrlKey) {
+		inp.ctrlKey = false;
+		nextObject = true;
+	}
+	if (inp.enterKey) {
 		inp.enterKey = false;
+		nextObject = true;
+	}
+	if (nextObject && !_3dObj) {
 		if (_inventoryCurrentNum > 0 && _inventoryCategoryNum != 5) {
 			GameObject *tmpObj = getPreviousObject(_inventoryCurrentObj);
 			tmpObj->o_next = _inventoryCurrentObj->o_next;

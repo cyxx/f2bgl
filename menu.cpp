@@ -211,6 +211,8 @@ bool Game::doMenu() {
 
 	const int saveSlot = getSaveSlot(so->pitch);
 
+	bool selectSlot = false;
+
 	memset(&_drawCharBuf, 0, sizeof(_drawCharBuf));
 	if (saveSlot == 0) {
 		if (getMessage(_objectsPtrTable[kObjPtrWorld]->objKey, kMsgMenuCancel, &_tmpMsg)) {
@@ -220,7 +222,7 @@ bool Game::doMenu() {
 			const int y = kScreenHeight / 2 + 80;
 			drawString(x, y, (const char *)_tmpMsg.data, _tmpMsg.font, 0);
 			if (pointerTap(inp, x, y, w, h)) {
-				inp.enterKey = true;
+				selectSlot = true;
 			}
 		}
 	} else {
@@ -230,12 +232,20 @@ bool Game::doMenu() {
 		const int y = kScreenHeight / 2 + 80;
 		drawString(x, y, _saveLoadSlots[saveSlot].description, kFontNormale, 0);
 		if (pointerTap(inp, x, y, w, h)) {
-			inp.enterKey = true;
+			selectSlot = true;
 		}
 	}
 
+	if (inp.ctrlKey) {
+		inp.ctrlKey = false;
+		selectSlot = true;
+	}
 	if (inp.enterKey) {
 		inp.enterKey = false;
+		selectSlot = true;
+	}
+
+	if (selectSlot) {
 		switch (_currentOption) {
 		case kOptionSave:
 			if (saveSlot == 0) { // cancel
