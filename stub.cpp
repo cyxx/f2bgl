@@ -150,6 +150,9 @@ struct GameStub_F2B : GameStub {
 		case kStateMenu:
 			_g->finiMenu();
 			break;
+		case kStateInstaller:
+			_g->finiInstaller();
+			break;
 		}
 		// init
 		switch (state) {

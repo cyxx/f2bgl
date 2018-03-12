@@ -501,7 +501,6 @@ bool Game::collisionSlotCb5(GameObject *o, CellMap *map, int x, int z, uint32_t 
 	return 0;
 }
 
-
 int Game::testObjectCollision2(GameObject *o, int dx1, int dz1, int dx2, int dz2) {
 	CollisionSlot2 slots2[65];
         slots2[0].box = -1;

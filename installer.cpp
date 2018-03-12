@@ -94,6 +94,14 @@ struct Installer {
 		}
 	}
 
+	void fini() {
+		for (int i = 0; i < kInstallMeshCount; ++i) {
+			free(_meshesTable[i].vertices);
+			free(_meshesTable[i].meshData);
+		}
+		memset(_meshesTable, 0, sizeof(_meshesTable));
+	}
+
 	void loadInstallData(int fileType) {
 		int fileSize = 0;
 		File *fp = fileOpen(kInstallFileNames[fileType], &fileSize, kFileType_INSTDATA, false);
@@ -240,6 +248,10 @@ static Installer _installer;
 void Game::initInstaller() {
 	_installer._render = _render;
 	_installer.init();
+}
+
+void Game::finiInstaller() {
+	_installer.fini();
 }
 
 void Game::doInstaller() {

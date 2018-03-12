@@ -48,6 +48,8 @@ Game::Game(Render *render, const GameParams *params)
 }
 
 Game::~Game() {
+	finiIcons();
+	freeLevelData();
 }
 
 void Game::clearGlobalData() {
@@ -138,6 +140,12 @@ void Game::clearLevelData() {
 	_infoPanelSpr.data = 0;
 	_render->flushCachedTextures();
 
+	freeLevelData();
+
+	memset(_sceneCellMap, 0, sizeof(_sceneCellMap));
+}
+
+void Game::freeLevelData() {
 	for (int i = 0; i < ARRAYSIZE(_objectKeysTable); ++i) {
 		GameObject *o = _objectKeysTable[i];
 		if (o) {
@@ -160,7 +168,6 @@ void Game::clearLevelData() {
 			}
 		}
 	}
-	memset(_sceneCellMap, 0, sizeof(_sceneCellMap));
 }
 
 void Game::countObjects(int16_t parentKey) {

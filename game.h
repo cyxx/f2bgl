@@ -633,6 +633,7 @@ struct Game {
 	// game.cpp
 	void clearGlobalData();
 	void clearLevelData();
+	void freeLevelData();
 	void countObjects(int16_t parentKey);
 	int gotoStartScriptAnim();
 	int gotoNextScriptAnim();
@@ -797,6 +798,7 @@ struct Game {
 
 	// installer.cpp
 	void initInstaller();
+	void finiInstaller();
 	void doInstaller();
 
 	// inventory.cpp

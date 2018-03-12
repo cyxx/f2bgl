@@ -40,7 +40,7 @@ Resource::Resource() {
 }
 
 Resource::~Resource() {
-	// TODO
+	// TODO - reclaimed by the OS when the program exits
 }
 
 void Resource::loadCMD(File *fp, int dataSize) {
