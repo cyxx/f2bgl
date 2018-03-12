@@ -2911,6 +2911,17 @@ void Game::addObjectsToScene() {
 	int translucentObjectsCount = 0;
 	SceneObject *bitmapObjects[kSceneObjectsTableSize];
 	int bitmapObjectsCount = 0;
+	// draw shadows
+	_render->setIgnoreDepth(true);
+	for (int i = 0; i < _sceneObjectsCount; ++i) {
+		SceneObject *so = &_sceneObjectsTable[i];
+		const int flags = so->o->flags[1];
+		if (so->polygonsData && (so->polygonsData[0] & 0x80) && (flags & 0x2400) == 0) {
+			_render->beginObjectDraw(so->x, 0, so->z, so->pitch, kPosShift);
+			drawSceneObjectShadow(so);
+			_render->endObjectDraw();
+		}
+	}
 	// draw opaque objects
 	_render->setIgnoreDepth(false);
 	for (int i = 0; i < _sceneObjectsCount; ++i) {
@@ -2927,16 +2938,6 @@ void Game::addObjectsToScene() {
 				bitmapObjects[bitmapObjectsCount] = so;
 				++bitmapObjectsCount;
 			}
-		}
-	}
-	// draw shadows
-	for (int i = 0; i < _sceneObjectsCount; ++i) {
-		SceneObject *so = &_sceneObjectsTable[i];
-		const int flags = so->o->flags[1];
-		if (so->polygonsData && (so->polygonsData[0] & 0x80) && (flags & 0x2400) == 0) {
-			_render->beginObjectDraw(so->x, 0, so->z, so->pitch, kPosShift);
-			drawSceneObjectShadow(so);
-			_render->endObjectDraw();
 		}
 	}
 	_compareBackToFront_xPos = _xPosObserver;
