@@ -35,6 +35,7 @@ static struct {
 	bool used;
 	char description[256];
 	SaveLoadTexture texture;
+	uint8_t *screenshotData;
 } _saveLoadSlots[kSaveLoadSlots];
 
 void Game::resetObjectAnim(GameObject *o) {
@@ -60,9 +61,11 @@ void Game::initMenu() {
 	so->z =   56 << kPosShift;
 	so->pitch = 512;
 
+	assert(kSaveLoadSlots == 8);
 	static const uint8_t texIndexLut[] = { 7, 6, 5, 4, 3, 2, 1, 0 };
 
 	// enumerate the saves
+	memset(_saveLoadSlots, 0, sizeof(_saveLoadSlots));
 	for (int i = 1; i < kSaveLoadSlots; ++i) {
 		_saveLoadSlots[i].num = -i;
 		_saveLoadSlots[i].used = hasSavedGameState(_saveLoadSlots[i].num);
@@ -70,11 +73,10 @@ void Game::initMenu() {
 		if (_saveLoadSlots[i].used) {
 			char filename[32];
 			snprintf(filename, sizeof(filename), kMenuFnTga_s, i);
-			_saveLoadSlots[i].texture.data = loadTGA(filename, &_saveLoadSlots[i].texture.w, &_saveLoadSlots[i].texture.h);
+			_saveLoadSlots[i].screenshotData = loadTGA(filename, &_saveLoadSlots[i].texture.w, &_saveLoadSlots[i].texture.h);
+			_saveLoadSlots[i].texture.data = _saveLoadSlots[i].screenshotData;
 			if (_saveLoadSlots[i].texture.data && _saveLoadSlots[i].texture.w > 0 && _saveLoadSlots[i].texture.h > 0) {
 				_render->prepareTextureRgb(_saveLoadSlots[i].texture.data, _saveLoadSlots[i].texture.w, _saveLoadSlots[i].texture.h, kSaveLoadTexKey + texIndexLut[i]);				}
-		} else {
-			memset(&_saveLoadSlots[i].texture, 0, sizeof(_saveLoadSlots[i].texture));
 		}
 		_saveLoadSlots[i].texture.texKey = kSaveLoadTexKey + texIndexLut[i];
 	}
@@ -88,9 +90,8 @@ void Game::initMenu() {
 
 void Game::finiMenu() {
 	for (int i = 0; i < kSaveLoadSlots; ++i) {
-		_render->releaseTexture(kSaveLoadTexKey + i);
-		uint8_t *texData = (uint8_t *)_saveLoadSlots[i].texture.data;
-		free(texData);
+		_render->releaseTexture(kSaveLoadTexKey + i); // should be texIndexLut[i] but equivalent as the loop iterates from 0 to 7
+		free(_saveLoadSlots[i].screenshotData);
 		memset(&_saveLoadSlots[i].texture, 0, sizeof(_saveLoadSlots[i].texture));
 	}
 	if (_resumeMusic) {
