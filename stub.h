@@ -16,16 +16,16 @@ enum {
 	kKeyCodeRight,
 	kKeyCodeUp,
 	kKeyCodeDown,
-	kKeyCodeAlt,     // gun
+	kKeyCodeAlt,     // toggle gun mode
 	kKeyCodeCtrl,    // shoot
 	kKeyCodeShift,   // walk
-	kKeyCodeSpace,   // use / open
-	kKeyCodeReturn,  // recharge gun
-	kKeyCodeTab,     // skip cutscene
+	kKeyCodeSpace,   // activate
+	kKeyCodeReturn,  // reload gun
+	kKeyCodeTab,     // change inventory category
 	kKeyCodeEscape,  // menu
 	kKeyCodeI,       // inventory
 	kKeyCodeJ,       // jump
-	kKeyCodeU,
+	kKeyCodeU,       // use
 	kKeyCode1,       // item #1
 	kKeyCode2,       // item #2
 	kKeyCode3,       // item #3

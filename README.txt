@@ -55,7 +55,7 @@ In-game hotkeys :
     Ctrl / B       shoot
     Enter          reload gun
     Space          activate
-    Tab            skip cutscene
+    Tab            change inventory category
     Escape         save/load menu
     I              inventory menu
     J              jump
