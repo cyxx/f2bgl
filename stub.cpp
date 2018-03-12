@@ -576,6 +576,9 @@ struct GameStub_F2B : GameStub {
 		++_screenshot;
 		_takeScreenshot = true;
 	}
+	virtual bool shouldVibrate() {
+		return _g->_conradHit == 2;
+	}
 };
 
 extern "C" {

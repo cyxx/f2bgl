@@ -71,11 +71,11 @@ static void setupKeyMap() {
 	gJoystickMap[0] = kKeyCodeAlt;
 	gJoystickMap[1] = kKeyCodeShift;
 	gJoystickMap[2] = kKeyCodeCtrl;
-	gJoystickMap[3] = kKeyCodeReturn;
-	gJoystickMap[4] = kKeyCodeSpace;
-	gJoystickMap[5] = kKeyCodeI;
-	gJoystickMap[6] = kKeyCodeJ;
-	gJoystickMap[7] = kKeyCodeU;
+	gJoystickMap[3] = kKeyCodeSpace;
+	gJoystickMap[4] = kKeyCodeI;
+	gJoystickMap[5] = kKeyCodeJ;
+	gJoystickMap[6] = kKeyCodeU;
+	gJoystickMap[7] = kKeyCodeReturn;
 	// gamecontroller buttons
 	memset(gGamepadMap, 0, sizeof(gGamepadMap));
 	gGamepadMap[SDL_CONTROLLER_BUTTON_A] = kKeyCodeAlt;
@@ -160,7 +160,7 @@ int main(int argc, char *argv[]) {
 		return ret;
 	}
 	const int displayMode = stub->getDisplayMode();
-	SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_JOYSTICK | SDL_INIT_GAMECONTROLLER);
+	SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_JOYSTICK | SDL_INIT_GAMECONTROLLER | SDL_INIT_HAPTIC);
 	SDL_ShowCursor(stub->hasCursor() ? SDL_ENABLE : SDL_DISABLE);
 	int flags = SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE;
 	if (displayMode != kDisplayModeWindowed) {
@@ -194,13 +194,30 @@ int main(int argc, char *argv[]) {
 	setupAudio(stub);
 	SDL_Joystick *joystick = 0;
 	SDL_GameController *controller = 0;
+	SDL_Haptic *haptic = 0;
 	if (SDL_NumJoysticks() > 0) {
 		SDL_GameControllerAddMappingsFromFile("gamecontrollerdb.txt");
 		if (SDL_IsGameController(kJoystickIndex)) {
 			controller = SDL_GameControllerOpen(kJoystickIndex);
+			if (controller) {
+				fprintf(stdout, "Using controller '%s'\n", SDL_GameControllerName(controller));
+				haptic = SDL_HapticOpenFromJoystick(SDL_GameControllerGetJoystick(controller));
+			}
 		}
 		if (!controller) {
+			// no controller found, look for joystick
 			joystick = SDL_JoystickOpen(kJoystickIndex);
+			if (joystick) {
+				fprintf(stdout, "Using joystick '%s'\n", SDL_JoystickName(joystick));
+				haptic = SDL_HapticOpenFromJoystick(joystick);
+			}
+		}
+		if (haptic) {
+			if (!SDL_HapticRumbleSupported(haptic)) {
+				// not supported, release the resource now
+				SDL_HapticClose(haptic);
+				haptic = 0;
+			}
 		}
 	}
 	stub->initGL(gWindowW, gWindowH, _aspectRatio);
@@ -378,6 +395,12 @@ int main(int argc, char *argv[]) {
 			stub->doTick(ticks);
 			stub->drawGL();
 			SDL_GL_SwapWindow(window);
+			if (stub->shouldVibrate()) {
+				if (haptic) {
+					SDL_HapticRumbleInit(haptic);
+					SDL_HapticRumblePlay(haptic, 1., 500);
+				}
+			}
 			const int delayTick = nextTick - SDL_GetTicks();
 			SDL_Delay(delayTick < 16 ? 16 : delayTick);
 		} else {
@@ -393,6 +416,9 @@ int main(int argc, char *argv[]) {
 	}
 	if (joystick) {
 		SDL_JoystickClose(joystick);
+	}
+	if (haptic) {
+		SDL_HapticClose(haptic);
 	}
 	SDL_Quit();
 	return 0;
