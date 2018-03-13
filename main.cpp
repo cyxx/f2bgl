@@ -4,6 +4,8 @@
  */
 
 #include <SDL.h>
+#include <ctype.h>
+#include <stdio.h>
 #include <string.h>
 #include "stub.h"
 
@@ -27,23 +29,150 @@ static int gSaveSlot = 1;
 
 static const int kTickDuration = 50;
 
-static const int kJoystickIndex = 0;
+static const char *kControlsCfg = "controls.cfg";
+
+static const int kJoystickDefaultIndex = 0;
 static const int kJoystickCommitValue = 16384;
 
 static const int kJoystickMapSize = 8;
 static int gJoystickMap[kJoystickMapSize];
 
-static int gGamepadMap[SDL_CONTROLLER_BUTTON_MAX];
+static const int kGamepadMapSize = SDL_CONTROLLER_BUTTON_MAX;
+static int gGamepadMap[kGamepadMapSize];
 
-static int gKeyScancodeMap[512];
+static const int gKeyScancodeMapSize = 512;
+static int gKeyScancodeMap[gKeyScancodeMapSize];
+
+static int readKeyMap(FILE *fp) {
+	static const char *kKeyboardScancode = "keyboard.scancode.";
+	static const char *kGamepadButton = "gamepad.button.";
+	static const char *kJoystickButton = "joystick.button.";
+	static const struct {
+		const char *keyword;
+		int keyMapping;
+	} mappings[] = {
+		{ "gun_mode", kKeyCodeAlt },
+		{ "shoot", kKeyCodeCtrl },
+		{ "walk", kKeyCodeShift },
+		{ "activate", kKeyCodeSpace },
+		{ "reload_gun", kKeyCodeReturn },
+		{ "change_inventory", kKeyCodeTab },
+		{ "escape", kKeyCodeEscape },
+		{ "inventory", kKeyCodeI },
+		{ "jump", kKeyCodeJ },
+		{ "use", kKeyCodeU },
+		{ "item1", kKeyCode1 },
+		{ "item2", kKeyCode2 },
+		{ "item3", kKeyCode3 },
+		{ "item4", kKeyCode4 },
+		{ "item5", kKeyCode5 },
+		{ "foot_step", kKeyCodePageUp },
+		{ "back_step", kKeyCodePageDown },
+		{ 0, -1 }
+	};
+	static const struct {
+		const char *name;
+		int code;
+	} buttons[] = {
+		{ "back", SDL_CONTROLLER_BUTTON_BACK },
+		{ "guide", SDL_CONTROLLER_BUTTON_GUIDE },
+		{ "start", SDL_CONTROLLER_BUTTON_START },
+		{ "leftstick", SDL_CONTROLLER_BUTTON_LEFTSTICK },
+		{ "leftshoulder", SDL_CONTROLLER_BUTTON_LEFTSHOULDER },
+		{ "rightstick", SDL_CONTROLLER_BUTTON_RIGHTSTICK },
+		{ "rightshoulder", SDL_CONTROLLER_BUTTON_RIGHTSHOULDER },
+		{ "a", SDL_CONTROLLER_BUTTON_A },
+		{ "b", SDL_CONTROLLER_BUTTON_B },
+		{ "x", SDL_CONTROLLER_BUTTON_X },
+		{ "y", SDL_CONTROLLER_BUTTON_Y },
+		{ 0, -1 }
+	};
+	int lineNumber = 0;
+	int mappingCount = 0;
+	char buf[256];
+	while (fgets(buf, sizeof(buf), fp)) {
+		++lineNumber;
+		if (buf[0] == '#') {
+			continue;
+		}
+		const char *p = strchr(buf, '=');
+		if (p) {
+			++p;
+			while (*p && isspace(*p)) {
+				++p;
+			}
+			int keyMapping = -1;
+			if (*p) {
+				for (int i = 0; mappings[i].keyword; ++i) {
+					if (strncmp(p, mappings[i].keyword, strlen(mappings[i].keyword)) == 0) {
+						keyMapping = mappings[i].keyMapping;
+						break;
+					}
+				}
+			}
+			if (keyMapping == -1) {
+				fprintf(stderr, "Unknown key mapping '%s' (line %d)\n", p, lineNumber);
+				continue;
+			}
+			if (strncmp(buf, kKeyboardScancode, strlen(kKeyboardScancode)) == 0) {
+				int scancode = atoi(buf + strlen(kKeyboardScancode));
+				if (scancode >= 0 && scancode < gKeyScancodeMapSize) {
+					gKeyScancodeMap[scancode] = keyMapping;
+					++mappingCount;
+				} else {
+					fprintf(stderr, "Unhandled scancode %d (line %d)\n", scancode, lineNumber);
+				}
+			} else if (strncmp(buf, kGamepadButton, strlen(kGamepadButton)) == 0) {
+				const char *name = buf + strlen(kGamepadButton);
+				for (int i = 0; buttons[i].name; ++i) {
+					if (strncmp(name, buttons[i].name, strlen(buttons[i].name)) == 0) {
+						int button = buttons[i].code;
+						if (button >= 0 && button < kGamepadMapSize) {
+							gGamepadMap[button] = keyMapping;
+							++mappingCount;
+						} else {
+							fprintf(stderr, "Unhandled gamepad button %d (line %d)\n", button, lineNumber);
+						}
+						break;
+					}
+				}
+			} else if (strncmp(buf, kJoystickButton, strlen(kJoystickButton)) == 0) {
+				int button = atoi(buf + strlen(kJoystickButton));
+				if (button >= 0 && button < kJoystickMapSize) {
+					gJoystickMap[button] = keyMapping;
+					++mappingCount;
+				} else {
+					fprintf(stderr, "Unhandled joystick button %d (line %d)\n", button, lineNumber);
+				}
+			}
+		}
+	}
+	return mappingCount;
+}
 
 static void setupKeyMap() {
 	// keyboard
-	memset(gKeyScancodeMap, 0, sizeof(gKeyScancodeMap));
 	gKeyScancodeMap[SDL_SCANCODE_LEFT]   = kKeyCodeLeft;
 	gKeyScancodeMap[SDL_SCANCODE_RIGHT]  = kKeyCodeRight;
 	gKeyScancodeMap[SDL_SCANCODE_UP]     = kKeyCodeUp;
 	gKeyScancodeMap[SDL_SCANCODE_DOWN]   = kKeyCodeDown;
+	// gamepad
+	gGamepadMap[SDL_CONTROLLER_BUTTON_DPAD_UP]    = kKeyCodeUp;
+	gGamepadMap[SDL_CONTROLLER_BUTTON_DPAD_DOWN]  = kKeyCodeDown;
+	gGamepadMap[SDL_CONTROLLER_BUTTON_DPAD_LEFT]  = kKeyCodeLeft;
+	gGamepadMap[SDL_CONTROLLER_BUTTON_DPAD_RIGHT] = kKeyCodeRight;
+
+	// read controls mapping from file
+	FILE *fp = fopen(kControlsCfg, "rb");
+	if (fp) {
+		const int mappingCount = readKeyMap(fp);
+		fclose(fp);
+		// use built-in mapping if no keys have been mapped
+		if (mappingCount != 0) {
+			return;
+		}
+	}
+	// keyboard
 	gKeyScancodeMap[SDL_SCANCODE_LALT]   = kKeyCodeAlt;
 	gKeyScancodeMap[SDL_SCANCODE_RALT]   = kKeyCodeAlt;
 	gKeyScancodeMap[SDL_SCANCODE_LSHIFT] = kKeyCodeShift;
@@ -67,7 +196,6 @@ static void setupKeyMap() {
 		gKeyScancodeMap[SDL_SCANCODE_1 + i] = kKeyCode1 + i;
 	}
 	// joystick buttons
-	memset(gJoystickMap, 0, sizeof(gJoystickMap));
 	gJoystickMap[0] = kKeyCodeAlt;
 	gJoystickMap[1] = kKeyCodeShift;
 	gJoystickMap[2] = kKeyCodeCtrl;
@@ -77,7 +205,6 @@ static void setupKeyMap() {
 	gJoystickMap[6] = kKeyCodeU;
 	gJoystickMap[7] = kKeyCodeReturn;
 	// gamecontroller buttons
-	memset(gGamepadMap, 0, sizeof(gGamepadMap));
 	gGamepadMap[SDL_CONTROLLER_BUTTON_A] = kKeyCodeAlt;
 	gGamepadMap[SDL_CONTROLLER_BUTTON_B] = kKeyCodeSpace;
 	gGamepadMap[SDL_CONTROLLER_BUTTON_X] = kKeyCodeCtrl;
@@ -197,8 +324,8 @@ int main(int argc, char *argv[]) {
 	SDL_Haptic *haptic = 0;
 	if (SDL_NumJoysticks() > 0) {
 		SDL_GameControllerAddMappingsFromFile("gamecontrollerdb.txt");
-		if (SDL_IsGameController(kJoystickIndex)) {
-			controller = SDL_GameControllerOpen(kJoystickIndex);
+		if (SDL_IsGameController(kJoystickDefaultIndex)) {
+			controller = SDL_GameControllerOpen(kJoystickDefaultIndex);
 			if (controller) {
 				fprintf(stdout, "Using controller '%s'\n", SDL_GameControllerName(controller));
 				haptic = SDL_HapticOpenFromJoystick(SDL_GameControllerGetJoystick(controller));
@@ -206,7 +333,7 @@ int main(int argc, char *argv[]) {
 		}
 		if (!controller) {
 			// no controller found, look for joystick
-			joystick = SDL_JoystickOpen(kJoystickIndex);
+			joystick = SDL_JoystickOpen(kJoystickDefaultIndex);
 			if (joystick) {
 				fprintf(stdout, "Using joystick '%s'\n", SDL_JoystickName(joystick));
 				haptic = SDL_HapticOpenFromJoystick(joystick);

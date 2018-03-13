@@ -47,7 +47,14 @@ Defaults can be changed using command line switches :
     --no-fog                    Disable fog rendering
     --no-gouraud                Disable gouraud shading
 
-In-game hotkeys :
+
+Controls:
+---------
+
+The game can be played using a joystick, a gamepad or the keyboard.
+Key mappings can be changed by editing the file 'controls.cfg'.
+
+In-game keys (default) :
 
     Arrow Keys     move Conrad
     Alt / V        toggle gun mode
