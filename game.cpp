@@ -3762,6 +3762,15 @@ void Game::drawScanner() {
 	}
 }
 
+static void drawInfoPanelChar(DrawBuffer *buf, int x, int y, int w, int h, const uint8_t *src) {
+	uint8_t *dst = buf->ptr + y * buf->pitch + x;
+	while (h--) {
+		memcpy(dst, src, w);
+		dst += buf->pitch;
+		src += w;
+	}
+}
+
 static const struct {
 	int obj;
 	int var;
@@ -3833,6 +3842,7 @@ void Game::setupInventoryObjects() {
 	_drawCharBuf.ptr = _infoPanelSpr.data;
 	_drawCharBuf.w = _drawCharBuf.pitch = _infoPanelSpr.w;
 	_drawCharBuf.h = _infoPanelSpr.h;
+	_drawCharBuf.draw = drawInfoPanelChar;
 
 	static const int y[] = { 0, 20, 50 };
 	for (int i = 0; i < 3; ++i) {

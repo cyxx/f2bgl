@@ -47,26 +47,6 @@ void Game::initFonts() {
 void Game::drawChar(int x, int y, SpriteImage *spr, int color) {
 	if (_drawCharBuf.draw) {
 		_drawCharBuf.draw(&_drawCharBuf, x, y, spr->w, spr->h, spr->data);
-	} else if (_drawCharBuf.ptr) {
-		const uint8_t *src = spr->data;
-		int h = spr->h;
-		int w = spr->w;
-		uint8_t *dst = _drawCharBuf.ptr + y * _drawCharBuf.pitch + x;
-		if (color == 0) {
-			while (h--) {
-				memcpy(dst, src, w);
-				dst += _drawCharBuf.pitch;
-				src += w;
-			}
-		} else {
-			while (h--) {
-				for (int i = 0; i < w; ++i) {
-					dst[i] = (src[i] == 0x74) ? color : src[i];
-				}
-				dst += _drawCharBuf.pitch;
-				src += w;
-			}
-		}
 	} else {
 		_render->drawSprite(x, y, spr->data, spr->w, spr->h, 0, spr->key);
 	}
