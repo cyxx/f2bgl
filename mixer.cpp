@@ -70,7 +70,6 @@ struct SoundDataWav {
 	int _bufSize;
 	uint8_t *_buf;
 	int _bitsPerSample;
-	bool _stereo;
 
 	SoundDataWav()
 		: _bufSize(0), _buf(0) {
@@ -81,28 +80,28 @@ struct SoundDataWav {
 		char buf[8];
 		fileRead(fp, buf, 8);
 		if (memcmp(buf, "RIFF", 4) != 0) {
+			warning("Missing WAV 'RIFF' tag");
 			return false;
 		}
 		fileRead(fp, buf, 8);
 		if (memcmp(buf, "WAVEfmt ", 8) != 0) {
+			warning("Missing WAV 'WAVEfmt ' tag");
 			return false;
 		}
 		fileReadUint32LE(fp); // fmtLength
 		const int compression = fileReadUint16LE(fp);
-		assert(compression == 1);
 		const int channels = fileReadUint16LE(fp);
-		assert(channels == 1);
 		const int sampleRate = fileReadUint32LE(fp);
-		assert(sampleRate == mixerSampleRate);
 		fileReadUint32LE(fp); // averageBytesPerSec
 		fileReadUint16LE(fp); // blockAlign
 		_bitsPerSample = fileReadUint16LE(fp);
-		assert(_bitsPerSample == 16);
-		debug(kDebug_SOUND, "wav/pcm format compression %d channels %d rate %d bits %d", compression, channels, sampleRate, _bitsPerSample);
-		_stereo = (channels == 2);
-//		_bufReadStep = (sampleRate << _fracStepBits) / mixerSampleRate;
+		if (compression != 1 || channels != 1 || sampleRate != mixerSampleRate || _bitsPerSample != 16) {
+			warning("Unhandled WAV format compression %d channels rate %d bits %d", compression, channels, sampleRate, _bitsPerSample);
+			return false;
+		}
 		fileRead(fp, buf, 4);
 		if (memcmp(buf, "data", 4) != 0) {
+			warning("Missing WAV 'data' tag");
 			return false;
 		}
 		const int chunkSize = fileReadUint32LE(fp);
@@ -147,10 +146,9 @@ struct MixerSound {
 				sample = (int16_t)READ_LE_UINT16(data._buf + readOffset);
 				readOffset += 2;
 			}
-			if (!data._stereo) {
-				mix(&dst[i + 0], sample, volumeL);
-				mix(&dst[i + 1], sample, volumeR);
-			}
+			// mono to stereo
+			mix(&dst[i + 0], sample, volumeL);
+			mix(&dst[i + 1], sample, volumeR);
 			if (readOffset >= data._bufSize) {
 				--loopsCount;
 				if (loopsCount <= 0) {
