@@ -2919,7 +2919,7 @@ void Game::addObjectsToScene() {
 	SceneObject *bitmapObjects[kSceneObjectsTableSize];
 	int bitmapObjectsCount = 0;
 	// draw shadows
-	_render->setIgnoreDepth(true);
+	_render->setIgnoreDepth(false);
 	for (int i = 0; i < _sceneObjectsCount; ++i) {
 		SceneObject *so = &_sceneObjectsTable[i];
 		const int flags = so->o->flags[1];
@@ -2930,7 +2930,6 @@ void Game::addObjectsToScene() {
 		}
 	}
 	// draw opaque objects
-	_render->setIgnoreDepth(false);
 	for (int i = 0; i < _sceneObjectsCount; ++i) {
 		SceneObject *so = &_sceneObjectsTable[i];
 		if (isTranslucentSceneObject(so)) {
@@ -3049,7 +3048,7 @@ void Game::drawSceneObjectShadow(SceneObject *so) {
 			const int8_t *q = (int8_t *)so->verticesData + so->verticesCount * 4 + index * 2;
 			polygonPoints[i].x = q[0];
 			polygonPoints[i].z = q[1];
-			polygonPoints[i].y = kGroundY * 2 - 1;
+			polygonPoints[i].y = (kGroundY - 1) * 2;
 		}
 		_render->drawPolygonFlat(polygonPoints, count + 1, kFlatColorShadow);
 		count = *p & 15;
