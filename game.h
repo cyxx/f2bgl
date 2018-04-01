@@ -138,8 +138,12 @@ enum {
 
 enum {
 	kCheatLifeCounter = 1 << 0,
+	// control tweak #1 - gun will automatically reload if ammo equals 0, this avoids using the 'enter' key to reload
 	kCheatAutoReloadGun = 1 << 1,
-	kCheatUseButtonToShoot = 1 << 2,
+	// control tweak #2 - space can be used to shoot, this avoids using the 'ctrl' key to shoot
+	kCheatActivateButtonToShoot = 1 << 2,
+	// control tweak #3 - pressing 'up' or 'down' when shooting allows to do back and foot steps, this avoids using the 'pageup' and 'pagedown' keys
+	kCheatStepWithUpDownInShooting = 1 << 3,
 };
 
 struct CollisionSlot;

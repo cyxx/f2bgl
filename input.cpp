@@ -290,7 +290,7 @@ void Game::updateGameInput() {
 		updateMouseInput();
 	}
 	bool ctrlKey = inp.ctrlKey;
-	if ((_cheats & kCheatUseButtonToShoot) != 0) {
+	if ((_cheats & kCheatActivateButtonToShoot) != 0) {
 		if (isConradInShootingPos()) {
 			if (inp.spaceKey) {
 				inp.ctrlKey = true;
@@ -307,9 +307,22 @@ void Game::updateGameInput() {
 			}
 		}
 	}
+	bool shiftKey = inp.shiftKey;
+	if ((_cheats & kCheatStepWithUpDownInShooting) != 0) {
+		if (isConradInShootingPos()) {
+			if (inp.shiftKey) {
+				inp.footStepKey = (inp.dirMask & kInputDirUp) != 0;
+				inp.dirMask &= ~kInputDirUp;
+				inp.backStepKey = (inp.dirMask & kInputDirDown) != 0;
+				inp.dirMask &= ~kInputDirDown;
+				inp.shiftKey = false;
+			}
+		}
+	}
 	updateInput();
 	inp.ctrlKey = ctrlKey;
 	inp.enterKey = enterKey;
+	inp.shiftKey = shiftKey;
 }
 
 bool Game::testInputKeyMask(int num, int dir, int button, int index) const {
