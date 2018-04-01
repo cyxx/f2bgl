@@ -184,8 +184,13 @@ Render::Render(const RenderParams *params) {
 		glFogf(GL_FOG_END, 256.);
 	}
 	if (_lighting) {
-		glShadeModel(GL_SMOOTH);
+		glEnable(GL_LIGHT0);
+		glLightfv(GL_LIGHT0, GL_POSITION, _lightPosition);
+		glLightfv(GL_LIGHT0, GL_AMBIENT,  _lightAmbient);
+		glLightfv(GL_LIGHT0, GL_DIFFUSE,  _lightDiffuse);
+		glLightfv(GL_LIGHT0, GL_SPECULAR, _lightSpecular);
 	}
+	glShadeModel(GL_SMOOTH);
 }
 
 Render::~Render() {
@@ -196,14 +201,6 @@ Render::~Render() {
 void Render::flushCachedTextures() {
 	_textureCache.flush();
 	_overlay.tex = 0;
-}
-
-void Render::setupLight() {
-	glLightfv(GL_LIGHT0, GL_POSITION, _lightPosition);
-	glLightfv(GL_LIGHT0, GL_AMBIENT,  _lightAmbient);
-	glLightfv(GL_LIGHT0, GL_DIFFUSE,  _lightDiffuse);
-	glLightfv(GL_LIGHT0, GL_SPECULAR, _lightSpecular);
-	glEnable(GL_LIGHT0);
 }
 
 void Render::resizeScreen(int w, int h, float *p) {
@@ -596,7 +593,9 @@ void Render::setupProjection(int mode) {
 		glMatrixMode(GL_MODELVIEW);
 		glLoadIdentity();
 		if (_lighting) {
-			setupLight();
+			glEnable(GL_LIGHT0);
+		} else {
+			glDisable(GL_LIGHT0);
 		}
 		glScalef(1., -.5, 1.);
 		glTranslatef(0., 14. * _aspectRatio, -72.);
@@ -614,8 +613,11 @@ void Render::setupProjection(int mode) {
 
 		glMatrixMode(GL_MODELVIEW);
 		glLoadIdentity();
+
 		if (_lighting) {
-			setupLight();
+			glEnable(GL_LIGHT0);
+		} else {
+			glDisable(GL_LIGHT0);
 		}
 		glTranslatef(0, -1024., -3092.);
 
@@ -633,7 +635,9 @@ void Render::setupProjection(int mode) {
 		glMatrixMode(GL_MODELVIEW);
 		glLoadIdentity();
 		if (_lighting) {
-			setupLight();
+			glEnable(GL_LIGHT0);
+		} else {
+			glDisable(GL_LIGHT0);
 		}
 		glScalef(1., -.5, -1.);
 		glRotatef(_cameraPitch, 0., 1., 0.);

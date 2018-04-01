@@ -421,6 +421,12 @@ int main(int argc, char *argv[]) {
 					case SDLK_q:
 						quitGame = true;
 						break;
+					case SDLK_F1:
+						stub->queueKeyInput(kKeyCodeToggleFog, 1);
+						break;
+					case SDLK_F2:
+						stub->queueKeyInput(kKeyCodeToggleGouraudShading, 1);
+						break;
 					}
 				}
 				break;

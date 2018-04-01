@@ -436,6 +436,16 @@ struct GameStub_F2B : GameStub {
 		case kKeyCodeCheatLifeCounter:
 			_g->_cheats ^= kCheatLifeCounter;
 			break;
+		case kKeyCodeToggleFog:
+			if (_renderParams.fog) { // only toggle if it has not been disabled
+				_render->toggleFog();
+			}
+			break;
+		case kKeyCodeToggleGouraudShading:
+			if (_renderParams.gouraud) {
+				_render->toggleGouraudShading();
+			}
+			break;
 		}
 	}
 	void queueTouchInput(int pointer, int x, int y, int down) {

@@ -35,6 +35,8 @@ enum {
 	kKeyCodePageDown, // back foot step
 	kKeyCodeFarNear,
 	kKeyCodeCheatLifeCounter,
+	kKeyCodeToggleFog,
+	kKeyCodeToggleGouraudShading,
 };
 
 enum {

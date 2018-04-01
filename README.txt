@@ -61,17 +61,19 @@ In-game keys (default) :
     Shift          walk
     Ctrl / B       shoot
     Enter          reload gun
-    Space          activate
+    Space          activate (or shoot)
     Tab            change inventory category
     Escape         save/load menu
     I              inventory menu
     J              jump
-    U              use
+    U              use current item
     1 .. 5         use item #
+    T              take screenshot
     S              save game state
     L              load game state
-    T              take screenshot
-    + and -        change game state slot
+    + and -        change game state save slot
+    F1             toggle fog on/off
+    F2             toggle flat/gouraud shading
 
 
 Credits:

@@ -64,7 +64,9 @@ struct Render {
 
 	void flushCachedTextures();
 
-	void setupLight();
+	void toggleFog() { _fog = !_fog; }
+	void toggleGouraudShading() { _lighting = !_lighting; }
+
 	void setCameraPos(int x, int y, int z, int shift = 0);
 	void setCameraPitch(int a);
 
