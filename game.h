@@ -9,6 +9,7 @@
 #include "util.h"
 #include "cutscene.h"
 #include "resource.h"
+#include "resourcepsx.h"
 #include "sound.h"
 #include "spritecache.h"
 #include "random.h"
@@ -452,6 +453,7 @@ struct Game {
 	typedef int (Game::*RayCastCallbackType)(GameObject *o, CellMap *cell, int x, int z);
 
 	Resource _res;
+	ResourcePsx _resPsx;
 	Cutscene _cut;
 	Sound _snd;
 	Render *_render;

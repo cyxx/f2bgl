@@ -1167,6 +1167,10 @@ void Game::initLevel(bool keepInventoryObjects) {
 
 	clearLevelData();
 
+	if (g_hasPsx) {
+		// _resPsx.loadLevelData(_level, kResTypePsx_VRM);
+	}
+
 	if (_params.playDemo) {
 		int dataSize;
 		char name[16];
@@ -2696,7 +2700,7 @@ void Game::doTick() {
 		}
 		if (_changeLevel) {
 			setPaletteColor(1, 255, 255, 255);
-			if (getMessage(_objectsPtrTable[kObjPtrFadeToBlack]->objKey, 1, &_tmpMsg)) {
+			if (getMessage(_objectsPtrTable[kObjPtrFadeToBlack]->objKey, 1, &_tmpMsg)) { // "Loading..."
 				memset(&_drawCharBuf, 0, sizeof(_drawCharBuf));
 				int w, h;
 				getStringRect((const char *)_tmpMsg.data, kFontNameCineTypo, &w, &h);

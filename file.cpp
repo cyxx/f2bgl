@@ -189,6 +189,7 @@ struct FileSystem {
 };
 
 bool g_isDemo = false;
+bool g_hasPsx = false;
 uint32_t g_level1ObjCrc;
 static int _fileLanguage;
 static int _fileVoice;
@@ -196,6 +197,7 @@ const char *g_fileDataPath;
 const char *g_fileSavePath;
 static bool _exitOnError = true;
 static FileSystem *_fileSystem;
+static const char *_psxDataPath;
 
 static void fileMakeFilePath(const char *fileName, int fileType, int fileLang, char *filePath) {
 	static const char *dataDirsTable[] = { "DATA", "DATA/SOUND", "TEXT", "VOICE", "DATA/DRIVERS", "INSTDATA" };
@@ -458,4 +460,27 @@ void fileWriteLine(File *fp, const char *s, ...) {
 	vsprintf(buf, s, va);
 	va_end(va);
 	fileWrite(fp, buf, strlen(buf));
+}
+
+bool fileInitPsx(const char *dataPath) {
+	_psxDataPath = dataPath;
+	g_hasPsx = true;
+	return g_hasPsx;
+}
+
+File *fileOpenPsx(const char *filename, int fileType, int levelNum) {
+	char path[MAXPATHLEN];
+	switch (fileType) {
+	case kFileType_PSX_LEVELDATA:
+		snprintf(path, sizeof(path), "%s/data%d/%s", _psxDataPath, levelNum, filename);
+		break;
+	default:
+		return 0;
+	}
+	File *fp = new StdioFile;
+	if (!fp->open(path, "rb")) {
+		delete fp;
+		fp = 0;
+	}
+	return fp;
 }

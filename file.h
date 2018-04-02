@@ -21,6 +21,7 @@ enum FileType {
 	kFileType_SCREENSHOT_LOAD,
 	kFileType_SCREENSHOT_SAVE,
 	kFileType_CONFIG,
+	kFileType_PSX_LEVELDATA,
 };
 
 enum FileLanguage {
@@ -39,6 +40,7 @@ enum FilePosition {
 struct File;
 
 extern bool g_isDemo;
+extern bool g_hasPsx;
 extern uint32_t g_level1ObjCrc; // crc for savegame states
 extern const char *g_fileDataPath;
 extern const char *g_fileSavePath;
@@ -61,5 +63,7 @@ void fileWriteByte(File *fp, uint8_t value);
 void fileWriteUint16LE(File *fp, uint16_t value);
 void fileWriteUint32LE(File *fp, uint32_t value);
 void fileWriteLine(File *fp, const char *s, ...);
+bool fileInitPsx(const char *dataPath);
+File *fileOpenPsx(const char *filename, int fileType, int levelNum = -1);
 
 #endif // FILE_H__

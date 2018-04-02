@@ -14,7 +14,7 @@
 static const char *USAGE =
 	"Fade2Black/OpenGL\n"
 	"Usage: f2b [OPTIONS]...\n"
-	"  --datapath=PATH             Path to data files (default '.')\n"
+	"  --datapath=PATH             Path to PC data files (default '.')\n"
 	"  --language=EN|FR|GR|SP|IT   Language files to use (default 'EN')\n"
 	"  --playdemo                  Use inputs from .DEM files\n"
 	"  --level=NUM                 Start at level NUM\n"
@@ -29,6 +29,7 @@ static const char *USAGE =
 	"  --mouse                     Enable mouse controls\n"
 	"  --no-fog                    Disable fog rendering\n"
 	"  --no-gouraud                Disable gouraud shading\n"
+	"  --psxpath=PATH              Path to PSX data files\n"
 ;
 
 static const struct {
@@ -99,6 +100,7 @@ static int getNextCutsceneNum(int num) {
 
 static char *_dataPath;
 static char *_savePath;
+static char *_psxDataPath;
 
 struct GameStub_F2B : GameStub {
 
@@ -205,6 +207,7 @@ struct GameStub_F2B : GameStub {
 				{ "touch",     no_argument,       0, 16 },
 				{ "no-fog",       no_argument,       0, 17 },
 				{ "no-gouraud",   no_argument,       0, 18 },
+				{ "psxpath",      required_argument, 0, 19 },
 #ifdef F2B_DEBUG
 				{ "xpos_conrad",  required_argument, 0, 100 },
 				{ "zpos_conrad",  required_argument, 0, 101 },
@@ -284,6 +287,9 @@ struct GameStub_F2B : GameStub {
 			case 18:
 				_renderParams.gouraud = false;
 				break;
+			case 19:
+				_psxDataPath = strdup(optarg);
+				break;
 #ifdef F2B_DEBUG
 			case 100:
 				_params.xPosConrad = atoi(optarg);
@@ -331,8 +337,14 @@ struct GameStub_F2B : GameStub {
 	}
 	virtual int init() {
 		if (!fileInit(_fileLanguage, _fileVoice, _dataPath ? _dataPath : ".", _savePath ? _savePath : ".")) {
-			warning("Unable to find datafiles");
+			warning("Unable to find PC datafiles");
 			return -2;
+		}
+		if (_psxDataPath) {
+			if (!fileInitPsx(_psxDataPath)) {
+				warning("Unable to find PlayStation datafiles");
+				// PSX data is optional
+			}
 		}
 		_render = new Render(&_renderParams);
 		_g = new Game(_render, &_params);
@@ -354,6 +366,8 @@ struct GameStub_F2B : GameStub {
 		_dataPath = 0;
 		free(_savePath);
 		_savePath = 0;
+		free(_psxDataPath);
+		_psxDataPath = 0;
 		free(_soundFont);
 		free(_textureFilter);
 		free(_textureScaler);
