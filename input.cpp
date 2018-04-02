@@ -298,6 +298,17 @@ void Game::updateGameInput() {
 			}
 		}
 	}
+	if ((_cheats & kCheatShootButtonToStep) != 0) {
+		if (!isConradInShootingPos()) {
+			if (inp.ctrlKey && (inp.dirMask & (kInputDirLeft | kInputDirRight)) == 0) {
+				inp.footStepKey = (inp.dirMask & kInputDirUp) != 0;
+				inp.dirMask &= ~kInputDirUp;
+				inp.backStepKey = (inp.dirMask & kInputDirDown) != 0;
+				inp.dirMask &= ~kInputDirDown;
+				inp.ctrlKey = false;
+			}
+		}
+	}
 	bool enterKey = inp.enterKey;
 	if ((_cheats & kCheatAutoReloadGun) != 0) {
 		if (_objectsPtrTable[kObjPtrGun]->customData[0] == 0) {
@@ -310,7 +321,7 @@ void Game::updateGameInput() {
 	bool shiftKey = inp.shiftKey;
 	if ((_cheats & kCheatStepWithUpDownInShooting) != 0) {
 		if (isConradInShootingPos()) {
-			if (inp.shiftKey) {
+			if (inp.shiftKey && (inp.dirMask & (kInputDirLeft | kInputDirRight)) == 0) {
 				inp.footStepKey = (inp.dirMask & kInputDirUp) != 0;
 				inp.dirMask &= ~kInputDirUp;
 				inp.backStepKey = (inp.dirMask & kInputDirDown) != 0;

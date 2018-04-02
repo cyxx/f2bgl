@@ -58,7 +58,7 @@ In-game keys (default) :
 
     Arrow Keys     move Conrad
     Alt / V        toggle gun mode
-    Shift          walk
+    Shift          walk (or steps)
     Ctrl / B       shoot
     Enter          reload gun
     Space          activate (or shoot)
