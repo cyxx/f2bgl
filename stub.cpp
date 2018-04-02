@@ -361,7 +361,9 @@ struct GameStub_F2B : GameStub {
 	}
 	virtual void quit() {
 		delete _g;
+		_g = 0;
 		delete _render;
+		_render = 0;
 		free(_dataPath);
 		_dataPath = 0;
 		free(_savePath);
@@ -369,9 +371,11 @@ struct GameStub_F2B : GameStub {
 		free(_psxDataPath);
 		_psxDataPath = 0;
 		free(_soundFont);
+		_soundFont = 0;
 		free(_textureFilter);
+		_textureFilter = 0;
 		free(_textureScaler);
-		_dataPath = 0;
+		_textureScaler = 0;
 	}
 	virtual StubMixProc getMixProc(int rate, int fmt, void (*lock)(int)) {
 		StubMixProc mix;
