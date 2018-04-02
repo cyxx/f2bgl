@@ -572,7 +572,10 @@ bool Game::loadGameState(int num) {
 		}
 		persistGameState<kModeLoad>(fp, *this);
 		_updatePalette = true;
+		const int16_t musicKey = _snd._musicKey;
+		_snd._musicKey = -1;
 		playMusic(_snd._musicMode);
+		debug(kDebug_SAVELOAD, "musicKey %d %d", musicKey, _snd._musicKey);
 	} else {
 		warning("Unexpected savegame #%d version %d", num, _saveVersion);
 	}

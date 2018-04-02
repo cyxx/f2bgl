@@ -272,7 +272,7 @@ bool Game::doMenu() {
 					loadGameState(_saveLoadSlots[saveSlot].num);
 					// game state loaded, return to the game
 					setGameStateLoad(saveSlot);
-					// and do not resume level music
+					// and do not resume level music (done in saveload)
 					_resumeMusic = false;
 					return false;
 				}
