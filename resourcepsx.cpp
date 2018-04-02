@@ -1,15 +1,16 @@
 
 #include "resourcepsx.h"
 
-void ResourcePsx::loadLevelData(int level, int resType) {
-	// PSX datafiles are 1-indexed
-	++level;
+static const char *_levels[] = {
+	"1", "2a", "2b", "2c", "3", "4a", "4b", "4c", "5a", "5b", "5c", "6a", "6b", 0
+};
 
+void ResourcePsx::loadLevelData(int level, int resType) {
 	char name[16];
 	switch (resType) {
 	case kResTypePsx_VRM: {
-			snprintf(name, sizeof(name), "level%d.vrm", level);
-			File *fp = fileOpenPsx(name, kFileType_PSX_LEVELDATA, level);
+			snprintf(name, sizeof(name), "level%s.vrm", _levels[level]);
+			File *fp = fileOpenPsx(name, kFileType_PSX_LEVELDATA, level + 1);
 			if (fp) {
 				fileReadUint32LE(fp);
 				int count = 0;
