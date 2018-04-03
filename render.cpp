@@ -155,7 +155,6 @@ Render::Render(const RenderParams *params) {
 	_aspectRatio = 1.;
 	_screenshotBuf = 0;
 	memset(&_overlay, 0, sizeof(_overlay));
-	_overlay.buf = (uint8_t *)calloc(kOverlayWidth * kOverlayHeight, sizeof(uint8_t));
 	_overlay.r = _overlay.g = _overlay.b = 255;
 	_viewport.changed = true;
 	_viewport.pw = 256;
@@ -195,7 +194,6 @@ Render::Render(const RenderParams *params) {
 
 Render::~Render() {
 	free(_screenshotBuf);
-	free(_overlay.buf);
 }
 
 void Render::flushCachedTextures() {
@@ -459,7 +457,7 @@ void Render::drawRectangle(int x, int y, int w, int h, int color) {
 	emitQuad2i(x, y, w, h);
 }
 
-void Render::copyToOverlay(int x, int y, const uint8_t *data, const uint8_t *pal, int w, int h) {
+void Render::copyToOverlayLut(int x, int y, const uint8_t *data, const uint8_t *pal, int w, int h) {
 	assert(_overlay.tex);
 	assert(x + w <= _overlay.tex->bitmapW);
 	assert(y + h <= _overlay.tex->bitmapH);
@@ -474,7 +472,7 @@ void Render::copyToOverlay(int x, int y, const uint8_t *data, const uint8_t *pal
 			data += w;
 		}
 	}
-	_overlay.clut = pal;
+	_textureCache.updateTexture(_overlay.tex, _overlay.buf, _overlay.tex->bitmapW, _overlay.tex->bitmapH, pal);
 }
 
 void Render::setIgnoreDepth(bool ignoreDepth) {
@@ -511,12 +509,17 @@ void Render::resizeOverlay(int w, int h) {
 		_textureCache.destroyTexture(_overlay.tex);
 		_overlay.tex = 0;
 	}
+	if (_overlay.buf) {
+		free(_overlay.buf);
+		_overlay.buf = 0;
+	}
 	if (w == 0 || h == 0) {
 		return;
 	}
-	assert(w * h <= kOverlayWidth * kOverlayHeight);
-	memset(_overlay.buf, 0, kOverlayWidth * kOverlayHeight);
-	_overlay.tex = _textureCache.createTexture(_overlay.buf, w, h);
+	_overlay.buf = (uint8_t *)calloc(w * h, sizeof(uint8_t));
+	if (_overlay.buf) {
+		_overlay.tex = _textureCache.createTexture(_overlay.buf, w, h);
+	}
 }
 
 void Render::setPaletteScale(bool greyScale, int rgbScale) {
@@ -668,7 +671,6 @@ void Render::drawOverlay() {
 	glLoadIdentity();
 
 	if (hasOverlayTexture) {
-		_textureCache.updateTexture(_overlay.tex, _overlay.buf, _overlay.tex->bitmapW, _overlay.tex->bitmapH, _overlay.clut);
 		glColor4ub(255, 255, 255, 255);
 		glEnable(GL_TEXTURE_2D);
 		glBindTexture(GL_TEXTURE_2D, _overlay.tex->id);
