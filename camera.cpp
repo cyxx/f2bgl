@@ -30,6 +30,8 @@ int Game::getClosestAngle(int a, int x, int z, int l, int r, int fl) {
 	if (fl == 0) {
 		rotateObserver(x, z, &x1, &z1);
 	} else {
+		const int angle = a;
+		int counter = 0;
 		do {
 			rotateObserver(x, z, &x1, &z1);
 			if (z1 < 0) {
@@ -46,7 +48,11 @@ int Game::getClosestAngle(int a, int x, int z, int l, int r, int fl) {
 			_ySinObserver = g_sin[_yRotObserver] * 2;
 			_yInvSinObserver = -_ySinObserver;
 			_yInvCosObserver =  _yCosObserver;
-		} while (ABS(x1) > 4);
+			++counter;
+		} while (ABS(x1) > 4 && counter < 8);
+		if (counter == 8) {
+			warning("getClosestAngle() too many iterations for x1 %d angle %d,%d", x1, angle, a);
+		}
 	}
 	a += x1;
 	a &= 1023;
