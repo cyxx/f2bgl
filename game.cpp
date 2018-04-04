@@ -20,6 +20,8 @@ Game::Game(Render *render, const GameParams *params)
 	memset(&_drawCharBuf, 0, sizeof(_drawCharBuf));
 	memset(&_drawNumber, 0, sizeof(_drawNumber));
 
+	_displayPsxLevelLoadingScreen = -1;
+
 	_ticks = 0;
 	_level = 0;
 	_skillLevel = kSkillNormal;
@@ -1153,6 +1155,27 @@ void Game::init() {
 	initLevel();
 }
 
+bool Game::displayPsxLevelLoadingScreen() {
+	switch (_displayPsxLevelLoadingScreen) {
+	case 1:
+		_render->resizeOverlay(kVrmLoadingScreenWidth, kVrmLoadingScreenHeight, true);
+		_displayPsxLevelLoadingScreen = 2;
+		// fall-through
+	case 2:
+		_render->copyToOverlay(0, 0, kVrmLoadingScreenWidth, kVrmLoadingScreenHeight, _resPsx._vrmLoadingBitmap, true);
+		break;
+	}
+	const bool present = !inp.enterKey && !inp.spaceKey;
+	inp.enterKey = false;
+	inp.spaceKey = false;
+	if (!present) {
+		_render->resizeOverlay(0, 0);
+		_displayPsxLevelLoadingScreen = 0;
+		_resPsx.unloadLevelData(kResTypePsx_VRM);
+	}
+	return present;
+}
+
 void Game::initLevel(bool keepInventoryObjects) {
 	debug(kDebug_GAME, "Game::initLevel() level %d keepInventory %d", _level, keepInventoryObjects);
 
@@ -1168,7 +1191,10 @@ void Game::initLevel(bool keepInventoryObjects) {
 	clearLevelData();
 
 	if (g_hasPsx) {
-		// _resPsx.loadLevelData(_level, kResTypePsx_VRM);
+		_resPsx.loadLevelData(_level, kResTypePsx_VRM);
+		if (_resPsx._vrmLoadingBitmap) {
+			_displayPsxLevelLoadingScreen = 1;
+		}
 	}
 
 	if (_params.playDemo) {

@@ -471,6 +471,7 @@ struct Game {
 	bool _changeLevel;
 	int _room, _roomPrev;
 	bool _endGame;
+	int _displayPsxLevelLoadingScreen;
 	int _mainLoopCurrentMode;
 	int _conradHit;
 
@@ -669,6 +670,7 @@ struct Game {
 	void updateSceneTextures();
 	void initScene();
 	void init();
+	bool displayPsxLevelLoadingScreen();
 	void initLevel(bool keepInventoryObjects = false);
 	void setupConradObject();
 	void changeRoom(int room);

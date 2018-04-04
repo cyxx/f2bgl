@@ -457,8 +457,12 @@ void Render::drawRectangle(int x, int y, int w, int h, int color) {
 	emitQuad2i(x, y, w, h);
 }
 
-void Render::copyToOverlayLut(int x, int y, const uint8_t *data, const uint8_t *pal, int w, int h) {
+void Render::copyToOverlay(int x, int y, int w, int h, const uint8_t *data, bool rgb, const uint8_t *pal) {
 	assert(_overlay.tex);
+	if (x == 0 && y == 0 && w == _overlay.tex->bitmapW && h == _overlay.tex->bitmapH) {
+		_textureCache.updateTexture(_overlay.tex, data, w, h, rgb, pal);
+		return;
+	}
 	assert(x + w <= _overlay.tex->bitmapW);
 	assert(y + h <= _overlay.tex->bitmapH);
 	const int dstPitch = _overlay.tex->bitmapW;
@@ -472,7 +476,7 @@ void Render::copyToOverlayLut(int x, int y, const uint8_t *data, const uint8_t *
 			data += w;
 		}
 	}
-	_textureCache.updateTexture(_overlay.tex, _overlay.buf, _overlay.tex->bitmapW, _overlay.tex->bitmapH, pal);
+	_textureCache.updateTexture(_overlay.tex, _overlay.buf, _overlay.tex->bitmapW, _overlay.tex->bitmapH, _overlay.rgb, pal);
 }
 
 void Render::setIgnoreDepth(bool ignoreDepth) {
@@ -504,7 +508,7 @@ void Render::setOverlayBlendColor(int r, int g, int b) {
 	_overlay.b = b;
 }
 
-void Render::resizeOverlay(int w, int h) {
+void Render::resizeOverlay(int w, int h, bool rgb) {
 	if (_overlay.tex) {
 		_textureCache.destroyTexture(_overlay.tex);
 		_overlay.tex = 0;
@@ -516,9 +520,11 @@ void Render::resizeOverlay(int w, int h) {
 	if (w == 0 || h == 0) {
 		return;
 	}
-	_overlay.buf = (uint8_t *)calloc(w * h, sizeof(uint8_t));
+	const int colorSize = rgb ? 4 * sizeof(uint8_t) : sizeof(uint8_t);
+	_overlay.rgb = rgb;
+	_overlay.buf = (uint8_t *)calloc(w * h, colorSize);
 	if (_overlay.buf) {
-		_overlay.tex = _textureCache.createTexture(_overlay.buf, w, h);
+		_overlay.tex = _textureCache.createTexture(_overlay.buf, w, h, rgb);
 	}
 }
 

@@ -513,6 +513,10 @@ struct GameStub_F2B : GameStub {
 			} else if (_g->_endGame) {
 				_g->_endGame = false;
 				_g->initLevel();
+			} else if (_g->_displayPsxLevelLoadingScreen) {
+				if (_g->displayPsxLevelLoadingScreen()) {
+					break;
+				}
 			}
 			_g->updateGameInput();
 			_g->doTick();

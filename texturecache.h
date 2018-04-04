@@ -32,7 +32,7 @@ struct TextureCache {
 	void convertTexture(const uint8_t *src, int w, int h, const uint16_t *clut, uint16_t *dst, int dstPitch);
 	Texture *createTexture(const uint8_t *data, int w, int h, bool rgb = false, const uint8_t *pal = 0);
 	void destroyTexture(Texture *);
-	void updateTexture(Texture *, const uint8_t *data, int w, int h, const uint8_t *pal);
+	void updateTexture(Texture *, const uint8_t *data, int w, int h, bool rgb = false, const uint8_t *pal = 0);
 
 	void convertPalette(const uint8_t *src, uint16_t *dst);
 	void setPalette(const uint8_t *pal, bool updateTextures = true);

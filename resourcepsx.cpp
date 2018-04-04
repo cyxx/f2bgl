@@ -2,8 +2,12 @@
 #include "resourcepsx.h"
 
 static const char *_levels[] = {
-	"1", "2a", "2b", "2c", "3", "4a", "4b", "4c", "5a", "5b", "5c", "6a", "6b", 0
+	"1", "2a", "2b", "2c", "3", "4a", "4b", "4c", "5a", "5b", "5c", "6a", "6b"
 };
+
+ResourcePsx::ResourcePsx() {
+	_vrmLoadingBitmap = 0;
+}
 
 void ResourcePsx::loadLevelData(int level, int resType) {
 	char name[16];
@@ -15,14 +19,31 @@ void ResourcePsx::loadLevelData(int level, int resType) {
 				fileReadUint32LE(fp);
 				int count = 0;
 				while (1) {
-					const int w = fileReadUint16LE(fp);
-					const int h = fileReadUint16LE(fp);
+					int w = fileReadUint16LE(fp);
+					int h = fileReadUint16LE(fp);
 					if (fileEof(fp)) {
 						break;
 					}
-					debug(kDebug_INFO, "VRAM %d w %d h %d", count, w, h);
+					debug(kDebug_RESOURCE, "VRAM %d w %d h %d", count, w, h);
 					if (count == 0) {
 						assert(w == 640 && h == 272);
+						_vrmLoadingBitmap = (uint8_t *)malloc(kVrmLoadingScreenWidth * kVrmLoadingScreenHeight * 4);
+						if (_vrmLoadingBitmap) {
+							const int dstPitch = kVrmLoadingScreenWidth * 4;
+							for (int y = 0; y < kVrmLoadingScreenHeight; ++y) {
+								uint8_t *dst = _vrmLoadingBitmap + (kVrmLoadingScreenHeight - 1 - y) * dstPitch;
+								for (int x = 0; x < kVrmLoadingScreenWidth; ++x) {
+									const uint16_t color = fileReadUint16LE(fp);
+									*dst++ = ( color        & 31) << 3;
+									*dst++ = ((color >>  5) & 31) << 3;
+									*dst++ = ((color >> 10) & 31) << 3;
+									*dst++ = 255;
+								}
+							}
+							h -= kVrmLoadingScreenHeight;
+						}
+					} else {
+						assert(w == 256 && h == 256);
 					}
 					fileSetPos(fp, w * h, kFilePosition_CUR);
 					++count;
@@ -30,6 +51,15 @@ void ResourcePsx::loadLevelData(int level, int resType) {
 				fileClose(fp);
 			}
 		}
+		break;
+	}
+}
+
+void ResourcePsx::unloadLevelData(int resType) {
+	switch (resType) {
+	case kResTypePsx_VRM:
+		free(_vrmLoadingBitmap);
+		_vrmLoadingBitmap = 0;
 		break;
 	}
 }

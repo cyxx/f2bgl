@@ -281,14 +281,29 @@ void TextureCache::destroyTexture(Texture *texture) {
 	delete texture;
 }
 
-void TextureCache::updateTexture(Texture *t, const uint8_t *data, int w, int h, const uint8_t *pal) {
+void TextureCache::updateTexture(Texture *t, const uint8_t *data, int w, int h, bool rgb, const uint8_t *pal) {
 	assert(t->bitmapW == w && t->bitmapH == h);
-	memcpy(t->bitmapData, data, w * h);
+	if (rgb) {
+		assert(t->bitmapData == 0);
+	} else {
+		memcpy(t->bitmapData, data, w * h);
+	}
 	uint16_t *texData = (uint16_t *)calloc(t->texW * t->texH, sizeof(uint16_t));
 	if (texData) {
-		uint16_t clut[256];
-		convertPalette(pal, clut);
-		convertTexture(t->bitmapData, t->bitmapW, t->bitmapH, clut, texData, t->texW);
+		if (rgb) {
+			uint16_t *p = texData;
+			for (int y = 0; y < h; ++y) {
+				for (int x = 0; x < w; ++x) {
+					p[x] = _formats[_fmt].convertColor(data[0], data[1], data[2]); data += 4;
+				}
+				p += t->texW;
+			}
+		} else {
+			assert(pal);
+			uint16_t clut[256];
+			convertPalette(pal, clut);
+			convertTexture(t->bitmapData, t->bitmapW, t->bitmapH, clut, texData, t->texW);
+		}
 		glBindTexture(GL_TEXTURE_2D, t->id);
 		glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, t->texW, t->texH, _formats[_fmt].format, _formats[_fmt].type, texData);
 		free(texData);
