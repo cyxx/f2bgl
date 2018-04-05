@@ -1318,7 +1318,7 @@ void Game::playMusic(int mode) {
 				_snd._musicKey = _res._musicKeysTable[_res._levelDescriptionsTable[_level].musicKeys[11]];
 				break;
 			}
-		} else if (_objectsPtrTable[kObjPtrMusic]->specialData[1][21] == 0x4000) {
+		} else if (_objectsPtrTable[kObjPtrMusic]->specialData[1][21] == 1048576) { // SUPER_MORPH
 			_snd._musicKey = _res._musicKeysTable[_res._levelDescriptionsTable[_level].musicKeys[12]];
 		} else {
 			switch (_objectsPtrTable[kObjPtrMusic]->specialData[1][22]) {
