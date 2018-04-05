@@ -1785,7 +1785,7 @@ int Game::executeObjectScript(GameObject *o) {
 	int currentInput = getCurrentInput();
 	uint8_t inputKey0 = _inputsTable[currentInput].inputKey0;
 	_currentObject = o;
-//	objKey = o->objKey;
+	_currentObjectKey = o->objKey;
 	int scriptMsgNum = -1;
 	if (o->msg) {
 		int messagesCount = o->scriptStateData[3];
