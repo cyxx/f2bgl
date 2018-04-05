@@ -163,7 +163,7 @@ struct Resource {
 	void loadENV(File *fp, int dataSize);
 	void loadKeyPaths(File *fp, int dataSize);
 	void loadObjectIndexes(File *fp, int dataSize);
-	void loadObjectText(File *fp, int dataSize);
+	void loadObjectText(File *fp, int dataSize, int levelNum);
 	void loadINM(const char *levelName);
 	void loadTrigo();
 	void loadDEM(File *fp, int dataSize);

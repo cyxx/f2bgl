@@ -58,7 +58,7 @@ char *stringNextToken(char **p) {
 
 void debug(int debugChannel, const char *msg, ...) {
 	if (g_utilDebugMask & debugChannel) {
-		char buf[256];
+		char buf[1024];
 		va_list va;
 		va_start(va, msg);
 		vsprintf(buf, msg, va);

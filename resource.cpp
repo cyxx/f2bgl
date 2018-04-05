@@ -110,11 +110,42 @@ void Resource::loadObjectIndexes(File *fp, int dataSize) {
 	qsort(_objectIndexesTable, _objectIndexesTableCount, sizeof(ResObjectIndex), resCompareIndexByObjectName);
 }
 
-void Resource::loadObjectText(File *fp, int dataSize) {
+void Resource::loadObjectText(File *fp, int dataSize, int levelNum) {
 	free(_objectTextData);
 	_objectTextData = ALLOC<uint8_t>(dataSize);
 	_objectTextDataSize = dataSize;
 	fileRead(fp, _objectTextData, dataSize);
+
+	if (fileLanguage() == kFileLanguage_SP && levelNum == 5) {
+
+		// fix Spanish translation 'DESACTIVADOS' to 'ACTIVADOS'
+		//
+		//  sp : message 0 offset 0x625a value 0 len -43 'PANELES DEL SUELO DESACTIVADOS'
+		//  en : message 0 offset 0x5828 value 0 len -35 'FLOOR PANELS ACTIVATED'
+		//  fr : message 0 offset 0x6035 value 0 len -28 'DALLES ACTIVEES'
+
+		uint8_t *p = _objectTextData + 0x625a;
+		if (READ_LE_UINT32(p + 4) == 1) {
+			if ((int32_t)READ_LE_UINT32(p + 12) == -43) {
+				strcpy((char *)p + 28, "PANELES DEL SUELO ACTIVADOS");
+			}
+		}
+	}
+	if (0) {
+		int offset = 0;
+		while (offset < _objectTextDataSize) {
+			const uint8_t *p = _objectTextData + offset;
+			const int groupSize = READ_LE_UINT32(p); p += 4;
+			const int messagesCount = READ_LE_UINT32(p); p += 4;
+			for (int i = 0; i < messagesCount; ++i) {
+				const uint32_t value = READ_LE_UINT32(p); p += 4;
+				const int32_t len = (int32_t)READ_LE_UINT32(p); p += 4;
+				debug(kDebug_RESOURCE, "message %d offset 0x%x value %d len %d '%s'", i, offset, value, len, &p[12]);
+				p += ABS(len);
+			}
+			offset += groupSize + 4;
+		}
+	}
 }
 
 static int resCompareKeyPaths(const void *p1, const void *p2) {
@@ -471,7 +502,7 @@ void Resource::loadLevelData(const char *levelName, int levelNum) {
 
 	snprintf(filename, sizeof(filename), "%s.dtt", levelName);
 	fp = fileOpen(filename, &dataSize, kFileType_TEXT);
-	loadObjectText(fp, dataSize);
+	loadObjectText(fp, dataSize, levelNum);
 	fileClose(fp);
 }
 
