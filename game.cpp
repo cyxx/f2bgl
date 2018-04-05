@@ -65,7 +65,6 @@ void Game::clearGlobalData() {
 	memset(_changedObjectsTable, 0, sizeof(_changedObjectsTable));
 	_followingObjectsCount = 0;
 	_followingObjectsTable = 0;
-	_currentObjectKey = 0;
 	_conradObjectKey = _worldObjectKey = 0;
 	_currentScriptKey = 0;
 	_newPlayerObject = 0;
@@ -1785,7 +1784,6 @@ int Game::executeObjectScript(GameObject *o) {
 	int currentInput = getCurrentInput();
 	uint8_t inputKey0 = _inputsTable[currentInput].inputKey0;
 	_currentObject = o;
-	_currentObjectKey = o->objKey;
 	int scriptMsgNum = -1;
 	if (o->msg) {
 		int messagesCount = o->scriptStateData[3];
@@ -2308,11 +2306,8 @@ bool Game::updateGlobalPos(int dx, int dy, int dz, int dx0, int dz0, int flag) {
 		if (_updateGlobalPosRefObject) {
 			sendMessage(57, _updateGlobalPosRefObject->objKey);
 			_currentObject = _updateGlobalPosRefObject;
-			int16_t objKeyTmp = _currentObjectKey;
-			_currentObjectKey = _currentObject->objKey;
 			sendMessage(57, o->objKey);
 			_currentObject = o;
-			_currentObjectKey = objKeyTmp;
 		} else {
 			sendMessage(57, o->objKey);
 		}
@@ -4288,7 +4283,7 @@ bool Game::sendMessage(int msg, int16_t destObjKey) {
 				}
 				bool alreadyInList = false;
 				for (GameMessage *m_cur = o->msg; m_cur; m_cur = m_cur->next) {
-					if (m_cur->objKey == _currentObjectKey && m_cur->num == msg) {
+					if (m_cur->objKey == _currentObject->objKey && m_cur->num == msg) {
 						m_cur->ticks = 0;
 						alreadyInList = true;
 						break;

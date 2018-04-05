@@ -366,7 +366,7 @@ static void persistObjects(File *fp, Game &g) {
 	for (int i = 0; i < g._collidingObjectsCount; ++i) {
 		persistGameObjectPtrByKey<M>(fp, g, g._collidingObjectsTable[i]);
 	}
-	persist<M>(fp, g._currentObjectKey);
+	pad<M>(fp, sizeof(int16_t));
 	persist<M>(fp, g._newPlayerObject);
 }
 

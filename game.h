@@ -485,7 +485,6 @@ struct Game {
 	GameObject *_changedObjectsTable[kChangedObjectsTableSize];
 	int _followingObjectsCount;
 	GameFollowingObject *_followingObjectsTable;
-	int16_t _currentObjectKey;
 	int16_t _conradObjectKey, _worldObjectKey;
 	int16_t _currentScriptKey;
 	int16_t _newPlayerObject;
