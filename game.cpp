@@ -2461,8 +2461,8 @@ void Game::setObjectParent(GameObject *o, GameObject *o_parent) {
 		return;
 	}
 	if (o_parent->specialData[1][21] == 128 && o->specialData[1][21] != 8) {
-		if (!_objectsPtrTable[8] && o_parent == _objectsPtrTable[kObjPtrInventaire]->o_child->o_next) {
-			_objectsPtrTable[8] = o;
+		if (!_objectsPtrTable[kObjPtrUtil] && o_parent == _objectsPtrTable[kObjPtrInventaire]->o_child->o_next) {
+			_objectsPtrTable[kObjPtrUtil] = o;
 			if (getMessage(o->objKey, 0, &_tmpMsg)) {
 				o->text = (const char *)_tmpMsg.data;
 			}
@@ -2489,19 +2489,19 @@ void Game::setObjectParent(GameObject *o, GameObject *o_parent) {
 			o_tmp->o_next = o;
 		}
 	} else {
-		if (_objectsPtrTable[8] && o == _objectsPtrTable[8]) {
-			if (o == o->o_parent->o_child && o->o_next) {
-				_objectsPtrTable[8] = 0;
+		if (_objectsPtrTable[kObjPtrUtil] && o == _objectsPtrTable[kObjPtrUtil]) {
+			if (o == o->o_parent->o_child && !o->o_next) {
+				_objectsPtrTable[kObjPtrUtil] = 0;
 				_varsTable[23] = 0;
 			} else {
 				if (o->o_next) {
-					_objectsPtrTable[8] = o->o_next;
+					_objectsPtrTable[kObjPtrUtil] = o->o_next;
 				} else {
-					_objectsPtrTable[8] = o->o_parent->o_child;
+					_objectsPtrTable[kObjPtrUtil] = o->o_parent->o_child;
 				}
-				_varsTable[23] = _objectsPtrTable[8]->objKey;
-				if (getMessage(_objectsPtrTable[8]->objKey, 0, &_tmpMsg)) {
-					_objectsPtrTable[8]->text = (const char *)_tmpMsg.data;
+				_varsTable[23] = _objectsPtrTable[kObjPtrUtil]->objKey;
+				if (getMessage(_objectsPtrTable[kObjPtrUtil]->objKey, 0, &_tmpMsg)) {
+					_objectsPtrTable[kObjPtrUtil]->text = (const char *)_tmpMsg.data;
 				}
 			}
 		}
@@ -4520,8 +4520,8 @@ void Game::drawInfoPanel() {
 			}
 			drawString(xPos + 33, yPos + 27, buf, kFontNameCart, 0);
 		}
-		if (_objectsPtrTable[8]) {
-			drawString(xPos + 33, yPos + 48, _objectsPtrTable[8]->text, kFontNameCart, 0);
+		if (_objectsPtrTable[kObjPtrUtil]) {
+			drawString(xPos + 33, yPos + 48, _objectsPtrTable[kObjPtrUtil]->text, kFontNameCart, 0);
 		}
 	}
 }
