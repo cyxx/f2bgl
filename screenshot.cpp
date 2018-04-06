@@ -118,12 +118,10 @@ void saveTGA(const char *filepath, const uint8_t *rgba, int w, int h, bool thumb
 				count = 0;
 				prevColor = color;
 			}
-			if (count != 0) {
-				fileWriteByte(f, count | 0x80);
-				fileWriteByte(f, (prevColor >> 16) & 255);
-				fileWriteByte(f, (prevColor >>  8) & 255);
-				fileWriteByte(f,  prevColor        & 255);
-			}
+			fileWriteByte(f, count | 0x80);
+			fileWriteByte(f, (prevColor >> 16) & 255);
+			fileWriteByte(f, (prevColor >>  8) & 255);
+			fileWriteByte(f,  prevColor        & 255);
 		}
 		fileClose(f);
 	}
@@ -148,6 +146,10 @@ uint8_t *loadTGA(const char *filepath, int *w, int *h) {
 				int offset = 0;
 				while (offset < bufferSize) {
 					const int count = (fileReadByte(f) & 0x7F) + 1;
+					if (fileEof(f)) {
+						warning("Incomplete TGA file '%s' offset %d size %d", filepath, offset, bufferSize);
+						break;
+					}
 					const int b = fileReadByte(f);
 					const int g = fileReadByte(f);
 					const int r = fileReadByte(f);
