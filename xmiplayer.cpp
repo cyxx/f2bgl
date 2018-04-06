@@ -90,6 +90,7 @@ struct XmiPlayer_WildMidi : XmiPlayer {
 		if (_midiBuffer) {
 			memcpy(_midiBuffer, data, dataSize);
 			_midiHandle = WildMidi_OpenBuffer(_midiBuffer, dataSize);
+			WildMidi_SetOption(_midiHandle, WM_MO_LOOP, WM_MO_LOOP);
 		}
 	}
 
@@ -437,7 +438,7 @@ struct XmiPlayer_FluidSynth : XmiPlayer {
 				break;
 			}
 		}
-		if (_currentXmiEvent >= _xmiParser._eventsCount) {
+		if (_currentXmiEvent >= _xmiParser._eventsCount) { // loop, rewind at the beginning of the song
 			_currentXmiEvent = 0;
 			_currentTick = 0;
 		}
