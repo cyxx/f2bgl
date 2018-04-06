@@ -15,7 +15,8 @@ static const int kHeaderSize = 96;
 // 23 - remove Game._sceneCameraPosTable (read-only data)
 // 24 - lookup _musicKey index
 // 25 - add level.obj crc32
-static const int kSaveVersion = 25;
+// 26 - add file language (messages offsets differ on the language)
+static const int kSaveVersion = 26;
 
 static const char *kLevels[] = { "1", "2a", "2b", "2c", "3", "4a", "4b", "4c", "5a", "5b", "5c", "6a", "6b" };
 
@@ -528,10 +529,11 @@ bool Game::saveGameState(int num) {
 	if (!fp) {
 		return false;
 	}
-	char header[kHeaderSize - sizeof(uint32_t)];
+	char header[kHeaderSize - sizeof(uint32_t) - sizeof(uint32_t)];
 	memset(header, 0, sizeof(header));
 	snprintf(header, sizeof(header), "PC__%4d : %s", kSaveVersion, kSaveText);
 	fileWrite(fp, header, sizeof(header));
+	fileWriteUint32LE(fp, fileLanguage());
 	fileWriteUint32LE(fp, g_level1ObjCrc);
 	_saveVersion = kSaveVersion;
 	// 160x100 thumbnail
@@ -558,7 +560,16 @@ bool Game::loadGameState(int num) {
 		if (_saveVersion >= 25) {
 			const uint32_t level1ObjCrc = READ_LE_UINT32(header + kHeaderSize - 4);
 			if (level1ObjCrc != g_level1ObjCrc) {
-				warning("Invalid datafiles CRC 0x%08x (0x%08x) for savegame #%d", level1ObjCrc, g_level1ObjCrc, num);
+				warning("Incompatible datafiles CRC 0x%08x (0x%08x) for savegame #%d", level1ObjCrc, g_level1ObjCrc, num);
+				fileClose(fp);
+				return false;
+			}
+		}
+		if (_saveVersion >= 26) {
+			const int saveLanguage = READ_LE_UINT32(header + kHeaderSize - 8);
+			const int currentLanguage = fileLanguage();
+			if (saveLanguage != currentLanguage) {
+				warning("Incompatible datafiles language %d (%d) for savegame #%d", saveLanguage, currentLanguage, num);
 				fileClose(fp);
 				return false;
 			}
