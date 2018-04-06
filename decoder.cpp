@@ -16,8 +16,11 @@ void decodeLZSS(const uint8_t *src, uint8_t *dst, int decodedSize) {
 				// LE16 - offset,count - bits == 4
 				const int offset = (src[1] << 4) | (src[0] >> 4);
 				int count = (src[0] & 15) + 2;
-				assert(decodedSize >= count);
 				src += 2;
+				if (count > decodedSize) {
+					warning("Invalid end of stream for compressed LZSS data, size %d count %d", decodedSize, count);
+					count = decodedSize;
+				}
 				decodedSize -= count;
 				while (count-- != 0) {
 					*dst = *(dst - offset - 1);
@@ -41,10 +44,13 @@ void decodeRAC(const uint8_t *src, uint8_t *dst, int decodedSize) {
 				int offset = READ_LE_UINT16(src); src += 2;
 				int count = (offset >> bits) + 2;
 				offset &= (1 << bits) - 1;
-				if (offset == 0) {
+				if (offset == 0) { // end of data marker
 					return;
 				}
-				assert(decodedSize >= count);
+				if (count > decodedSize) {
+					warning("Invalid end of stream for compressed RAC data, size %d count %d", decodedSize, count);
+					count = decodedSize;
+				}
 				decodedSize -= count;
 				while (count-- != 0) {
 					*dst = *(dst - offset);
