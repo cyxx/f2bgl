@@ -20,7 +20,7 @@ Game::Game(Render *render, const GameParams *params)
 	memset(&_drawCharBuf, 0, sizeof(_drawCharBuf));
 	memset(&_drawNumber, 0, sizeof(_drawNumber));
 
-	_displayPsxLevelLoadingScreen = -1;
+	_displayPsxLevelLoadingScreen = 0;
 
 	_ticks = 0;
 	_level = 0;
@@ -1157,6 +1157,7 @@ void Game::init() {
 bool Game::displayPsxLevelLoadingScreen() {
 	switch (_displayPsxLevelLoadingScreen) {
 	case 1:
+		_render->setupProjection(kProj2D);
 		_render->resizeOverlay(kVrmLoadingScreenWidth, kVrmLoadingScreenHeight, true);
 		_displayPsxLevelLoadingScreen = 2;
 		// fall-through
@@ -1164,9 +1165,8 @@ bool Game::displayPsxLevelLoadingScreen() {
 		_render->copyToOverlay(0, 0, kVrmLoadingScreenWidth, kVrmLoadingScreenHeight, _resPsx._vrmLoadingBitmap, true);
 		break;
 	}
-	const bool present = !inp.enterKey && !inp.spaceKey;
-	inp.enterKey = false;
-	inp.spaceKey = false;
+	const bool present = !inp.ctrlKey;
+	inp.ctrlKey = false;
 	if (!present) {
 		_render->resizeOverlay(0, 0);
 		_displayPsxLevelLoadingScreen = 0;
@@ -1189,6 +1189,7 @@ void Game::initLevel(bool keepInventoryObjects) {
 
 	clearLevelData();
 
+	_displayPsxLevelLoadingScreen = 0;
 	if (g_hasPsx) {
 		_resPsx.loadLevelData(_level, kResTypePsx_VRM);
 		if (_resPsx._vrmLoadingBitmap) {
