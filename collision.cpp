@@ -327,7 +327,7 @@ void Game::addObjectToDrawList(CellMap *cell) {
 	}
 }
 
-bool Game::testCollisionSlotRect(GameObject *o1, GameObject *o2) {
+bool Game::testCollisionSlotRect(GameObject *o1, GameObject *o2) const {
 	const int x1_1 = o1->xPosParent + o1->xPos + o1->xFrm1;
 	const int x2_1 = o1->xPosParent + o1->xPos + o1->xFrm2;
 	const int y1_1 = o1->zPosParent + o1->zPos + o1->zFrm1;
@@ -346,7 +346,7 @@ bool Game::testCollisionSlotRect(GameObject *o1, GameObject *o2) {
 	return (x2 > x1 && y2 > y1);
 }
 
-bool Game::testCollisionSlotRect2(GameObject *o1, GameObject *o2, int x, int z) {
+bool Game::testCollisionSlotRect2(GameObject *o1, GameObject *o2, int x, int z) const {
 	const int x1_1 = x + o1->xFrm1;
 	const int x2_1 = x + o1->xFrm2;
 	const int y1_1 = z + o1->zFrm1;
@@ -479,7 +479,7 @@ bool Game::collisionSlotCb5(GameObject *o, CellMap *map, int x, int z, uint32_t 
 	_varsTable[21] = 0;
 	_varsTable[32] = 0;
 	if (map->type != 0) {
-		if ((map->type == 32 && !(o->flags[1] & 0x2000)) || (map->type != 32)) {
+		if ((map->type == 32 && (o->flags[1] & 0x2000) == 0) || (map->type != 32)) {
 			if (!(o->flags[1] & 0x80)) {
 				_updateGlobalPosRefObject = 0;
 				_varsTable[21] = map->type;
@@ -503,35 +503,29 @@ bool Game::collisionSlotCb5(GameObject *o, CellMap *map, int x, int z, uint32_t 
 
 int Game::testObjectCollision2(GameObject *o, int dx1, int dz1, int dx2, int dz2) {
 	CollisionSlot2 slots2[65];
-        slots2[0].box = -1;
-        dx1 <<= 15;
-        dx2 <<= 15;
-        dz1 <<= 15;
-        dz2 <<= 15;
-        o->xFrm1 += dx1;
-        o->xFrm2 += dx2;
-        o->zFrm1 += dz1;
-        o->zFrm2 += dz2;
+	slots2[0].box = -1;
+	dx1 <<= kPosShift;
+	dx2 <<= kPosShift;
+	dz1 <<= kPosShift;
+	dz2 <<= kPosShift;
+	o->xFrm1 += dx1;
+	o->xFrm2 += dx2;
+	o->zFrm1 += dz1;
+	o->zFrm2 += dz2;
 	const int x = o->xPosParent + o->xPos;
 	const int z = o->zPosParent + o->zPos;
-        if (!setCollisionSlotsUsingCallback2(o, x, z, &Game::collisionSlotCb5, 0xFFFFFFFE, slots2)) {
-                o->xFrm1 -= dx1;
-                o->xFrm2 -= dx2;
-                o->zFrm1 -= dz1;
-                o->zFrm2 -= dz2;
-                return -1;
-        }
-        o->xFrm1 -= dx1;
-        o->xFrm2 -= dx2;
-        o->zFrm1 -= dz1;
-        o->zFrm2 -= dz2;
-	return 0;
+	const int ret = !setCollisionSlotsUsingCallback2(o, x, z, &Game::collisionSlotCb5, 0xFFFFFFFE, slots2) ? -1 : 0;
+	o->xFrm1 -= dx1;
+	o->xFrm2 -= dx2;
+	o->zFrm1 -= dz1;
+	o->zFrm2 -= dz2;
+	return ret;
 }
 
 void Game::fixCoordinates(GameObject *o, int dx1, int dz1, int dx2, int dz2, int *fx, int *fz) {
         int t = 4;
-	const int xCol = (o->xFrm2 + (dx2 << 15)) - (o->xFrm1 + (dx1 << 15)) + (t << 15);
-	const int zCol = (o->zFrm2 + (dz2 << 15)) - (o->zFrm1 + (dz1 << 15)) + (t << 15);
+	const int xCol = (o->xFrm2 + (dx2 << kPosShift)) - (o->xFrm1 + (dx1 << kPosShift)) + (t << kPosShift);
+	const int zCol = (o->zFrm2 + (dz2 << kPosShift)) - (o->zFrm1 + (dz1 << kPosShift)) + (t << kPosShift);
 	int x1Prev = o->xFrm1;
 	int x2Prev = o->xFrm2;
 	int z1Prev = o->zFrm1;
@@ -549,30 +543,30 @@ void Game::fixCoordinates(GameObject *o, int dx1, int dz1, int dx2, int dz2, int
 			int dxPrev = dx;
 			int dzPrev = dz;
                         if (!wCol) {
-                                o->xFrm1 -= (1 << 15);
+                                o->xFrm1 -= (1 << kPosShift);
                                 if (testObjectCollision2(o, 0, 0, 0, 0)) {
-                                        o->xFrm1 += (1 << 15);
+                                        o->xFrm1 += (1 << kPosShift);
                                         wCol = 1;
                                 }
                         }
                         if (!eCol) {
-                                o->xFrm2 += (1 << 15);
+                                o->xFrm2 += (1 << kPosShift);
                                 if (testObjectCollision2(o, 0, 0, 0, 0)) {
-                                        o->xFrm2 -= (1 << 15);
+                                        o->xFrm2 -= (1 << kPosShift);
                                         eCol = 1;
                                 }
                         }
                         if (!sCol) {
-                                o->zFrm1 -= (1 << 15);
+                                o->zFrm1 -= (1 << kPosShift);
                                 if (testObjectCollision2(o, 0, 0, 0, 0)) {
-                                        o->zFrm1 += (1 << 15);
+                                        o->zFrm1 += (1 << kPosShift);
                                         sCol = 1;
                                 }
                         }
                         if (!nCol) {
-                                o->zFrm2 += (1 << 15);
+                                o->zFrm2 += (1 << kPosShift);
                                 if (testObjectCollision2(o, 0, 0, 0, 0)) {
-                                        o->zFrm2 -= (1 << 15);
+                                        o->zFrm2 -= (1 << kPosShift);
                                         nCol = 1;
                                 }
 			}
@@ -598,18 +592,18 @@ int Game::testObjectCollision1(GameObject *o, int xFrom, int zFrom, int xTo, int
 	CollisionSlot2 slots2[65];
 	slots2[0].box = -1;
 	int ret = 0;
-	static const int radius = 2 << 15;
-	o->xFrm1 -= radius;
-	o->xFrm2 += radius;
-	o->zFrm1 -= radius;
-	o->zFrm2 += radius;
+	static const int delta = kFollowingMargin << kPosShift;
+	o->xFrm1 -= delta;
+	o->xFrm2 += delta;
+	o->zFrm1 -= delta;
+	o->zFrm2 += delta;
 	bool result = false;
 	const int xDistance = xTo - xFrom;
 	const int zDistance = zTo - zFrom;
 	int xStep, zStep;
 	int x, z, k, k2;
 	if (xDistance != 0 || zDistance != 0) {
-		k = (ABS(xDistance) >= ABS(zDistance)) ? (ABS(xDistance) >> 15) + 1 : (ABS(zDistance) >> 15) + 1;
+		k = (ABS(xDistance) >= ABS(zDistance)) ? (ABS(xDistance) >> kPosShift) + 1 : (ABS(zDistance) >> kPosShift) + 1;
 		xStep = xDistance / k;
 		zStep = zDistance / k;
 		x = xFrom;
@@ -647,20 +641,20 @@ int Game::testObjectCollision1(GameObject *o, int xFrom, int zFrom, int xTo, int
 	if (!result && (o->flags[1] & 0x800) != 0 && getCellMapShr19(x, z)->isDoor) {
 		ret = -1;
 	}
-	o->xFrm1 += radius;
-	o->xFrm2 -= radius;
-	o->zFrm1 += radius;
-	o->zFrm2 -= radius;
+	o->xFrm1 += delta;
+	o->xFrm2 -= delta;
+	o->zFrm1 += delta;
+	o->zFrm2 -= delta;
 	return ret;
 }
 
 void Game::fixCoordinates2(GameObject *o_following, int x1, int z1, int *x2, int *z2, int *x3, int *z3) {
 	const int dx = (*x2 - x1) + (*x2 - *x3);
 	const int dz = (*z2 - z1) + (*z2 - *z3);
-	const int xTo = (*x2 + dx) >> 15;
-	const int zTo = (*z2 + dz) >> 15;
-	int x = (*x2) >> 15;
-	int z = (*z2) >> 15;
+	const int xTo = (*x2 + dx) >> kPosShift;
+	const int zTo = (*z2 + dz) >> kPosShift;
+	int x = (*x2) >> kPosShift;
+	int z = (*z2) >> kPosShift;
 	const int xDistance = xTo - x;
 	const int zDistance = zTo - z;
 	int k = (ABS(xDistance) >= ABS(zDistance)) ? ABS(xDistance) + 1 : ABS(zDistance) + 1;
@@ -668,9 +662,9 @@ void Game::fixCoordinates2(GameObject *o_following, int x1, int z1, int *x2, int
 	const int zStep = zDistance / k;
 	while (k--) {
 		static const uint32_t mask = 0xFFFFFFFE;
-		if (!testObjectCollision1(o_following, x1, z1, x << 15, z << 15, mask) && !testObjectCollision1(o_following, x << 15, z << 15, *x3, *z3, mask)) {
-			*x2 = x << 15;
-			*z2 = z << 15;
+		if (!testObjectCollision1(o_following, x1, z1, x << kPosShift, z << kPosShift, mask) && !testObjectCollision1(o_following, x << kPosShift, z << kPosShift, *x3, *z3, mask)) {
+			*x2 = x << kPosShift;
+			*z2 = z << kPosShift;
 			break;
 		}
 		x += xStep;

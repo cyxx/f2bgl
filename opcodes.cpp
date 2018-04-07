@@ -2020,18 +2020,19 @@ int Game::op_updateFollowingObject(int argc, int32_t *argv) {
 	int *count = &o_follower->customData[10];
 	int xTo = o_followed->xPosParent + o_followed->xPos;
 	int zTo = o_followed->zPosParent + o_followed->zPos;
-	const int x1Col = ((o_follower->xFrm1 - o_followed->xFrm1) >> 15) - 2;
-	const int z1Col = ((o_follower->zFrm1 - o_followed->zFrm1) >> 15) - 2;
-	const int x2Col = ((o_follower->xFrm2 - o_followed->xFrm2) >> 15) + 2;
-	const int z2Col = ((o_follower->zFrm2 - o_followed->zFrm2) >> 15) + 2;
+	const int x1Col = ((o_follower->xFrm1 - o_followed->xFrm1) >> 15) - kFollowingMargin;
+	const int z1Col = ((o_follower->zFrm1 - o_followed->zFrm1) >> 15) - kFollowingMargin;
+	const int x2Col = ((o_follower->xFrm2 - o_followed->xFrm2) >> 15) + kFollowingMargin;
+	const int z2Col = ((o_follower->zFrm2 - o_followed->zFrm2) >> 15) + kFollowingMargin;
 	if (testObjectCollision2(o_followed, x1Col, z1Col, x2Col, z2Col)) {
 		fixCoordinates(o_followed, x1Col, z1Col, x2Col, z2Col, &xTo, &zTo);
 	}
+	static const uint32_t mask = 0xFFFFFFFE;
 	switch (*count) {
 	case -1: {
 			int xFrom = o_follower->xPosParent + o_follower->xPos;
 			int zFrom = o_follower->zPosParent + o_follower->zPos;
-			if (!testObjectCollision1(o_follower, xFrom, zFrom, xTo, zTo, 0xFFFFFFFE) || _varsTable[32] != 0) {
+			if (!testObjectCollision1(o_follower, xFrom, zFrom, xTo, zTo, mask) || _varsTable[32] != 0) {
 				points[0].x = xTo;
 				points[0].z = zTo;
 				*count = 0;
@@ -2045,7 +2046,7 @@ int Game::op_updateFollowingObject(int argc, int32_t *argv) {
 	case 0: {
 			int xFrom = o_follower->xPosParent + o_follower->xPos;
 			int zFrom = o_follower->zPosParent + o_follower->zPos;
-			if (!testObjectCollision1(o_follower, xFrom, zFrom, xTo, zTo, 0xFFFFFFFE) || _varsTable[32] != 0) {
+			if (!testObjectCollision1(o_follower, xFrom, zFrom, xTo, zTo, mask) || _varsTable[32] != 0) {
 				points[0].x = xTo;
 				points[0].z = zTo;
 				_currentObject->setData(specx, points[0].x);
@@ -2061,7 +2062,7 @@ int Game::op_updateFollowingObject(int argc, int32_t *argv) {
 	default: {
 			int xFrom = o_follower->xPosParent + o_follower->xPos;
 			int zFrom = o_follower->zPosParent + o_follower->zPos;
-			if (!testObjectCollision1(o_follower, xFrom, zFrom, xTo, zTo, 0xFFFFFFFE) || _varsTable[32] != 0) {
+			if (!testObjectCollision1(o_follower, xFrom, zFrom, xTo, zTo, mask) || _varsTable[32] != 0) {
 				points[0].x = xTo;
 				points[0].z = zTo;
 				*count = 0;
@@ -2072,7 +2073,7 @@ int Game::op_updateFollowingObject(int argc, int32_t *argv) {
 				for (int i = 0; i < *count - 1; i++) {
 					xFrom = points[i].x;
 					zFrom = points[i].z;
-					if (!testObjectCollision1(o_follower, xFrom, zFrom, xTo, zTo, 0xFFFFFFFE) || _varsTable[32] != 0) {
+					if (!testObjectCollision1(o_follower, xFrom, zFrom, xTo, zTo, mask) || _varsTable[32] != 0) {
 						points[i + 1].x = xTo;
 						points[i + 1].z = zTo;
 						*count = i + 1;
@@ -2083,7 +2084,7 @@ int Game::op_updateFollowingObject(int argc, int32_t *argv) {
 				if (!flag) {
 					xFrom = points[*count - 1].x;
 					zFrom = points[*count - 1].z;
-					if (!testObjectCollision1(o_follower, xFrom, zFrom, xTo, zTo, 0xFFFFFFFE) || _varsTable[32] != 0) {
+					if (!testObjectCollision1(o_follower, xFrom, zFrom, xTo, zTo, mask) || _varsTable[32] != 0) {
 						points[*count].x = xTo;
 						points[*count].z = zTo;
 					} else {
@@ -2097,7 +2098,7 @@ int Game::op_updateFollowingObject(int argc, int32_t *argv) {
 				}
 				xFrom = o_follower->xPosParent + o_follower->xPos;
 				zFrom = o_follower->zPosParent + o_follower->zPos;
-				if (!testObjectCollision1(o_follower, xFrom, zFrom, points[1].x, points[1].z, 0xFFFFFFFE) || _varsTable[32] != 0) {
+				if (!testObjectCollision1(o_follower, xFrom, zFrom, points[1].x, points[1].z, mask) || _varsTable[32] != 0) {
 					for (int i = 0; i <= *count; i++) {
 						points[i].x = points[i + 1].x;
 						points[i].z = points[i + 1].z;

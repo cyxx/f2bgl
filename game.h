@@ -78,6 +78,7 @@ enum {
 	kSaveLoadTexKey = 10000,
 	kSaveLoadSlots = 8,
 	kPlayerInputPointersCount = 4,
+	kFollowingMargin = 2,
 	kTexKeyBlob = 20000,
 	kTexKeyWall = 30000,
 };
@@ -771,8 +772,8 @@ struct Game {
 	bool setCollisionSlotsUsingCallback2(GameObject *o, int x, int z, CollisionSlotCallbackType2 callback, uint32_t a, CollisionSlot2 *slot2);
 	bool setCollisionSlotsUsingCallback3(GameObject *o, int x, int z, CollisionSlotCallbackType3 callback, uint32_t a, int b, CollisionSlot2 *slot2);
 	void addObjectToDrawList(CellMap *cell);
-	bool testCollisionSlotRect(GameObject *o1, GameObject *o2);
-	bool testCollisionSlotRect2(GameObject *o1, GameObject *o2, int x, int z);
+	bool testCollisionSlotRect(GameObject *o1, GameObject *o2) const;
+	bool testCollisionSlotRect2(GameObject *o1, GameObject *o2, int x, int z) const;
 	bool collisionSlotCb3(GameObject *o, CellMap *cell, int x, int z, uint32_t a);
 	bool collisionSlotCb4(GameObject *o, CellMap *cell, int x, int z, uint32_t a, int b);
 	void updateCurrentObjectCollisions();
