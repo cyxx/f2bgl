@@ -779,7 +779,7 @@ struct Game {
 	bool collisionSlotCb5(GameObject * ptr_object, CellMap *map, int x, int z, uint32_t mask8);
 	int testObjectCollision2(GameObject *o, int dx1, int dz1, int dx2, int dz2);
 	void fixCoordinates(GameObject *o, int dx1, int dz1, int dx2, int dz2, int *fx, int *fz);
-	int testObjectCollision1(GameObject *o, int xFrom, int zFrom, int xTo, int zTo, int mask8);
+	int testObjectCollision1(GameObject *o, int xFrom, int zFrom, int xTo, int zTo, uint32_t mask8);
 	void fixCoordinates2(GameObject *o_following, int x1, int z1, int *x2, int *z2, int *x3, int *z3);
 
 	// icons.cpp

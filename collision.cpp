@@ -209,7 +209,7 @@ bool Game::setCollisionSlotsUsingCallback2(GameObject *o, int x, int z, Collisio
 				int i, mask = xCell | (zCell << 8);
 				for (i = 0; i < 64; ++i) {
 					if (slot2[i].box == -1) {
-						if (xCell < 0 || xCell >= 64 || zCell < 0 || zCell >= 64) {
+						if (xCell < 0 || xCell >= kMapSizeX || zCell < 0 || zCell >= kMapSizeZ) {
 							return false;
 						}
 						slot2[i].box = mask;
@@ -265,7 +265,7 @@ bool Game::setCollisionSlotsUsingCallback3(GameObject *o, int x, int z, Collisio
 				int i, mask = xCell | (zCell << 8);
 				for (i = 0; i < 64; ++i) {
 					if (slot2[i].box == -1) {
-						if (xCell < 0 || xCell >= 64 || zCell < 0 || zCell >= 64) {
+						if (xCell < 0 || xCell >= kMapSizeX || zCell < 0 || zCell >= kMapSizeZ) {
 							return false;
 						}
 						slot2[i].box = mask;
@@ -483,7 +483,7 @@ bool Game::collisionSlotCb5(GameObject *o, CellMap *map, int x, int z, uint32_t 
 			if (!(o->flags[1] & 0x80)) {
 				_updateGlobalPosRefObject = 0;
 				_varsTable[21] = map->type;
-				return -1;
+				return true;
 			}
 		}
 	}
@@ -493,12 +493,12 @@ bool Game::collisionSlotCb5(GameObject *o, CellMap *map, int x, int z, uint32_t 
 		if (obj != o && ((obj->flags[1] & 0x100) != 0 || ((obj->flags[1] & 0x80) != 0 && obj->specialData[1][23] != 57) || (obj->specialData[1][21] == 32 && obj->specialData[1][22] == 1)) && (obj->specialData[1][8] & (o->specialData[1][8] & mask8))) {
 			if (testCollisionSlotRect2(o, obj, x, z)) {
 				_updateGlobalPosRefObject = obj;
-				return -1;
+				return true;
 			}
 		}
 		slot = slot->next;
 	}
-	return 0;
+	return false;
 }
 
 int Game::testObjectCollision2(GameObject *o, int dx1, int dz1, int dx2, int dz2) {
@@ -513,7 +513,7 @@ int Game::testObjectCollision2(GameObject *o, int dx1, int dz1, int dx2, int dz2
         o->zFrm1 += dz1;
         o->zFrm2 += dz2;
 	const int x = o->xPosParent + o->xPos;
-	const int z = o->xPosParent + o->zPos;
+	const int z = o->zPosParent + o->zPos;
         if (!setCollisionSlotsUsingCallback2(o, x, z, &Game::collisionSlotCb5, 0xFFFFFFFE, slots2)) {
                 o->xFrm1 -= dx1;
                 o->xFrm2 -= dx2;
@@ -592,7 +592,7 @@ void Game::fixCoordinates(GameObject *o, int dx1, int dz1, int dx2, int dz2, int
         o->zFrm2 = z2Prev;
 }
 
-int Game::testObjectCollision1(GameObject *o, int xFrom, int zFrom, int xTo, int zTo, int mask8) {
+int Game::testObjectCollision1(GameObject *o, int xFrom, int zFrom, int xTo, int zTo, uint32_t mask8) {
 	int xPrev = -1;
 	int zPrev = -1;
 	CollisionSlot2 slots2[65];
@@ -603,7 +603,7 @@ int Game::testObjectCollision1(GameObject *o, int xFrom, int zFrom, int xTo, int
 	o->xFrm2 += radius;
 	o->zFrm1 -= radius;
 	o->zFrm2 += radius;
-	int result = 0;
+	bool result = false;
 	const int xDistance = xTo - xFrom;
 	const int zDistance = zTo - zFrom;
 	int xStep, zStep;
@@ -631,7 +631,7 @@ int Game::testObjectCollision1(GameObject *o, int xFrom, int zFrom, int xTo, int
 			x = xFrom + (xDistance >> 1);
 			z = zFrom + (zDistance >> 1);
 		}
-		if (!(x == xPrev && z == zPrev)) {
+		if (x != xPrev || z != zPrev) {
 			if (!(result = setCollisionSlotsUsingCallback2(o, x, z, &Game::collisionSlotCb5, mask8, slots2))) {
 				ret = -1;
 			}
