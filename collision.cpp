@@ -194,10 +194,10 @@ bool Game::setCollisionSlotsUsingCallback2(GameObject *o, int x, int z, Collisio
 		if (o->xFrm1 == 0 && o->zFrm1 == 0 && o->xFrm2 == 0 && o->zFrm2 == 0) {
 			return true;
 		}
-		const int x1 = (x + _currentObject->xFrm1) >> 19;
-		const int z1 = (z + _currentObject->zFrm1) >> 19;
-		const int x2 = (x + _currentObject->xFrm2) >> 19;
-		const int z2 = (z + _currentObject->zFrm2) >> 19;
+		const int x1 = (x + o->xFrm1) >> 19;
+		const int z1 = (z + o->zFrm1) >> 19;
+		const int x2 = (x + o->xFrm2) >> 19;
+		const int z2 = (z + o->zFrm2) >> 19;
 		if (slot2[0].box == -1) {
 			hitsCount = 0;
 		} else {
@@ -250,10 +250,10 @@ bool Game::setCollisionSlotsUsingCallback3(GameObject *o, int x, int z, Collisio
 		if (o->xFrm1 == 0 && o->zFrm1 == 0 && o->xFrm2 == 0 && o->zFrm2 == 0) {
 			return true;
 		}
-		const int x1 = (x + _currentObject->xFrm1) >> 19;
-		const int z1 = (z + _currentObject->zFrm1) >> 19;
-		const int x2 = (x + _currentObject->xFrm2) >> 19;
-		const int z2 = (z + _currentObject->zFrm2) >> 19;
+		const int x1 = (x + o->xFrm1) >> 19;
+		const int z1 = (z + o->zFrm1) >> 19;
+		const int x2 = (x + o->xFrm2) >> 19;
+		const int z2 = (z + o->zFrm2) >> 19;
 		if (slot2[0].box == -1) {
 			hitsCount = 0;
 		} else {

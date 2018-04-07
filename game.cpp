@@ -477,10 +477,10 @@ GameObject *Game::setupObjectsHelper(int16_t prevKey, GameObject *o_parent) {
 				o_new->zPosPrev = o_new->zPos = _params.zPosConrad << 19;
 			}
 		}
-		o_new->xFrm1 = READ_LE_UINT32(p + 24);
-		o_new->zFrm1 = READ_LE_UINT32(p + 28);
-		o_new->xFrm2 = READ_LE_UINT32(p + 32);
-		o_new->zFrm2 = READ_LE_UINT32(p + 36);
+		o_new->xFrm1 = (int32_t)READ_LE_UINT32(p + 24);
+		o_new->zFrm1 = (int32_t)READ_LE_UINT32(p + 28);
+		o_new->xFrm2 = (int32_t)READ_LE_UINT32(p + 32);
+		o_new->zFrm2 = (int32_t)READ_LE_UINT32(p + 36);
 		o_new->room = READ_LE_UINT32(p + 176);
 		for (int i = 0; i < 12; ++i) {
 			o_new->customData[i] = READ_LE_UINT32(p + 184 + i * 4);
