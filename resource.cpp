@@ -732,7 +732,7 @@ void Resource::patchCmdData(int levelNum) {
 	}
 
 	//
-	// Conrad mocking voices are conditionned by a NOT rnd ( 20 ) which is very unlikely to occur.
+	// Conrad mocking voices are conditionned by a NOT rnd ( 20 ) which is quite unlikely to occur.
 	//
 	// LEVEL1.CMD  script 835 (0x11E94) - COND NOT rnd ( 20 ) STMT set_obj ( 0, 267, 2 )
 	// LEVEL2.CMD  script 712 (0xFA78)
@@ -747,14 +747,14 @@ void Resource::patchCmdData(int levelNum) {
 	// LEVEL11.CMD script 551 (0xCA64)
 	// LEVEL12.CMD script 778 (0x11628)
 	//
-	// As the voices are in the datafiles, this was probably an oversight. The condition is changed
-	// to not negate the result.
+	// As the voices are in the datafiles, it is possible to re-enable them. The condition is changed to
+	// NOT rnd( 1 ) to always skip the set_obj statement and execute the following voiced statments.
 	//
 
 	for (int i = 0; i < _cmdOffsetsTableCount; ++i) {
 		uint8_t *p = _cmdData + _cmdOffsetsTable[i];
 		if (READ_LE_UINT32(p) == 0x93 && READ_LE_UINT32(p + 4) == 0 && READ_LE_UINT32(p + 8) == 20) {
-			p[0] = 0x13;
+			p[8] = 1;
 			debug(kDebug_RESOURCE, "Found mocking voice check cmd %d", i);
 			_conradVoiceCmdNum = i;
 		}
