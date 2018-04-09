@@ -298,6 +298,10 @@ int fileLanguage() {
 	return _fileLanguage;
 }
 
+int fileVoice() {
+	return _fileVoice;
+}
+
 File *fileOpen(const char *fileName, int *fileSize, int fileType, bool errorIfNotFound) {
 	if (fileType == kFileType_SAVE || fileType == kFileType_LOAD || fileType == kFileType_SCREENSHOT_SAVE || fileType == kFileType_SCREENSHOT_LOAD || fileType == kFileType_CONFIG) {
 		char filePath[MAXPATHLEN];

@@ -15,8 +15,9 @@ static const int kHeaderSize = 96;
 // 23 - remove Game._sceneCameraPosTable (read-only data)
 // 24 - lookup _musicKey index
 // 25 - add level.obj crc32
-// 26 - add file language (messages offsets differ on the language)
-static const int kSaveVersion = 26;
+// 26 - add language datafiles (messages offset differ on the language)
+// 27 - add voice datafiles (messages offset differ on the voice for SP and IT)
+static const int kSaveVersion = 27;
 
 static const char *kLevels[] = { "1", "2a", "2b", "2c", "3", "4a", "4b", "4c", "5a", "5b", "5c", "6a", "6b" };
 
@@ -34,6 +35,22 @@ static const char *kLevelNames[] = {
 	"Reactor Room",
 	"The Master Brain",
 };
+
+static const char *languageString(int language) {
+	switch (language) {
+	case kFileLanguage_EN:
+		return "EN";
+	case kFileLanguage_FR:
+		return "FR";
+	case kFileLanguage_GR:
+		return "GR";
+	case kFileLanguage_SP:
+		return "SP";
+	case kFileLanguage_IT:
+		return "IT";
+	}
+	return "";
+}
 
 enum {
 	kModeSave,
@@ -473,6 +490,9 @@ static void persistResMessageDescription(File *fp, Game &g, ResMessageDescriptio
 
 template <int M>
 static void persistGamePlayerMessage(File *fp, Game &g, GamePlayerMessage &m) {
+	// This could replaced by a call to g->getMessage(m.objKey, m.value, &m.desc) and
+	// would make the savegame data independant from the voice/language setting.
+	// GameObject.text still points to the .dtt buffer and needs to be fixed.
 	persistResMessageDescription<M>(fp, g, m.desc);
 	persist<M>(fp, m.objKey);
 	persist<M>(fp, m.value);
@@ -529,11 +549,12 @@ bool Game::saveGameState(int num) {
 	if (!fp) {
 		return false;
 	}
-	char header[kHeaderSize - sizeof(uint32_t) - sizeof(uint32_t)];
+	char header[kHeaderSize - sizeof(uint32_t) - sizeof(uint16_t) - sizeof(uint16_t)];
 	memset(header, 0, sizeof(header));
 	snprintf(header, sizeof(header), "PC__%4d : %s", kSaveVersion, kSaveText);
 	fileWrite(fp, header, sizeof(header));
-	fileWriteUint32LE(fp, fileLanguage());
+	fileWriteUint16LE(fp, fileLanguage());
+	fileWriteUint16LE(fp, fileVoice());
 	fileWriteUint32LE(fp, g_level1ObjCrc);
 	_saveVersion = kSaveVersion;
 	// 160x100 thumbnail
@@ -566,10 +587,19 @@ bool Game::loadGameState(int num) {
 			}
 		}
 		if (_saveVersion >= 26) {
-			const int saveLanguage = READ_LE_UINT32(header + kHeaderSize - 8);
+			const int saveLanguage = READ_LE_UINT16(header + kHeaderSize - 8);
 			const int currentLanguage = fileLanguage();
 			if (saveLanguage != currentLanguage) {
-				warning("Incompatible datafiles language %d (%d) for savegame #%d", saveLanguage, currentLanguage, num);
+				warning("Incompatible datafiles language %s (%s) for savegame #%d", languageString(saveLanguage), languageString(currentLanguage), num);
+				fileClose(fp);
+				return false;
+			}
+		}
+		if (_saveVersion >= 27) {
+			const int saveVoice = READ_LE_UINT16(header + kHeaderSize - 6);
+			const int currentVoice = fileVoice();
+			if (saveVoice != currentVoice) {
+				warning("Incompatible datafiles voice %s (%s) for savegame #%d", languageString(saveVoice), languageString(currentVoice), num);
 				fileClose(fp);
 				return false;
 			}

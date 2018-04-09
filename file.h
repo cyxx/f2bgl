@@ -47,6 +47,7 @@ extern const char *g_fileSavePath;
 
 bool fileInit(int language, int voice, const char *dataPath, const char *savePath);
 int fileLanguage();
+int fileVoice();
 bool fileExists(const char *fileName, int fileType);
 File *fileOpen(const char *fileName, int *fileSize, int fileType, bool errorIfNotFound = true);
 void fileClose(File *fp);
