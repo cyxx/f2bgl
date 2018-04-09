@@ -618,4 +618,4 @@ extern "C" {
 	GameStub *GameStub_create() {
 		return new GameStub_F2B;
 	}
-};
+}

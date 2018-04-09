@@ -141,7 +141,7 @@ static void persistSceneAnimation(File *fp, SceneAnimation &s) {
 	persist<M>(fp, s.frameIndex);
 	persist<M>(fp, s.frame2Index);
 	persist<M>(fp, s.flags);
-};
+}
 
 template <int M>
 static void persistSceneAnimationState(File *fp, SceneAnimationState &s) {

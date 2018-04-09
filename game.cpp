@@ -3221,7 +3221,7 @@ void Game::drawWall(const Vertex *vertices, int verticesCount, int texture, int 
 				const uint8_t *texData = _spriteCache.getData(spr->key, spr->data);
 				if (maskedWall) { // make every 4 pixels transparent
 					const int texSize = spr->h * spr->w;
-					uint8_t maskedTexData[texSize];
+					uint8_t *maskedTexData = (uint8_t *)alloca(texSize);
 					assert(((spr->h) & 7) == 0);
 					int offset = 0;
 					for (int y = 0; y < spr->h; y += 8) {
