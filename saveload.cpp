@@ -16,7 +16,7 @@ static const int kHeaderSize = 96;
 // 24 - lookup _musicKey index
 // 25 - add level.obj crc32
 // 26 - add language datafiles (messages offset differ on the language)
-// 27 - add voice datafiles (messages offset differ on the voice for SP and IT)
+// 27 - add voice datafiles (messages offset differ on the voice for SP and IT) and remove ResMessageDescription
 static const int kSaveVersion = 27;
 
 static const char *kLevels[] = { "1", "2a", "2b", "2c", "3", "4a", "4b", "4c", "5a", "5b", "5c", "6a", "6b" };
@@ -479,21 +479,10 @@ static void persistOption(File *fp, Game &g) {
 }
 
 template <int M>
-static void persistResMessageDescription(File *fp, Game &g, ResMessageDescription &d) {
-	persistPtr<M>(fp, d.data, g._res._objectTextData);
-	persist<M>(fp, d.frameSync);
-	persist<M>(fp, d.duration);
-	persist<M>(fp, d.xPos);
-	persist<M>(fp, d.yPos);
-	persist<M>(fp, d.font);
-}
-
-template <int M>
 static void persistGamePlayerMessage(File *fp, Game &g, GamePlayerMessage &m) {
-	// This could replaced by a call to g->getMessage(m.objKey, m.value, &m.desc) and
-	// would make the savegame data independant from the voice/language setting.
-	// GameObject.text still points to the .dtt buffer and needs to be fixed.
-	persistResMessageDescription<M>(fp, g, m.desc);
+	if (_saveVersion <= 26 && M == kModeLoad) {
+		pad<kModeLoad>(fp, 16); // sizeof(ResMessageDescription)
+	}
 	persist<M>(fp, m.objKey);
 	persist<M>(fp, m.value);
 	persist<M>(fp, m.w);
@@ -502,6 +491,7 @@ static void persistGamePlayerMessage(File *fp, Game &g, GamePlayerMessage &m) {
 	persist<M>(fp, m.yPos);
 	persist<M>(fp, m.visible);
 	persist<M>(fp, m.crc);
+	g.getMessage(m.objKey, m.value, &m.desc);
 }
 
 template <int M>
