@@ -6,7 +6,9 @@ SDL_LIBS = `sdl2-config --libs`
 
 LIBS = $(SDL_LIBS) -lGL -lz -lWildMidi -lfluidsynth -lm
 
-CXXFLAGS += -Wall -Wno-sign-compare -Wpedantic
+#LTO = -flto
+CXXFLAGS += -Wall -Wno-sign-compare -Wpedantic $(LTO)
+LDFLAGS  += $(LTO)
 
 SRCS = cabinet.cpp camera.cpp collision.cpp cutscene.cpp decoder.cpp file.cpp \
 	font.cpp game.cpp icons.cpp input.cpp installer.cpp inventory.cpp main.cpp menu.cpp mixer.cpp \
@@ -20,7 +22,7 @@ DEPS = $(SRCS:.cpp=.d)
 CXXFLAGS += -MMD $(DEFINES) $(SDL_CFLAGS)
 
 f2bgl: $(OBJS)
-	$(CXX) -o $@ $^ $(LIBS)
+	$(CXX) $(LDFLAGS) -o $@ $^ $(LIBS)
 
 clean:
 	rm -f *.o *.d
