@@ -11,13 +11,14 @@ static const char *kSaveText = "1.00 Aug 25 1995  09:11:45 (c) 1995 Delphine Sof
 static const int kHeaderSize = 96;
 
 // 21 - first version
-// 22 - persists GameObject.text
+// 22 - persist GameObject.text
 // 23 - remove Game._sceneCameraPosTable (read-only data)
 // 24 - lookup _musicKey index
 // 25 - add level.obj crc32
 // 26 - add language datafiles (messages offset differ on the language)
 // 27 - add voice datafiles (messages offset differ on the voice for SP and IT) and remove ResMessageDescription
-static const int kSaveVersion = 27;
+// 28 - persist GameFollowingObject
+static const int kSaveVersion = 28;
 
 static const char *kLevels[] = { "1", "2a", "2b", "2c", "3", "4a", "4b", "4c", "5a", "5b", "5c", "6a", "6b" };
 
@@ -312,7 +313,7 @@ static void persistGameObject(File *fp, Game &g, GameObject *o) {
 }
 
 template <int M>
-static void persisGameFollowingObject(File *fp, GameFollowingObject &o) {
+static void persistGameFollowingObject(File *fp, GameFollowingObject &o) {
 	for (int i = 0; i < ARRAYSIZE(o.points); ++i) {
 		persist<M>(fp, o.points[i].x);
 		persist<M>(fp, o.points[i].z);
@@ -353,6 +354,11 @@ static void persistObjects(File *fp, Game &g) {
 	if (M == kModeLoad) {
 		free(g._followingObjectsTable);
 		g._followingObjectsTable = ALLOC<GameFollowingObject>(g._followingObjectsCount);
+	}
+	if (_saveVersion >= 28) {
+		for (int i = 0; i < g._followingObjectsCount; ++i) {
+			persistGameFollowingObject<M>(fp, g._followingObjectsTable[i]);
+		}
 	}
 	for (int i = 0; i < ARRAYSIZE(g._objectsPtrTable); ++i) {
 		persistGameObjectPtrByKey<M>(fp, g, g._objectsPtrTable[i]);
