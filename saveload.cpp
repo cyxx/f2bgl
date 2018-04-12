@@ -21,21 +21,6 @@ static const int kSaveVersion = 27;
 
 static const char *kLevels[] = { "1", "2a", "2b", "2c", "3", "4a", "4b", "4c", "5a", "5b", "5c", "6a", "6b" };
 
-static const char *kLevelNames[] = {
-	"The Prison",
-	"Morph Base",
-	"Mars Mining Facility",
-	"Venus Space Station",
-	"The Pyramid",
-	"Landing Pad",
-	"Underground",
-	"Morph Mothership",
-	"Earth Base : Command Room",
-	"Earth Base : Dormitory",
-	"Reactor Room",
-	"The Master Brain",
-};
-
 static const char *languageString(int language) {
 	switch (language) {
 	case kFileLanguage_EN:
@@ -567,49 +552,51 @@ bool Game::loadGameState(int num) {
 	}
 	char header[kHeaderSize];
 	fileRead(fp, header, sizeof(header));
-	if (sscanf(header, "PC__%4d", &_saveVersion) == 1 && _saveVersion >= 21) {
-		if (_saveVersion >= 25) {
-			const uint32_t level1ObjCrc = READ_LE_UINT32(header + kHeaderSize - 4);
-			if (level1ObjCrc != g_level1ObjCrc) {
-				warning("Incompatible datafiles CRC 0x%08x (0x%08x) for savegame #%d", level1ObjCrc, g_level1ObjCrc, num);
-				fileClose(fp);
-				return false;
-			}
-		}
-		if (_saveVersion >= 26) {
-			const int saveLanguage = READ_LE_UINT16(header + kHeaderSize - 8);
-			const int currentLanguage = fileLanguage();
-			if (saveLanguage != currentLanguage) {
-				warning("Incompatible datafiles language %s (%s) for savegame #%d", languageString(saveLanguage), languageString(currentLanguage), num);
-				fileClose(fp);
-				return false;
-			}
-		}
-		if (_saveVersion >= 27) {
-			const int saveVoice = READ_LE_UINT16(header + kHeaderSize - 6);
-			const int currentVoice = fileVoice();
-			if (saveVoice != currentVoice) {
-				warning("Incompatible datafiles voice %s (%s) for savegame #%d", languageString(saveVoice), languageString(currentVoice), num);
-				fileClose(fp);
-				return false;
-			}
-		}
-		int level = -1;
-		persist<kModeLoad>(fp, level);
-		debug(kDebug_SAVELOAD, "level %d currentLevel %d", level, _level);
-		if (level != _level) {
-			_level = level;
-			initLevel();
-		}
-		persistGameState<kModeLoad>(fp, *this);
-		_updatePalette = true;
-		const int16_t musicKey = _snd._musicKey;
-		_snd._musicKey = -1;
-		playMusic(_snd._musicMode);
-		debug(kDebug_SAVELOAD, "musicKey %d %d", musicKey, _snd._musicKey);
-	} else {
+	_saveVersion = 0;
+	if (sscanf(header, "PC__%4d", &_saveVersion) != 1 || _saveVersion < 21) {
 		warning("Unexpected savegame #%d version %d", num, _saveVersion);
+		fileClose(fp);
+		return false;
 	}
+	if (_saveVersion >= 25) {
+		const uint32_t level1ObjCrc = READ_LE_UINT32(header + kHeaderSize - 4);
+		if (level1ObjCrc != g_level1ObjCrc) {
+			warning("Incompatible datafiles CRC 0x%08x (0x%08x) for savegame #%d", level1ObjCrc, g_level1ObjCrc, num);
+			fileClose(fp);
+			return false;
+		}
+	}
+	if (_saveVersion >= 26) {
+		const int saveLanguage = READ_LE_UINT16(header + kHeaderSize - 8);
+		const int currentLanguage = fileLanguage();
+		if (saveLanguage != currentLanguage) {
+			warning("Incompatible datafiles language %s (%s) for savegame #%d", languageString(saveLanguage), languageString(currentLanguage), num);
+			fileClose(fp);
+			return false;
+		}
+	}
+	if (_saveVersion >= 27) {
+		const int saveVoice = READ_LE_UINT16(header + kHeaderSize - 6);
+		const int currentVoice = fileVoice();
+		if (saveVoice != currentVoice) {
+			warning("Incompatible datafiles voice %s (%s) for savegame #%d", languageString(saveVoice), languageString(currentVoice), num);
+			fileClose(fp);
+			return false;
+		}
+	}
+	int level = -1;
+	persist<kModeLoad>(fp, level);
+	debug(kDebug_SAVELOAD, "level %d currentLevel %d", level, _level);
+	if (level != _level) {
+		_level = level;
+		initLevel();
+	}
+	persistGameState<kModeLoad>(fp, *this);
+	_updatePalette = true;
+	const int16_t musicKey = _snd._musicKey;
+	_snd._musicKey = -1;
+	playMusic(_snd._musicMode);
+	debug(kDebug_SAVELOAD, "musicKey %d %d", musicKey, _snd._musicKey);
 	fileClose(fp);
 	return true;
 }
@@ -628,16 +615,12 @@ void Game::saveScreenshot(bool saveState, int num) {
 	}
 }
 
-const char *Game::getLevelName(int level) const {
-	if (level >= 0 && level < ARRAYSIZE(kLevelNames)) {
-		return kLevelNames[level];
-	}
-	return 0;
-}
-
 bool Game::hasSavedGameState(int num) const {
-	assert(num < 0);
 	char filename[32];
-	snprintf(filename, sizeof(filename), kMenuFn_s, -num, "sav");
+	if (num < 0) {
+		snprintf(filename, sizeof(filename), kMenuFn_s, -num, "sav");
+	} else {
+		snprintf(filename, sizeof(filename), kFn_s, kLevels[_level], num, "sav");
+	}
 	return fileExists(filename, kFileType_LOAD);
 }
