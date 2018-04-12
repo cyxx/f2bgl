@@ -469,14 +469,6 @@ GameObject *Game::setupObjectsHelper(int16_t prevKey, GameObject *o_parent) {
 		o_new->yPosPrev = o_new->yPos = READ_LE_UINT32(p + 12);
 		o_new->zPosPrev = o_new->zPos = READ_LE_UINT32(p + 16);
 		o_new->pitchPrev = o_new->pitch = READ_LE_UINT32(p + 20);
-		if (strcmp(o_new->name, "conrad") == 0) {
-			if (_params.xPosConrad > 0) {
-				o_new->xPosPrev = o_new->xPos = _params.xPosConrad << 19;
-			}
-			if (_params.zPosConrad > 0) {
-				o_new->zPosPrev = o_new->zPos = _params.zPosConrad << 19;
-			}
-		}
 		o_new->xFrm1 = (int32_t)READ_LE_UINT32(p + 24);
 		o_new->zFrm1 = (int32_t)READ_LE_UINT32(p + 28);
 		o_new->xFrm2 = (int32_t)READ_LE_UINT32(p + 32);
@@ -2691,21 +2683,6 @@ void Game::doTick() {
 				}
 			}
 		}
-#ifdef F2B_DEBUG
-		if (1) {
-			int y = 8;
-			GameObject *o = _objectsPtrTable[kObjPtrConrad];
-			char buf[64];
-			snprintf(buf, sizeof(buf), "conrad.pos %d %d %d pitch %d", o->xPos >> kPosShift, o->zPos >> kPosShift, o->yPos >> kPosShift, o->pitch);
-			drawString(8, y, buf, kFontNormale, 0);
-			y += 8;
-			snprintf(buf, sizeof(buf), "camera.pos %d %d %d pitch %d", _xPosObserver >> kPosShift, _zPosObserver >> kPosShift, _yPosObserver >> kPosShift, _yRotObserver);
-			drawString(8, y, buf, kFontNormale, 0);
-			y += 8;
-			snprintf(buf, sizeof(buf), "%d fps", _render->_framesPerSec);
-			drawString(8, y, buf, kFontNormale, 0);
-		}
-#endif
 		if (_drawNumber.font != 0) {
 			char buf[32];
 			snprintf(buf, sizeof(buf), "%d", _drawNumber.value);

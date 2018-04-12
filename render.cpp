@@ -694,7 +694,6 @@ void Render::drawOverlay() {
 	}
 
 	++_framesCount;
-#ifdef F2B_DEBUG
 	if ((_framesCount & 31) == 0) {
 		struct timeval t1;
 		gettimeofday(&t1, 0);
@@ -704,7 +703,6 @@ void Render::drawOverlay() {
 			_framesPerSec = (int)(1000. * 32 / msecs);
 		}
 	}
-#endif
 }
 
 const uint8_t *Render::captureScreen(int *w, int *h) {

@@ -189,30 +189,27 @@ struct GameStub_F2B : GameStub {
 		g_utilDebugMask = kDebug_INFO;
 		while (1) {
 			static struct option options[] = {
-				{ "datapath",  required_argument, 0, 1 },
-				{ "language",  required_argument, 0, 2 },
-				{ "playdemo",  no_argument,       0, 3 },
-				{ "level",     required_argument, 0, 4 },
-				{ "voice",     required_argument, 0, 5 },
-				{ "subtitles", no_argument,      0, 6 },
-				{ "savepath",  required_argument, 0, 7 },
-				{ "debug",     required_argument, 0, 8 },
-				{ "fullscreen",    no_argument,   0,  9 },
-				{ "fullscreen-ar", no_argument,   0, 10 },
-				{ "alt-level", required_argument, 0, 11 },
-				{ "soundfont", required_argument, 0, 12 },
+				{ "datapath",      required_argument, 0, 1 },
+				{ "language",      required_argument, 0, 2 },
+				{ "playdemo",      no_argument,       0, 3 },
+				{ "level",         required_argument, 0, 4 },
+				{ "voice",         required_argument, 0, 5 },
+				{ "subtitles",     no_argument,       0, 6 },
+				{ "savepath",      required_argument, 0, 7 },
+				{ "debug",         required_argument, 0, 8 },
+				{ "fullscreen",    no_argument,       0, 9 },
+				{ "fullscreen-ar", no_argument,       0, 10 },
+				{ "alt-level",     required_argument, 0, 11 },
+				{ "soundfont",     required_argument, 0, 12 },
 				{ "texturefilter", required_argument, 0, 13 },
 				{ "texturescaler", required_argument, 0, 14 },
-				{ "mouse",     no_argument,       0, 15 },
-				{ "touch",     no_argument,       0, 16 },
-				{ "no-fog",       no_argument,       0, 17 },
-				{ "no-gouraud",   no_argument,       0, 18 },
-				{ "psxpath",      required_argument, 0, 19 },
-#ifdef F2B_DEBUG
-				{ "xpos_conrad",  required_argument, 0, 100 },
-				{ "zpos_conrad",  required_argument, 0, 101 },
-				{ "init_state",   required_argument, 0, 102 },
-#endif
+				{ "mouse",         no_argument,       0, 15 },
+				{ "touch",         no_argument,       0, 16 },
+				{ "no-fog",        no_argument,       0, 17 },
+				{ "no-gouraud",    no_argument,       0, 18 },
+				{ "psxpath",       required_argument, 0, 19 },
+				// debug
+				{ "init-state",    required_argument, 0, 101 },
 				{ 0, 0, 0, 0 }
 			};
 			int index;
@@ -290,14 +287,7 @@ struct GameStub_F2B : GameStub {
 			case 19:
 				_psxDataPath = strdup(optarg);
 				break;
-#ifdef F2B_DEBUG
-			case 100:
-				_params.xPosConrad = atoi(optarg);
-				break;
-			case 101:
-				_params.zPosConrad = atoi(optarg);
-				break;
-			case 102: {
+			case 101: {
 					static struct {
 						const char *name;
 						int state;
@@ -315,7 +305,6 @@ struct GameStub_F2B : GameStub {
 					}
 				}
 				break;
-#endif
 			default:
 				printf("%s\n", USAGE);
 				return -1;

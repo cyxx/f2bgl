@@ -2,12 +2,10 @@
 SDL_CFLAGS = `sdl2-config --cflags`
 SDL_LIBS = `sdl2-config --libs`
 
-#DEFINES = -DF2B_DEBUG
-
 LIBS = $(SDL_LIBS) -lGL -lz -lWildMidi -lfluidsynth -lm
 
 #LTO = -flto
-CXXFLAGS += -Wall -Wno-sign-compare -Wpedantic $(LTO)
+CXXFLAGS += -Wall -Wno-sign-compare -Wpedantic -MMD $(SDL_CFLAGS) $(LTO)
 LDFLAGS  += $(LTO)
 
 SRCS = cabinet.cpp camera.cpp collision.cpp cutscene.cpp decoder.cpp file.cpp \
@@ -18,8 +16,6 @@ SRCS = cabinet.cpp camera.cpp collision.cpp cutscene.cpp decoder.cpp file.cpp \
 
 OBJS = $(SRCS:.cpp=.o)
 DEPS = $(SRCS:.cpp=.d)
-
-CXXFLAGS += -MMD $(DEFINES) $(SDL_CFLAGS)
 
 f2bgl: $(OBJS)
 	$(CXX) $(LDFLAGS) -o $@ $^ $(LIBS)
