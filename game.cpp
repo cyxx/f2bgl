@@ -1149,6 +1149,7 @@ void Game::init() {
 bool Game::displayPsxLevelLoadingScreen() {
 	switch (_displayPsxLevelLoadingScreen) {
 	case 1:
+		_render->clearScreen();
 		_render->setupProjection(kProj2D);
 		_render->resizeOverlay(kVrmLoadingScreenWidth, kVrmLoadingScreenHeight, true);
 		_displayPsxLevelLoadingScreen = 2;
