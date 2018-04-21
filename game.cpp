@@ -12,7 +12,7 @@
 #include "xmiplayer.h"
 
 Game::Game(Render *render, const GameParams *params)
-	: _cut(render, this, &_snd), _snd(&_res), _render(render), _params(*params) {
+	: _cut(render, this, &_snd), _cutPsx(render, &_snd), _snd(&_res), _render(render), _params(*params) {
 
 	_cheats = kCheatAutoReloadGun | kCheatActivateButtonToShoot | kCheatStepWithUpDownInShooting;
 	_gameStateMsg = 0;
@@ -4703,4 +4703,29 @@ void Game::drawSprite(int x, int y, int sprKey) {
 	if (data) {
 		_render->drawSprite(x, y, data, w, h, 0, sprKey);
 	}
+}
+
+bool Game::loadCutscene() {
+	const int cutsceneNum = _cut._numToPlay;
+	assert(cutsceneNum >= 0);
+	if (g_hasPsx) {
+		return _cutPsx.load(cutsceneNum);
+	}
+	return _cut.load(cutsceneNum);
+}
+
+bool Game::updateCutscene(uint32_t ticks) {
+	if (g_hasPsx) {
+		return _cutPsx.play();
+	}
+	bool ret = _cut.update(ticks);
+	if (ret) {
+		_cut._interrupted = inp.spaceKey || inp.enterKey || inp.ctrlKey;
+		const bool stop = inp.escapeKey || (!inp.pointers[0][0].down && inp.pointers[0][1].down);
+		ret = !_cut._interrupted && !stop;
+	}
+	if (!ret) {
+		_cut.unload();
+	}
+	return ret;
 }

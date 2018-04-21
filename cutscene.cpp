@@ -453,12 +453,7 @@ bool Cutscene::play() {
 		updateMessages();
 	}
 	drawFrame();
-	const PlayerInput &inp = _game->inp;
-	// skip all cutscenes
-	_interrupted = inp.spaceKey || inp.enterKey || inp.ctrlKey;
-	// skip current cutscene
-	const bool stop = inp.escapeKey || (!inp.pointers[0][0].down && inp.pointers[0][1].down);
-	return !_interrupted && !stop;
+	return true;
 }
 
 void Cutscene::drawFrame() {

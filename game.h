@@ -8,6 +8,7 @@
 
 #include "util.h"
 #include "cutscene.h"
+#include "cutscenepsx.h"
 #include "resource.h"
 #include "resourcepsx.h"
 #include "sound.h"
@@ -455,6 +456,7 @@ struct Game {
 	Resource _res;
 	ResourcePsx _resPsx;
 	Cutscene _cut;
+	CutscenePsx _cutPsx;
 	Sound _snd;
 	Render *_render;
 	GameParams _params;
@@ -745,6 +747,8 @@ struct Game {
 	void displayTarget(int cx, int cy);
 	int getShootPos(int16_t objKey, int *x, int *y, int *z);
 	void drawSprite(int x, int y, int sprKey);
+	bool loadCutscene();
+	bool updateCutscene(uint32_t ticks);
 
 	// camera.cpp
 	void updateObserverSinCos();

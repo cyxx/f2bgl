@@ -22,6 +22,7 @@ enum FileType {
 	kFileType_SCREENSHOT_SAVE,
 	kFileType_CONFIG,
 	kFileType_PSX_LEVELDATA,
+	kFileType_PSX_VIDEO,
 };
 
 enum FileLanguage {
@@ -30,6 +31,7 @@ enum FileLanguage {
 	kFileLanguage_GR,
 	kFileLanguage_SP,
 	kFileLanguage_IT,
+	kFileLanguage_JP,
 };
 
 enum FilePosition {
@@ -51,7 +53,7 @@ int fileVoice();
 bool fileExists(const char *fileName, int fileType);
 File *fileOpen(const char *fileName, int *fileSize, int fileType, bool errorIfNotFound = true);
 void fileClose(File *fp);
-void fileRead(File *fp, void *buf, int size);
+int fileRead(File *fp, void *buf, int size);
 uint8_t fileReadByte(File *fp);
 uint16_t fileReadUint16LE(File *fp);
 uint32_t fileReadUint32LE(File *fp);
@@ -64,6 +66,7 @@ void fileWriteByte(File *fp, uint8_t value);
 void fileWriteUint16LE(File *fp, uint16_t value);
 void fileWriteUint32LE(File *fp, uint32_t value);
 void fileWriteLine(File *fp, const char *s, ...);
+int fileSize(File *fp);
 bool fileInitPsx(const char *dataPath);
 File *fileOpenPsx(const char *filename, int fileType, int levelNum = -1);
 

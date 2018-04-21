@@ -159,7 +159,7 @@ struct GameStub_F2B : GameStub {
 		// init
 		switch (state) {
 		case kStateCutscene:
-			_g->_cut.load(_g->_cut._numToPlay);
+			_g->loadCutscene();
 			break;
 		case kStateGame:
 			_g->updatePalette();
@@ -470,8 +470,7 @@ struct GameStub_F2B : GameStub {
 		_nextState = _state;
 		switch (_state) {
 		case kStateCutscene:
-			if (!_g->_cut.update(ticks)) {
-				_g->_cut.unload();
+			if (!_g->updateCutscene(ticks)) {
 				int cutsceneNum = _g->_cut._numToPlay;
 				if (!_g->_cut.isInterrupted()) {
 					do {
@@ -480,7 +479,7 @@ struct GameStub_F2B : GameStub {
 							num = getNextCutsceneNum(_g->_cut._numToPlay);
 						}
 						_g->_cut._numToPlay = num;
-					} while (_g->_cut._numToPlay >= 0 && !_g->_cut.load(_g->_cut._numToPlay));
+					} while (_g->_cut._numToPlay >= 0 && !_g->loadCutscene());
 				} else {
 					_g->_cut._numToPlay = -1;
 				}

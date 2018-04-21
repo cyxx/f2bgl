@@ -367,13 +367,14 @@ void fileClose(File *fp) {
 	}
 }
 
-void fileRead(File *fp, void *buf, int size) {
-	int count = fp->read(buf, size);
+int fileRead(File *fp, void *buf, int size) {
+	const int count = fp->read(buf, size);
 	if (count != size) {
 		if (_exitOnError && fp->err()) {
 			error("I/O error on reading %d bytes", size);
 		}
 	}
+	return count;
 }
 
 uint8_t fileReadByte(File *fp) {
@@ -466,25 +467,60 @@ void fileWriteLine(File *fp, const char *s, ...) {
 	fileWrite(fp, buf, strlen(buf));
 }
 
+int fileSize(File *fp) {
+	const int pos = fp->seek(0, SEEK_END);
+	const int size = fp->tell();
+	fp->seek(pos, SEEK_SET);
+	return size;
+}
+
 bool fileInitPsx(const char *dataPath) {
 	_psxDataPath = dataPath;
 	g_hasPsx = true;
 	return g_hasPsx;
 }
 
+static const char *_psxLanguages[] = { "us", "fr", "gr", "sp", "it", "jp" };
+
 File *fileOpenPsx(const char *filename, int fileType, int levelNum) {
+	File *fp = new StdioFile;
 	char path[MAXPATHLEN];
 	switch (fileType) {
 	case kFileType_PSX_LEVELDATA:
 		snprintf(path, sizeof(path), "%s/data%d/%s", _psxDataPath, levelNum, filename);
+		if (fp->open(path, "rb")) {
+			return fp;
+		}
 		break;
+	case kFileType_PSX_VIDEO:
+		if (strlen(filename) != 4) {
+			warning("Invalid PSX video filename '%s'", filename);
+			break;
+		}
+		// voiced videos
+		snprintf(path, sizeof(path), "%s/videos/%s/%s.dps", _psxDataPath, _psxLanguages[_fileLanguage], filename);
+		if (fp->open(path, "rb")) {
+			return fp;
+		}
+		if (_fileLanguage == kFileLanguage_GR) {
+			// german specific videos
+			snprintf(path, sizeof(path), "%s/video2/gr%c%c.dps", _psxDataPath, filename[2], filename[3]);
+			if (fp->open(path, "rb")) {
+				return fp;
+			}
+		}
+		snprintf(path, sizeof(path), "%s/video2/%s.dps", _psxDataPath, filename);
+		if (fp->open(path, "rb")) {
+			return fp;
+		}
+		snprintf(path, sizeof(path), "%s/video/%s.dps", _psxDataPath, filename);
+		if (fp->open(path, "rb")) {
+			return fp;
+		}
 	default:
-		return 0;
+		break;
 	}
-	File *fp = new StdioFile;
-	if (!fp->open(path, "rb")) {
-		delete fp;
-		fp = 0;
-	}
-	return fp;
+	warning("Unable to open '%s' type %d", filename, fileType);
+	delete fp;
+	return 0;
 }
