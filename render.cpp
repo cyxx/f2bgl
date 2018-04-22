@@ -465,15 +465,16 @@ void Render::copyToOverlay(int x, int y, int w, int h, const uint8_t *data, bool
 	}
 	assert(x + w <= _overlay.tex->bitmapW);
 	assert(y + h <= _overlay.tex->bitmapH);
+	const int colorSize = rgb ? 4 : 1;
 	const int dstPitch = _overlay.tex->bitmapW;
-	uint8_t *dst = _overlay.buf + y * dstPitch + x;
+	uint8_t *dst = _overlay.buf + (y * dstPitch + x) * colorSize;
 	if (dstPitch == w) {
-		memcpy(dst, data, w * h);
+		memcpy(dst, data, w * h * colorSize);
 	} else {
 		while (h--) {
-			memcpy(dst, data, w);
-			dst += dstPitch;
-			data += w;
+			memcpy(dst, data, w * colorSize);
+			dst += dstPitch * colorSize;
+			data += w * colorSize;
 		}
 	}
 	_textureCache.updateTexture(_overlay.tex, _overlay.buf, _overlay.tex->bitmapW, _overlay.tex->bitmapH, _overlay.rgb, pal);
@@ -520,7 +521,7 @@ void Render::resizeOverlay(int w, int h, bool rgb) {
 	if (w == 0 || h == 0) {
 		return;
 	}
-	const int colorSize = rgb ? 4 * sizeof(uint8_t) : sizeof(uint8_t);
+	const int colorSize = rgb ? 4 : 1;
 	_overlay.rgb = rgb;
 	_overlay.buf = (uint8_t *)calloc(w * h, colorSize);
 	if (_overlay.buf) {

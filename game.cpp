@@ -4715,10 +4715,7 @@ bool Game::loadCutscene() {
 }
 
 bool Game::updateCutscene(uint32_t ticks) {
-	if (g_hasPsx) {
-		return _cutPsx.play();
-	}
-	bool ret = _cut.update(ticks);
+	bool ret = g_hasPsx ? _cutPsx.play() : _cut.update(ticks);
 	if (ret) {
 		_cut._interrupted = inp.spaceKey || inp.enterKey || inp.ctrlKey;
 		const bool stop = inp.escapeKey || (!inp.pointers[0][0].down && inp.pointers[0][1].down);

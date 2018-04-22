@@ -291,7 +291,8 @@ bool CutscenePsx::play() {
 				memcpy(videoData + currentSector * kVideoDataSize, _sector + kVideoHeaderSize, kVideoDataSize);
 				if (currentSector == videoSectorsCount - 1) {
 					_decoder->decodeMdec(videoData, videoSectorsCount * kVideoDataSize);
-					_render->copyToOverlay(0, 0, _header.w, _header.h, _decoder->_rgba, true);
+					const int y = (kCutscenePsxVideoHeight - _header.h) / 2;
+					_render->copyToOverlay(0, y, _header.w, _header.h, _decoder->_rgba, true);
 					++_frameCounter;
 					free(videoData);
 					videoData = 0;
@@ -340,7 +341,7 @@ bool CutscenePsx::load(int num) {
 
 					_render->clearScreen();
 					_render->setupProjection(kProj2D);
-					_render->resizeOverlay(_header.w, _header.h, true);
+					_render->resizeOverlay(_header.w, kCutscenePsxVideoHeight, true);
 				}
 			}
 		}
