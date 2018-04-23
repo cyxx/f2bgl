@@ -10,8 +10,8 @@
 
 extern "C" {
 #include <libavcodec/avcodec.h>
-extern AVCodec ff_mdec_decoder;
-extern AVCodec ff_adpcm_xa_decoder;
+// extern AVCodec ff_mdec_decoder;
+// extern AVCodec ff_adpcm_xa_decoder;
 }
 
 struct DpsDecoder {
@@ -42,12 +42,9 @@ DpsDecoder::DpsDecoder() {
 
 	_rgba = 0;
 	_w = _h = 0;
-#ifdef _WIN32
 	avcodec_register_all();
-#else
-	avcodec_register(&ff_mdec_decoder);
-	avcodec_register(&ff_adpcm_xa_decoder);
-#endif
+	// avcodec_register(&ff_mdec_decoder);
+	// avcodec_register(&ff_adpcm_xa_decoder);
 }
 
 DpsDecoder::~DpsDecoder() {
@@ -95,18 +92,23 @@ void DpsDecoder::decodeMdec(const uint8_t *data, int size) {
 	AVPacket pkt;
 	av_new_packet(&pkt, size);
 	memcpy(pkt.data, data, size);
+#if LIBAVCODEC_VERSION_MAJOR <= 57
+	int hasFrame = 0;
+	int ret = avcodec_decode_video2(_videoContext, _videoFrame, &hasFrame, &pkt);
+#else
 	int ret = avcodec_send_packet(_videoContext, &pkt);
 	if (!(ret < 0)) {
 		ret = avcodec_receive_frame(_videoContext, _videoFrame);
-		if (!(ret < 0)) {
-			for (int y = 0; y < _videoFrame->height; ++y) {
-				const uint8_t *Y = _videoFrame->data[0] + y * _videoFrame->linesize[0];
-				const uint8_t *U = _videoFrame->data[1] + y / 2 * _videoFrame->linesize[1];
-				const uint8_t *V = _videoFrame->data[2] + y / 2 * _videoFrame->linesize[2];
-				for (int x = 0; x < _videoFrame->width; ++x) {
-					const uint32_t color = yuv420_to_rgba(Y[x], U[x / 2], V[x / 2]);
-					memcpy(_rgba + ((_h - 1 - y) * _w + x) * 4, &color, 4);
-				}
+	}
+#endif
+	if (!(ret < 0)) {
+		for (int y = 0; y < _videoFrame->height; ++y) {
+			const uint8_t *Y = _videoFrame->data[0] + y * _videoFrame->linesize[0];
+			const uint8_t *U = _videoFrame->data[1] + y / 2 * _videoFrame->linesize[1];
+			const uint8_t *V = _videoFrame->data[2] + y / 2 * _videoFrame->linesize[2];
+			for (int x = 0; x < _videoFrame->width; ++x) {
+				const uint32_t color = yuv420_to_rgba(Y[x], U[x / 2], V[x / 2]);
+				memcpy(_rgba + ((_h - 1 - y) * _w + x) * 4, &color, 4);
 			}
 		}
 	}
@@ -133,14 +135,19 @@ void DpsDecoder::decodeXa(const uint8_t *data, int size) {
 	AVPacket pkt;
 	av_new_packet(&pkt, size);
 	memcpy(pkt.data, data, size);
+#if LIBAVCODEC_VERSION_MAJOR <= 57
+	int hasFrame = 0;
+	int ret = avcodec_decode_audio4(_audioContext, _audioFrame, &hasFrame, &pkt);
+#else
 	int ret = avcodec_send_packet(_audioContext, &pkt);
-	while (!(ret < 0)) {
+	if (!(ret < 0)) {
 		ret = avcodec_receive_frame(_audioContext, _audioFrame);
-		if (!(ret < 0)) {
-			const int dataSize = av_get_bytes_per_sample(_audioContext->sample_fmt);
-			// int16_t * 2 (stereo) * _audioFrame->nb_samples
-			warning("DpsDecoder::decodeXa() TODO dataSize %d", dataSize);
-		}
+	}
+#endif
+	if (!(ret < 0)) { // while
+		const int dataSize = av_get_bytes_per_sample(_audioContext->sample_fmt);
+		// int16_t * 2 (stereo) * _audioFrame->nb_samples
+		warning("DpsDecoder::decodeXa() TODO dataSize %d", dataSize);
 	}
 	av_packet_unref(&pkt);
 }
