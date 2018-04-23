@@ -11,14 +11,10 @@
 #include "scaler.h"
 #include "texturecache.h"
 
-static const int kDefaultTexBufSize = 320 * 200;
+static const int kLutTextureBufferSize = 320 * 200;
 
-uint16_t convert_RGBA_5551(int r, int g, int b) {
+static uint16_t convert_RGBA_5551(int r, int g, int b) {
 	return ((r >> 3) << 11) | ((g >> 3) << 6) | ((b >> 3) << 1) | 1;
-}
-
-uint16_t convert_BGRA_1555(int r, int g, int b) {
-	return 0x8000 | ((r >> 3) << 10) | ((g >> 3) << 5) | (b >> 3);
 }
 
 static const struct {
@@ -27,9 +23,6 @@ static const struct {
 	int type;
 	uint16_t (*convertColor)(int, int, int);
 } _formats[] = {
-#ifdef __amigaos4__
-	{ GL_RGB5_A1, GL_BGRA, GL_UNSIGNED_SHORT_1_5_5_5_REV, &convert_BGRA_1555 },
-#endif
 #ifdef USE_GLES
 	{ GL_RGBA, GL_RGBA, GL_UNSIGNED_SHORT_5_5_5_1, &convert_RGBA_5551 },
 #else
@@ -107,7 +100,7 @@ void TextureCache::init(const char *filter, const char *scaler) {
 		}
 	}
 	if (_scalers[_scaler].factor != 1) {
-		_texBuf = (uint16_t *)malloc(kDefaultTexBufSize * sizeof(uint16_t));
+		_texBuf = (uint16_t *)malloc(kLutTextureBufferSize * sizeof(uint16_t));
 	}
 }
 
@@ -186,7 +179,7 @@ void TextureCache::convertTexture(const uint8_t *src, int w, int h, const uint16
 			dst += dstPitch;
 		}
 	} else {
-		assert(w * h <= kDefaultTexBufSize);
+		assert(w * h <= kLutTextureBufferSize);
 		int offset = 0;
 		for (int y = 0; y < h; ++y) {
 			for (int x = 0; x < w; ++x) {

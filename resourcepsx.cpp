@@ -1,5 +1,6 @@
 
 #include "resourcepsx.h"
+#include "textureconvert.h"
 
 static const char *_levels[] = {
 	"1", "2a", "2b", "2c", "3", "4a", "4b", "4c", "5a", "5b", "5c", "6a", "6b"
@@ -33,11 +34,8 @@ void ResourcePsx::loadLevelData(int level, int resType) {
 							for (int y = 0; y < kVrmLoadingScreenHeight; ++y) {
 								uint8_t *dst = _vrmLoadingBitmap + (kVrmLoadingScreenHeight - 1 - y) * dstPitch;
 								for (int x = 0; x < kVrmLoadingScreenWidth; ++x) {
-									const uint16_t color = fileReadUint16LE(fp);
-									*dst++ = ( color        & 31) << 3;
-									*dst++ = ((color >>  5) & 31) << 3;
-									*dst++ = ((color >> 10) & 31) << 3;
-									*dst++ = 255;
+									const uint32_t color = bgr555_to_rgba(fileReadUint16LE(fp));
+									memcpy(dst + x * 4, &color, 4);
 								}
 							}
 							h -= kVrmLoadingScreenHeight;
