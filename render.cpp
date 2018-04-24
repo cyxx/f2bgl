@@ -157,8 +157,8 @@ Render::Render(const RenderParams *params) {
 	memset(&_overlay, 0, sizeof(_overlay));
 	_overlay.r = _overlay.g = _overlay.b = 255;
 	_viewport.changed = true;
-	_viewport.pw = 256;
-	_viewport.ph = 256;
+	_viewport.wScale = 256;
+	_viewport.hScale = 256;
 	_textureCache.init(params->textureFilter, params->textureScaler);
 	_paletteGreyScale = false;
 	_paletteRgbScale = 256;
@@ -458,26 +458,16 @@ void Render::drawRectangle(int x, int y, int w, int h, int color) {
 }
 
 void Render::copyToOverlay(int x, int y, int w, int h, const uint8_t *data, bool rgb, const uint8_t *pal) {
-	assert(_overlay.tex);
-	if (x == 0 && y == 0 && w == _overlay.tex->bitmapW && h == _overlay.tex->bitmapH) {
-		_textureCache.updateTexture(_overlay.tex, data, w, h, rgb, pal);
-		return;
-	}
-	assert(x + w <= _overlay.tex->bitmapW);
-	assert(y + h <= _overlay.tex->bitmapH);
-	const int colorSize = rgb ? 4 : 1;
-	const int dstPitch = _overlay.tex->bitmapW;
-	uint8_t *dst = _overlay.buf + (y * dstPitch + x) * colorSize;
-	if (dstPitch == w) {
-		memcpy(dst, data, w * h * colorSize);
+	_overlay.x = x;
+	_overlay.y = y;
+	_overlay.w = w;
+	_overlay.h = h;
+	if (!_overlay.tex) {
+		_overlay.rgbTex = rgb;
+		_overlay.tex = _textureCache.createTexture(data, w, h, rgb, pal);
 	} else {
-		while (h--) {
-			memcpy(dst, data, w * colorSize);
-			dst += dstPitch * colorSize;
-			data += w * colorSize;
-		}
+		_textureCache.updateTexture(_overlay.tex, data, w, h, rgb, pal);
 	}
-	_textureCache.updateTexture(_overlay.tex, _overlay.buf, _overlay.tex->bitmapW, _overlay.tex->bitmapH, _overlay.rgb, pal);
 }
 
 void Render::setIgnoreDepth(bool ignoreDepth) {
@@ -509,24 +499,15 @@ void Render::setOverlayBlendColor(int r, int g, int b) {
 	_overlay.b = b;
 }
 
-void Render::resizeOverlay(int w, int h, bool rgb) {
-	if (_overlay.tex) {
-		_textureCache.destroyTexture(_overlay.tex);
-		_overlay.tex = 0;
+void Render::resizeOverlay(int w, int h, bool rgb, int displayWidth, int displayHeight) {
+	if (w != _overlay.w || h != _overlay.h || rgb != _overlay.rgbTex) {
+		if (_overlay.tex) {
+			_textureCache.destroyTexture(_overlay.tex);
+			_overlay.tex = 0;
+		}
 	}
-	if (_overlay.buf) {
-		free(_overlay.buf);
-		_overlay.buf = 0;
-	}
-	if (w == 0 || h == 0) {
-		return;
-	}
-	const int colorSize = rgb ? 4 : 1;
-	_overlay.rgb = rgb;
-	_overlay.buf = (uint8_t *)calloc(w * h, colorSize);
-	if (_overlay.buf) {
-		_overlay.tex = _textureCache.createTexture(_overlay.buf, w, h, rgb);
-	}
+	_overlay.displayWidth  = displayWidth  == 0 ? w : displayWidth;
+	_overlay.displayHeight = displayHeight == 0 ? h : displayHeight;
 }
 
 void Render::setPaletteScale(bool greyScale, int rgbScale) {
@@ -567,8 +548,8 @@ void Render::clearScreen() {
 #endif
 	if (_viewport.changed) {
 		_viewport.changed = false;
-		const int vw = _viewport.w * _viewport.pw >> 8;
-		const int vh = _viewport.h * _viewport.ph >> 8;
+		const int vw = _viewport.w * _viewport.wScale >> 8;
+		const int vh = _viewport.h * _viewport.hScale >> 8;
 		const int vx = _viewport.x + (_viewport.w - vw) / 2;
 		const int vy = _viewport.y + (_viewport.h - vh) / 2;
 		glViewport(vx, vy, vw, vh);
@@ -685,7 +666,9 @@ void Render::drawOverlay() {
 		const GLfloat tV = _overlay.tex->v;
 		assert(tU != 0. && tV != 0.);
 		GLfloat uv[] = { 0., 0., tU, 0., tU, tV, 0., tV };
-		emitQuadTex2i(-1, 0, 2, _h, uv);
+		const int y = _overlay.y * _h / _overlay.displayHeight;
+		const int h = _overlay.h * _h / _overlay.displayHeight;
+		emitQuadTex2i(-1, y, 2, h, uv);
 		glDisable(GL_TEXTURE_2D);
 	}
 	if (hasOverlayColor) {

@@ -10,6 +10,7 @@ enum {
 	kAudioHeaderSize = 24,
 	kVideoDataSize = 2016,
 	kVideoHeaderSize = 56,
+	kCutscenePsxVideoWidth = 320,
 	kCutscenePsxVideoHeight = 240,
 };
 

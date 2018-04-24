@@ -1150,7 +1150,6 @@ bool Game::displayPsxLevelLoadingScreen() {
 	switch (_displayPsxLevelLoadingScreen) {
 	case 1:
 		_render->clearScreen();
-		_render->setupProjection(kProj2D);
 		_render->resizeOverlay(kVrmLoadingScreenWidth, kVrmLoadingScreenHeight, true);
 		_displayPsxLevelLoadingScreen = 2;
 		// fall-through
@@ -4436,8 +4435,8 @@ void Game::sendShootMessageHelper(GameObject *o, int xPos, int zPos, int radius,
 void Game::initViewport() {
 	assert(_viewportSize >= 0 && _viewportSize <= kViewportMax);
 	const int scale = (kViewportMax - _viewportSize) * 128 / kViewportMax + 128;
-	_render->_viewport.pw = scale;
-	_render->_viewport.ph = scale;
+	_render->_viewport.wScale = scale;
+	_render->_viewport.hScale = scale;
 	_render->_viewport.changed = true;
 }
 

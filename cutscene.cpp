@@ -423,7 +423,7 @@ bool Cutscene::load(int num) {
 
 bool Cutscene::play() {
 	if (_frameCounter == 0) {
-		_render->resizeOverlay(_fileHdr.videoFrameWidth, kCutsceneDisplayHeight);
+		_render->resizeOverlay(_fileHdr.videoFrameWidth, _fileHdr.videoFrameHeight, false, kCutsceneDisplayWidth, kCutsceneDisplayHeight);
 	}
 	++_frameCounter;
 	if (g_isDemo && _frameCounter == _duration) {

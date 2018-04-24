@@ -342,7 +342,7 @@ bool CutscenePsx::load(int num) {
 
 					_render->clearScreen();
 					_render->setupProjection(kProj2D);
-					_render->resizeOverlay(_header.w, kCutscenePsxVideoHeight, true);
+					_render->resizeOverlay(_header.w, _header.h, true, kCutscenePsxVideoWidth, kCutscenePsxVideoHeight);
 				}
 			}
 		}

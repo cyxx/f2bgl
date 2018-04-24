@@ -40,16 +40,16 @@ struct Render {
 	float _aspectRatio;
 	uint8_t *_screenshotBuf;
 	struct {
-		uint8_t *buf;
-		bool rgb;
+		bool rgbTex;
 		Texture *tex;
+		int x, y, w, h;
+		int displayWidth, displayHeight;
 		int r, g, b;
 	} _overlay;
 	struct {
 		bool changed;
-		int pw, ph;
-		int x, y;
-		int w, h;
+		int wScale, hScale;
+		int x, y, w, h;
 	} _viewport;
 	bool _paletteGreyScale;
 	int _paletteRgbScale;
@@ -86,7 +86,7 @@ struct Render {
 	void endObjectDraw();
 
 	void setOverlayBlendColor(int r, int g, int b);
-	void resizeOverlay(int w, int h, bool rgb = false);
+	void resizeOverlay(int w, int h, bool rgb = false, int displayWidth = 0, int displayHeight = 0);
 	void copyToOverlay(int x, int y, int w, int h, const uint8_t *data, bool rgb = false, const uint8_t *clut = 0);
 
 	void setPaletteScale(bool greyScale, int rgbScale);
