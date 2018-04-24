@@ -486,6 +486,9 @@ File *fileOpenPsx(const char *filename, int fileType, int levelNum) {
 	File *fp = new StdioFile;
 	char path[MAXPATHLEN];
 	switch (fileType) {
+	case kFileType_PSX_IMG:
+		snprintf(path, sizeof(path), "%s/img/%s", _psxDataPath, filename);
+		break;
 	case kFileType_PSX_LEVELDATA:
 		snprintf(path, sizeof(path), "%s/data%d/%s", _psxDataPath, levelNum, filename);
 		if (fp->open(path, "rb")) {
@@ -493,32 +496,41 @@ File *fileOpenPsx(const char *filename, int fileType, int levelNum) {
 		}
 		break;
 	case kFileType_PSX_VIDEO:
-		if (strlen(filename) != 4) {
+		if (strlen(filename) != 8) {
 			warning("Invalid PSX video filename '%s'", filename);
 			break;
 		}
 		// voiced videos
-		snprintf(path, sizeof(path), "%s/videos/%s/%s.dps", _psxDataPath, _psxLanguages[_fileLanguage], filename);
+		snprintf(path, sizeof(path), "%s/videos/%s/%s", _psxDataPath, _psxLanguages[_fileLanguage], filename);
 		if (fp->open(path, "rb")) {
 			return fp;
 		}
 		if (_fileLanguage == kFileLanguage_GR) {
 			// german specific videos
-			snprintf(path, sizeof(path), "%s/video2/gr%c%c.dps", _psxDataPath, filename[2], filename[3]);
+			snprintf(path, sizeof(path), "%s/video2/gr%s", _psxDataPath, &filename[2]);
 			if (fp->open(path, "rb")) {
 				return fp;
 			}
 		}
-		snprintf(path, sizeof(path), "%s/video2/%s.dps", _psxDataPath, filename);
+		snprintf(path, sizeof(path), "%s/video2/%s", _psxDataPath, filename);
 		if (fp->open(path, "rb")) {
 			return fp;
 		}
-		snprintf(path, sizeof(path), "%s/video/%s.dps", _psxDataPath, filename);
+		snprintf(path, sizeof(path), "%s/video/%s", _psxDataPath, filename);
 		if (fp->open(path, "rb")) {
 			return fp;
 		}
+		break;
+	case kFileType_PSX_VOICE:
+		snprintf(path, sizeof(path), "%s/xa_%s/%s", _psxDataPath, _psxLanguages[_fileLanguage], filename);
+		break;
 	default:
 		break;
+	}
+	// fallback, files dumped without directory structure
+	snprintf(path, sizeof(path), "%s/%s", _psxDataPath, filename);
+	if (fp->open(path, "rb")) {
+		return fp;
 	}
 	warning("Unable to open '%s' type %d", filename, fileType);
 	delete fp;

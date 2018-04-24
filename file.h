@@ -21,8 +21,10 @@ enum FileType {
 	kFileType_SCREENSHOT_LOAD,
 	kFileType_SCREENSHOT_SAVE,
 	kFileType_CONFIG,
+	kFileType_PSX_IMG,
 	kFileType_PSX_LEVELDATA,
 	kFileType_PSX_VIDEO,
+	kFileType_PSX_VOICE,
 };
 
 enum FileLanguage {

@@ -164,7 +164,7 @@ CutscenePsx::~CutscenePsx() {
 	_decoder = 0;
 }
 
-static const char *_dpsTable[] = {
+static const char *_namesTable[] = {
 	// 0
 	"moar",
 	"moba",
@@ -238,6 +238,7 @@ static const char *_dpsTable[] = {
 static const uint8_t _cdSync[12] = { 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0x00 };
 
 bool CutscenePsx::readSector() {
+	// mode2 form2 : cdSync (12 bytes) header (4 bytes) subheader (8 bytes) data (2324 bytes) edc (4 bytes)
 	++_sectorCounter;
 	const int count = fileRead(_fp, _sector, sizeof(_sector));
 	return count == kSectorSize && memcmp(_sector, _cdSync, sizeof(_cdSync)) == 0;
@@ -302,29 +303,40 @@ bool CutscenePsx::load(int num) {
 	_frameCounter = 0;
 	_sectorCounter = -1;
 
-	int sectors = 0;
-	_fp = fileOpenPsx(_dpsTable[num], kFileType_PSX_VIDEO);
+	char filename[16];
+	snprintf(filename, sizeof(filename), "%s.dps", _namesTable[num]);
+	_fp = fileOpenPsx(filename, kFileType_PSX_VIDEO);
 	if (_fp) {
 		const int size = fileSize(_fp);
 		if ((size % kSectorSize) != 0) {
-			warning("Unexpected file size (%d bytes) for '%s', not a multiple of a raw CD sector size", size, _dpsTable[num]);
+			warning("Unexpected file size (%d bytes) for '%s', not a multiple of a raw CD sector size", size, filename);
 			fileClose(_fp);
 			_fp = 0;
-		} else if (readSector()) {
+		} else if (!readSector()) {
+			warning("CutscenePsx::load() Invalid first sector");
+			fileClose(_fp);
+			_fp = 0;
+		} else {
 			const uint8_t *header = _sector + 0x18;
 			if (memcmp(header, "DPS", 3) != 0) {
 				warning("CutscenePsx::load() Invalid header");
+				fileClose(_fp);
+				_fp = 0;
 			} else {
 				_header.w = READ_LE_UINT16(header + 0x10);
 				_header.h = READ_LE_UINT16(header + 0x12);
 				_header.framesCount = READ_LE_UINT16(header + 0x1C);
 				_header.stereo = true;
-				for (sectors = 1; sectors < 5; ++sectors) {
+				int sector = 1;
+				for (; sector < 5; ++sector) {
 					if (!readSector()) {
+						warning("CutscenePsx::load() Invalid sector %d", sector);
+						fileClose(_fp);
+						_fp = 0;
 						break;
 					}
 				}
-				if (sectors == 5) {
+				if (sector == 5) {
 					// _decoder->initXa(_header.stereo);
 					_decoder->initMdec(_header.w, _header.h);
 
@@ -335,7 +347,7 @@ bool CutscenePsx::load(int num) {
 			}
 		}
 	}
-	return _fp != 0 && sectors == 5;
+	return _fp != 0;
 }
 
 void CutscenePsx::unload() {
