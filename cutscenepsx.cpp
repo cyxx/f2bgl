@@ -289,13 +289,45 @@ bool CutscenePsx::play() {
 				}
 			}
 		} else if (type == 4) {
-			const bool stereo = (_sector[0x13] & 1) != 0;
-			if (stereo != _header.stereo) {
+			if (_header.xaSampleRate == 0) { // this is the first audio sector, get the format
+				_header.xaStereo = (_sector[0x13] & 1) != 0;
+				_header.xaSampleRate = (_sector[0x13] & 4) != 0 ? 18900 : 37800;
+				_header.xaBits = (_sector[0x13] & 0x10) != 0 ? 4 : 8;
+				if (!_header.xaStereo || _header.xaSampleRate != 37800 || _header.xaBits != 8) {
+					warning("CutscenePsx::play() Unsupported audio format, stereo %d bits %d freq %d", _header.xaStereo, _header.xaBits, _header.xaSampleRate);
+					err = true;
+					break;
+				}
+				_decoder->initXa(_header.xaStereo);
 			}
 			// _decoder->decodeXa(_sector + kAudioHeaderSize, kAudioDataSize);
 		}
 	} while (videoCurrentSector != videoSectorsCount - 1 && !fileEof(_fp) && !err);
 	return !err;
+}
+
+bool CutscenePsx::readHeader(DpsHeader *hdr) {
+	if (!readSector()) {
+		warning("CutscenePsx::readHeader() Invalid first sector");
+	} else {
+		const uint8_t *header = _sector + 0x18;
+		if (memcmp(header, "DPS", 3) != 0) {
+			warning("CutscenePsx::readHeader() Invalid header signature");
+		} else {
+			hdr->w = READ_LE_UINT16(header + 0x10);
+			hdr->h = READ_LE_UINT16(header + 0x12);
+			hdr->framesCount = READ_LE_UINT16(header + 0x1C);
+			int sector = 1;
+			for (; sector < 5; ++sector) {
+				if (!readSector()) {
+					warning("CutscenePsx::readHeader() Invalid sector %d", sector);
+					break;
+				}
+			}
+			return sector == 5;
+		}
+	}
+	return false;
 }
 
 bool CutscenePsx::load(int num) {
@@ -312,39 +344,14 @@ bool CutscenePsx::load(int num) {
 			warning("Unexpected file size (%d bytes) for '%s', not a multiple of a raw CD sector size", size, filename);
 			fileClose(_fp);
 			_fp = 0;
-		} else if (!readSector()) {
-			warning("CutscenePsx::load() Invalid first sector");
+		} else if (!readHeader(&_header)) {
+			warning("Unable to read cutscene file header");
 			fileClose(_fp);
 			_fp = 0;
 		} else {
-			const uint8_t *header = _sector + 0x18;
-			if (memcmp(header, "DPS", 3) != 0) {
-				warning("CutscenePsx::load() Invalid header");
-				fileClose(_fp);
-				_fp = 0;
-			} else {
-				_header.w = READ_LE_UINT16(header + 0x10);
-				_header.h = READ_LE_UINT16(header + 0x12);
-				_header.framesCount = READ_LE_UINT16(header + 0x1C);
-				_header.stereo = true;
-				int sector = 1;
-				for (; sector < 5; ++sector) {
-					if (!readSector()) {
-						warning("CutscenePsx::load() Invalid sector %d", sector);
-						fileClose(_fp);
-						_fp = 0;
-						break;
-					}
-				}
-				if (sector == 5) {
-					// _decoder->initXa(_header.stereo);
-					_decoder->initMdec(_header.w, _header.h);
-
-					_render->clearScreen();
-					_render->setupProjection(kProj2D);
-					_render->resizeOverlay(_header.w, _header.h, true, kCutscenePsxVideoWidth, kCutscenePsxVideoHeight);
-				}
-			}
+			_decoder->initMdec(_header.w, _header.h);
+			_render->clearScreen();
+			_render->resizeOverlay(_header.w, _header.h, true, kCutscenePsxVideoWidth, kCutscenePsxVideoHeight);
 		}
 	}
 	return _fp != 0;

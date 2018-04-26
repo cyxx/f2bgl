@@ -21,7 +21,9 @@ struct Sound;
 struct DpsHeader {
 	uint16_t w, h;
 	uint16_t framesCount;
-	bool stereo;
+	uint8_t xaStereo;
+	uint16_t xaSampleRate;
+	uint8_t xaBits;
 };
 
 struct CutscenePsx {
@@ -39,6 +41,7 @@ struct CutscenePsx {
 
 	bool readSector();
 	bool play();
+	bool readHeader(DpsHeader *header);
 	bool load(int num);
 	void unload();
 };

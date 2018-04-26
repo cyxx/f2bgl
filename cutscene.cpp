@@ -404,7 +404,7 @@ bool Cutscene::load(int num) {
 		return false;
 	}
 	if (!g_isDemo && _fileHdr.soundFrameSize != 0 && (_fileHdr.soundStereo != 0 || _fileHdr.soundBits != 16 || _fileHdr.soundFreq != 22050)) {
-		warning("Cutscene::load() Unsupported sound format %d/%d/%d", _fileHdr.soundStereo, _fileHdr.soundBits, _fileHdr.soundFreq);
+		warning("Cutscene::load() Unsupported sound format, stereo %d bits %d freq %d", _fileHdr.soundStereo, _fileHdr.soundBits, _fileHdr.soundFreq);
 		fileClose(_fp); _fp = 0;
 		return false;
 	}
