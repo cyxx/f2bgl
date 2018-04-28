@@ -413,7 +413,7 @@ bool Cutscene::load(int num) {
 	}
 	_frameReadBuffer = (uint8_t *)malloc(_fileHdr.videoFrameSize + 1024);
 	_soundReadBuffer = 0;
-	_snd->_mix.playQueue(4);
+	_snd->_mix.playQueue(4, kMixerQueueType_D16);
 	_frameCounter = 0;
 	_msgsCount = 0;
 	memset(&_msgs, 0, sizeof(_msgs));

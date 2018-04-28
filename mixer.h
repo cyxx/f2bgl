@@ -10,12 +10,18 @@
 
 enum {
 	kMaxSoundsCount = 32,
-	kMaxQueuesCount = 1
+	kMaxQueuesCount = 1,
+	kFracBits = 10,
 };
 
 enum {
 	kDefaultVolume = 127,
 	kDefaultPan = 64 // 0,128 range
+};
+
+enum {
+	kMixerQueueType_D16,
+	kMixerQueueType_XA, // stereo 37800Hz
 };
 
 struct MixerSound;
@@ -48,7 +54,7 @@ struct Mixer {
 	bool isWavPlaying(uint32_t) const;
 	void loopWav(uint32_t, int count);
 
-	void playQueue(int preloadSize);
+	void playQueue(int preloadSize, int type);
 	void appendToQueue(const uint8_t *buf, int size);
 	void stopQueue();
 

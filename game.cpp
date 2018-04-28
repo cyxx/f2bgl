@@ -4721,7 +4721,7 @@ bool Game::updateCutscene(uint32_t ticks) {
 		ret = !_cut._interrupted && !stop;
 	}
 	if (!ret) {
-		_cut.unload();
+		g_hasPsx ? _cutPsx.unload() : _cut.unload();
 	}
 	return ret;
 }

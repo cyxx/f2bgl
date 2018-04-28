@@ -66,6 +66,79 @@ struct Delta16Decoder {
 	}
 };
 
+static int8_t sext8(uint8_t x, int bits) {
+	const int shift = 8 - bits;
+	return ((int8_t)(x << shift)) >> shift;
+}
+
+struct XaDecoder {
+	int _pcmL0, _pcmL1;
+	int _pcmR0, _pcmR1;
+
+	uint8_t _data[128];
+	int _dataSize;
+	int16_t _samples[224];
+	int _samplesSize;
+
+	XaDecoder() {
+		reset();
+		memset(_data, 0, sizeof(_data));
+		_dataSize = 0;
+		memset(_samples, 0, sizeof(_samples));
+		_samplesSize = 0;
+	}
+
+	void reset() {
+		_pcmL0 = _pcmL1 = 0;
+		_pcmR0 = _pcmR1 = 0;
+	}
+
+	int decode(const uint8_t *src, int size) {
+		const int count = _dataSize + size;
+		if (count >= 128) {
+			size = 128 - _dataSize;
+		}
+		memcpy(_data + _dataSize, src, size);
+		_dataSize += size;
+		if (_dataSize == 128) {
+			decodeGroup_stereo(_data, _samples);
+			_dataSize = 0;
+			_samplesSize = 224;
+		}
+		assert(_dataSize < 128);
+		return size;
+	}
+
+	// src points to a 128 bytes buffer, dst to a 224 bytes buffer
+	void decodeGroup_stereo(const uint8_t *src, int16_t *dst) {
+		static const int16_t K0_1024[] = { 0, 960, 1840, 1568 };
+		static const int16_t K1_1024[] = { 0,   0, -832, -880 };
+		for (int i = 0; i < 4; ++i) {
+			const int shiftL = 12 - (src[4 + i * 2] & 15);
+			assert(shiftL >= 0);
+			const int filterL = src[4 + i * 2] >> 4;
+			assert(filterL < 4);
+			const int shiftR = 12 - (src[5 + i * 2] & 15);
+			assert(shiftR >= 0);
+			const int filterR = src[5 + i * 2] >> 4;
+			assert(filterR < 4);
+			for (int j = 0; j < 28; ++j) {
+				const uint8_t data = src[16 + i + j * 4];
+				const int tL = sext8(data & 15, 4);
+				const int sL = (tL << shiftL) + ((_pcmL0 * K0_1024[filterL] + _pcmL1 * K1_1024[filterL] + 512) >> 10);
+				_pcmL1 = _pcmL0;
+				_pcmL0 = sL;
+				*dst++ = clipS16(_pcmL0);
+				const int tR = sext8(data >> 4, 4);
+				const int sR = (tR << shiftR) + ((_pcmR0 * K0_1024[filterR] + _pcmR1 * K1_1024[filterR] + 512) >> 10);
+				_pcmR1 = _pcmR0;
+				_pcmR0 = sR;
+				*dst++ = clipS16(_pcmR0);
+                        }
+                }
+        }
+};
+
 struct SoundDataWav {
 	int _bufSize;
 	uint8_t *_buf;
@@ -172,10 +245,14 @@ struct MixerQueueList {
 };
 
 struct MixerQueue {
-	Delta16Decoder decoder;
+	int type;
+	Delta16Decoder d16Decoder;
+	XaDecoder xaDecoder;
 	int size;
 	int preloadSize;
 	MixerQueueList *head;
+	uint32_t offset;
+	uint32_t step;
 };
 
 static void nullMixerLock(int lock) {
@@ -300,13 +377,18 @@ void Mixer::loopWav(uint32_t id, int count) {
 	}
 }
 
-void Mixer::playQueue(int preloadSize) {
+void Mixer::playQueue(int preloadSize, int type) {
 	stopQueue();
 	MixerLock ml(_lock);
 	_queue = new MixerQueue;
 	_queue->preloadSize = preloadSize;
+	_queue->type = type;
 	_queue->size = 0;
 	_queue->head = 0;
+	if (type == kMixerQueueType_XA) {
+		_queue->offset = 0;
+		_queue->step = 2 * (37800 << kFracBits) / _rate; // stereo
+	}
 }
 
 void Mixer::appendToQueue(const uint8_t *buf, int size) {
@@ -372,22 +454,46 @@ void Mixer::mixBuf(int16_t *buf, int len) {
 		_xmiPlayer->readSamples(buf, len);
 	} else if (_queue->size >= _queue->preloadSize) {
 		MixerQueueList *mql = _queue->head;
-		for (int i = 0; mql && i < len; i += 2) {
-			int sample = _queue->decoder.decode(mql->buffer[mql->read]);
-			++mql->read;
-			if (mql->read == 1) {
-				sample = _queue->decoder.decode(mql->buffer[mql->read]);
+		switch (_queue->type) {
+		case kMixerQueueType_D16:
+			for (int i = 0; mql && i < len; i += 2) {
+				int sample = _queue->d16Decoder.decode(mql->buffer[mql->read]);
 				++mql->read;
+				if (mql->read == 1) {
+					sample = _queue->d16Decoder.decode(mql->buffer[mql->read]);
+					++mql->read;
+				}
+				if (mql->read >= mql->size) {
+					MixerQueueList *next = mql->next;
+					free(mql->buffer);
+					delete mql;
+					mql = next;
+					_queue->head = mql;
+				}
+				mix(&buf[i + 0], sample, _musicVolume);
+				mix(&buf[i + 1], sample, _musicVolume);
 			}
-			mix(&buf[i + 0], sample, _musicVolume);
-			mix(&buf[i + 1], sample, _musicVolume);
-			if (mql->read >= mql->size) {
-				MixerQueueList *next = mql->next;
-				free(mql->buffer);
-				delete mql;
-				mql = next;
-				_queue->head = mql;
+			break;
+		case kMixerQueueType_XA:
+			for (int i = 0; mql && i < len; i += 2) {
+				int pos = _queue->offset >> kFracBits;
+				if (pos >= _queue->xaDecoder._samplesSize) {
+					const int count = _queue->xaDecoder.decode(mql->buffer + mql->read, mql->size - mql->read);
+					mql->read += count;
+					if (mql->read >= mql->size) {
+						MixerQueueList *next = mql->next;
+						free(mql->buffer);
+						delete mql;
+						mql = next;
+						_queue->head = mql;
+					}
+					_queue->offset = pos = 0;
+				}
+				mix(&buf[i + 0], _queue->xaDecoder._samples[pos + 0], _musicVolume);
+				mix(&buf[i + 1], _queue->xaDecoder._samples[pos + 1], _musicVolume);
+				_queue->offset += _queue->step;
 			}
+			break;
 		}
 	}
 	for (int i = 0; i < kMaxSoundsCount; ++i) {

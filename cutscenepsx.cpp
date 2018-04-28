@@ -11,14 +11,11 @@
 extern "C" {
 #include <libavcodec/avcodec.h>
 // extern AVCodec ff_mdec_decoder;
-// extern AVCodec ff_adpcm_xa_decoder;
 }
 
 struct DpsDecoder {
 	AVCodecContext *_videoContext;
 	AVFrame *_videoFrame;
-	AVCodecContext *_audioContext;
-	AVFrame *_audioFrame;
 
 	uint8_t *_rgba;
 	int _w, _h;
@@ -30,21 +27,16 @@ struct DpsDecoder {
 
 	void initMdec(int w, int h);
 	void decodeMdec(const uint8_t *data, int size);
-	void initXa(bool stereo);
-	void decodeXa(const uint8_t *data, int size);
 };
 
 DpsDecoder::DpsDecoder() {
 	_videoContext = 0;
 	_videoFrame = 0;
-	_audioContext = 0;
-	_audioFrame = 0;
 
 	_rgba = 0;
 	_w = _h = 0;
 	avcodec_register_all();
 	// avcodec_register(&ff_mdec_decoder);
-	// avcodec_register(&ff_adpcm_xa_decoder);
 }
 
 DpsDecoder::~DpsDecoder() {
@@ -62,14 +54,6 @@ void DpsDecoder::fini() {
 	if (_videoFrame) {
 		av_frame_free(&_videoFrame);
 		_videoFrame = 0;
-	}
-	if (_audioContext) {
-		avcodec_free_context(&_audioContext);
-		_audioContext = 0;
-	}
-	if (_audioFrame) {
-		av_frame_free(&_audioFrame);
-		_audioFrame = 0;
 	}
 }
 
@@ -111,43 +95,6 @@ void DpsDecoder::decodeMdec(const uint8_t *data, int size) {
 				memcpy(_rgba + ((_h - 1 - y) * _w + x) * 4, &color, 4);
 			}
 		}
-	}
-	av_packet_unref(&pkt);
-}
-
-void DpsDecoder::initXa(bool stereo) {
-	AVCodec *codec = avcodec_find_decoder(AV_CODEC_ID_ADPCM_XA);
-	_audioContext = avcodec_alloc_context3(codec);
-	if (_audioContext) {
-		if (stereo) {
-			_audioContext->channels       = 2;
-			_audioContext->channel_layout = AV_CH_LAYOUT_STEREO;
-		} else {
-			_audioContext->channels       = 1;
-			_audioContext->channel_layout = AV_CH_LAYOUT_MONO;
-		}
-		avcodec_open2(_audioContext, codec, 0);
-		_audioFrame = av_frame_alloc();
-	}
-}
-
-void DpsDecoder::decodeXa(const uint8_t *data, int size) {
-	AVPacket pkt;
-	av_new_packet(&pkt, size);
-	memcpy(pkt.data, data, size);
-#if LIBAVCODEC_VERSION_MAJOR <= 57
-	int hasFrame = 0;
-	int ret = avcodec_decode_audio4(_audioContext, _audioFrame, &hasFrame, &pkt);
-#else
-	int ret = avcodec_send_packet(_audioContext, &pkt);
-	if (!(ret < 0)) {
-		ret = avcodec_receive_frame(_audioContext, _audioFrame);
-	}
-#endif
-	if (!(ret < 0)) { // while
-		const int dataSize = av_get_bytes_per_sample(_audioContext->sample_fmt);
-		// int16_t * 2 (stereo) * _audioFrame->nb_samples
-		warning("DpsDecoder::decodeXa() TODO dataSize %d", dataSize);
 	}
 	av_packet_unref(&pkt);
 }
@@ -298,9 +245,9 @@ bool CutscenePsx::play() {
 					err = true;
 					break;
 				}
-				_decoder->initXa(_header.xaStereo);
+				_sound->_mix.playQueue(4, kMixerQueueType_XA);
 			}
-			// _decoder->decodeXa(_sector + kAudioHeaderSize, kAudioDataSize);
+			_sound->_mix.appendToQueue(_sector + kAudioHeaderSize, kAudioDataSize);
 		}
 	} while (videoCurrentSector != videoSectorsCount - 1 && !fileEof(_fp) && !err);
 	return !err;
@@ -360,7 +307,6 @@ bool CutscenePsx::load(int num) {
 void CutscenePsx::unload() {
 	if (_decoder) {
 		_decoder->fini();
-		_decoder = 0;
 	}
 	if (_fp) {
 		fileClose(_fp);
