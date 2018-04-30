@@ -14,7 +14,7 @@ enum {
 	kCutscenePsxVideoHeight = 240,
 };
 
-struct DpsDecoder;
+struct Mdec;
 struct Render;
 struct Sound;
 
@@ -27,7 +27,7 @@ struct DpsHeader {
 };
 
 struct CutscenePsx {
-	DpsDecoder *_decoder;
+	Mdec *_mdec;
 	Render *_render;
 	Sound *_sound;
 	File *_fp;

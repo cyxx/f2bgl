@@ -10,39 +10,34 @@
 
 extern "C" {
 #include <libavcodec/avcodec.h>
-// extern AVCodec ff_mdec_decoder;
+// extern AVCodec ff_mdec_mdec;
 }
 
-struct DpsDecoder {
+struct Mdec {
 	AVCodecContext *_videoContext;
 	AVFrame *_videoFrame;
 
 	uint8_t *_rgba;
 	int _w, _h;
 
-	DpsDecoder();
-	~DpsDecoder();
+	Mdec();
 
 	void fini();
-
-	void initMdec(int w, int h);
-	void decodeMdec(const uint8_t *data, int size);
+	void init(int w, int h);
+	void decode(const uint8_t *data, int size);
 };
 
-DpsDecoder::DpsDecoder() {
+Mdec::Mdec() {
 	_videoContext = 0;
 	_videoFrame = 0;
 
 	_rgba = 0;
 	_w = _h = 0;
 	avcodec_register_all();
-	// avcodec_register(&ff_mdec_decoder);
+	// avcodec_register(&ff_mdec_mdec);
 }
 
-DpsDecoder::~DpsDecoder() {
-}
-
-void DpsDecoder::fini() {
+void Mdec::fini() {
 	if (_rgba) {
 		free(_rgba);
 		_rgba = 0;
@@ -57,7 +52,7 @@ void DpsDecoder::fini() {
 	}
 }
 
-void DpsDecoder::initMdec(int w, int h) {
+void Mdec::init(int w, int h) {
 	_w = w;
 	_h = h;
 	_rgba = (uint8_t *)malloc(w * 4 * h);
@@ -72,7 +67,7 @@ void DpsDecoder::initMdec(int w, int h) {
 	}
 }
 
-void DpsDecoder::decodeMdec(const uint8_t *data, int size) {
+void Mdec::decode(const uint8_t *data, int size) {
 	AVPacket pkt;
 	av_new_packet(&pkt, size);
 	memcpy(pkt.data, data, size);
@@ -101,14 +96,14 @@ void DpsDecoder::decodeMdec(const uint8_t *data, int size) {
 
 CutscenePsx::CutscenePsx(Render *render, Sound *sound)
 	: _render(render), _sound(sound) {
-	_decoder = new DpsDecoder();
+	_mdec = new Mdec();
 	_fp = 0;
 }
 
 CutscenePsx::~CutscenePsx() {
 	unload();
-	delete _decoder;
-	_decoder = 0;
+	delete _mdec;
+	_mdec = 0;
 }
 
 static const char *_namesTable[] = {
@@ -227,9 +222,9 @@ bool CutscenePsx::play() {
 				}
 				memcpy(videoData + currentSector * kVideoDataSize, _sector + kVideoHeaderSize, kVideoDataSize);
 				if (currentSector == videoSectorsCount - 1) {
-					_decoder->decodeMdec(videoData, videoSectorsCount * kVideoDataSize);
+					_mdec->decode(videoData, videoSectorsCount * kVideoDataSize);
 					const int y = (kCutscenePsxVideoHeight - _header.h) / 2;
-					_render->copyToOverlay(0, y, _header.w, _header.h, _decoder->_rgba, true);
+					_render->copyToOverlay(0, y, _header.w, _header.h, _mdec->_rgba, true);
 					++_frameCounter;
 					free(videoData);
 					videoData = 0;
@@ -296,7 +291,7 @@ bool CutscenePsx::load(int num) {
 			fileClose(_fp);
 			_fp = 0;
 		} else {
-			_decoder->initMdec(_header.w, _header.h);
+			_mdec->init(_header.w, _header.h);
 			_render->clearScreen();
 			_render->resizeOverlay(_header.w, _header.h, true, kCutscenePsxVideoWidth, kCutscenePsxVideoHeight);
 		}
@@ -305,11 +300,12 @@ bool CutscenePsx::load(int num) {
 }
 
 void CutscenePsx::unload() {
-	if (_decoder) {
-		_decoder->fini();
+	if (_mdec) {
+		_mdec->fini();
 	}
 	if (_fp) {
 		fileClose(_fp);
 		_fp = 0;
 	}
+	_sound->_mix.stopQueue();
 }
