@@ -74,7 +74,7 @@ struct Cutscene {
 	uint32_t _frameTicks;
 
 	Cutscene(Render *render, Game *g, Sound *snd);
-	~Cutscene();
+	virtual ~Cutscene();
 
 	bool readFileHeader(CinFileHeader *hdr);
 	bool readFrameHeader(CinFrameHeader *hdr);
@@ -82,11 +82,11 @@ struct Cutscene {
 	void updatePalette(int palType, int colorsCount, const uint8_t *p);
 	void decodeImage(const uint8_t *frameData);
 	void updateMessages();
-	bool load(int num);
-	void unload();
+	virtual bool load(int num);
+	virtual void unload();
 	bool play();
 	void drawFrame();
-	bool update(uint32_t ticks);
+	virtual bool update(uint32_t ticks);
 	bool isInterrupted() const;
 	void queue(int num, int counter = 0);
 	int dequeue();

@@ -10,12 +10,12 @@
 
 extern "C" {
 #include <libavcodec/avcodec.h>
-// extern AVCodec ff_mdec_mdec;
+// extern AVCodec ff_mdec_decoder;
 }
 
 struct Mdec {
-	AVCodecContext *_videoContext;
-	AVFrame *_videoFrame;
+	AVCodecContext *_context;
+	AVFrame *_frame;
 
 	uint8_t *_rgba;
 	int _w, _h;
@@ -28,13 +28,13 @@ struct Mdec {
 };
 
 Mdec::Mdec() {
-	_videoContext = 0;
-	_videoFrame = 0;
+	_context = 0;
+	_frame = 0;
 
 	_rgba = 0;
 	_w = _h = 0;
 	avcodec_register_all();
-	// avcodec_register(&ff_mdec_mdec);
+	// avcodec_register(&ff_mdec_decoder);
 }
 
 void Mdec::fini() {
@@ -42,13 +42,13 @@ void Mdec::fini() {
 		free(_rgba);
 		_rgba = 0;
 	}
-	if (_videoContext) {
-		avcodec_free_context(&_videoContext);
-		_videoContext = 0;
+	if (_context) {
+		avcodec_free_context(&_context);
+		_context = 0;
 	}
-	if (_videoFrame) {
-		av_frame_free(&_videoFrame);
-		_videoFrame = 0;
+	if (_frame) {
+		av_frame_free(&_frame);
+		_frame = 0;
 	}
 }
 
@@ -58,12 +58,12 @@ void Mdec::init(int w, int h) {
 	_rgba = (uint8_t *)malloc(w * 4 * h);
 
 	const AVCodec *codec = avcodec_find_decoder(AV_CODEC_ID_MDEC);
-	_videoContext = avcodec_alloc_context3(codec);
-	if (_videoContext) {
-		_videoContext->width  = w;
-		_videoContext->height = h;
-		avcodec_open2(_videoContext, codec, 0);
-		_videoFrame = av_frame_alloc();
+	_context = avcodec_alloc_context3(codec);
+	if (_context) {
+		_context->width  = w;
+		_context->height = h;
+		avcodec_open2(_context, codec, 0);
+		_frame = av_frame_alloc();
 	}
 }
 
@@ -73,19 +73,19 @@ void Mdec::decode(const uint8_t *data, int size) {
 	memcpy(pkt.data, data, size);
 #if LIBAVCODEC_VERSION_MAJOR <= 57
 	int hasFrame = 0;
-	int ret = avcodec_decode_video2(_videoContext, _videoFrame, &hasFrame, &pkt);
+	int ret = avcodec_decode_video2(_context, _frame, &hasFrame, &pkt);
 #else
-	int ret = avcodec_send_packet(_videoContext, &pkt);
+	int ret = avcodec_send_packet(_context, &pkt);
 	if (!(ret < 0)) {
-		ret = avcodec_receive_frame(_videoContext, _videoFrame);
+		ret = avcodec_receive_frame(_context, _frame);
 	}
 #endif
 	if (!(ret < 0)) {
-		for (int y = 0; y < _videoFrame->height; ++y) {
-			const uint8_t *Y = _videoFrame->data[0] + y * _videoFrame->linesize[0];
-			const uint8_t *U = _videoFrame->data[1] + y / 2 * _videoFrame->linesize[1];
-			const uint8_t *V = _videoFrame->data[2] + y / 2 * _videoFrame->linesize[2];
-			for (int x = 0; x < _videoFrame->width; ++x) {
+		for (int y = 0; y < _frame->height; ++y) {
+			const uint8_t *Y = _frame->data[0] + y * _frame->linesize[0];
+			const uint8_t *U = _frame->data[1] + y / 2 * _frame->linesize[1];
+			const uint8_t *V = _frame->data[2] + y / 2 * _frame->linesize[2];
+			for (int x = 0; x < _frame->width; ++x) {
 				const uint32_t color = yuv420_to_rgba(Y[x], U[x / 2], V[x / 2]);
 				memcpy(_rgba + ((_h - 1 - y) * _w + x) * 4, &color, 4);
 			}
@@ -94,14 +94,12 @@ void Mdec::decode(const uint8_t *data, int size) {
 	av_packet_unref(&pkt);
 }
 
-CutscenePsx::CutscenePsx(Render *render, Sound *sound)
-	: _render(render), _sound(sound) {
+CutscenePsx::CutscenePsx(Render *render, Game *g, Sound *sound)
+	: Cutscene(render, g, sound) {
 	_mdec = new Mdec();
-	_fp = 0;
 }
 
 CutscenePsx::~CutscenePsx() {
-	unload();
 	delete _mdec;
 	_mdec = 0;
 }
@@ -240,9 +238,9 @@ bool CutscenePsx::play() {
 					err = true;
 					break;
 				}
-				_sound->_mix.playQueue(4, kMixerQueueType_XA);
+				_snd->_mix.playQueue(4, kMixerQueueType_XA);
 			}
-			_sound->_mix.appendToQueue(_sector + kAudioHeaderSize, kAudioDataSize);
+			_snd->_mix.appendToQueue(_sector + kAudioHeaderSize, kAudioDataSize);
 		}
 	} while (videoCurrentSector != videoSectorsCount - 1 && !fileEof(_fp) && !err);
 	return !err;
@@ -307,5 +305,9 @@ void CutscenePsx::unload() {
 		fileClose(_fp);
 		_fp = 0;
 	}
-	_sound->_mix.stopQueue();
+	_snd->_mix.stopQueue();
+}
+
+bool CutscenePsx::update(uint32_t ticks) {
+	return play();
 }

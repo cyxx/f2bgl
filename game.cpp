@@ -12,7 +12,13 @@
 #include "xmiplayer.h"
 
 Game::Game(Render *render, const GameParams *params)
-	: _cut(render, this, &_snd), _cutPsx(render, &_snd), _snd(&_res), _render(render), _params(*params) {
+	: _snd(&_res), _render(render), _params(*params) {
+
+	if (g_hasPsx) {
+		_cut = new CutscenePsx(_render, this, &_snd);
+	} else {
+		_cut = new Cutscene(_render, this, &_snd);
+	}
 
 	_cheats = kCheatAutoReloadGun | kCheatActivateButtonToShoot | kCheatStepWithUpDownInShooting;
 	_gameStateMsg = 0;
@@ -52,6 +58,7 @@ Game::Game(Render *render, const GameParams *params)
 Game::~Game() {
 	finiIcons();
 	freeLevelData();
+	delete _cut;
 }
 
 void Game::clearGlobalData() {
@@ -89,8 +96,8 @@ void Game::clearGlobalData() {
 }
 
 void Game::clearLevelData() {
-	_cut._numToPlayCounter = -1;
-	_cut._numToPlay = -1;
+	_cut->_numToPlayCounter = -1;
+	_cut->_numToPlay = -1;
 
 	_fixedViewpoint = false;
 	_xPosObserverPrev = _xPosObserver = 0;
@@ -2694,8 +2701,8 @@ void Game::doTick() {
 			op_addObjectMessage(2, argv);
 			_gameStateMsg = 0;
 		}
-		if (_cut._numToPlayCounter > 0) {
-			--_cut._numToPlayCounter;
+		if (_cut->_numToPlayCounter > 0) {
+			--_cut->_numToPlayCounter;
 		}
 		if (_changeLevel) {
 			setPaletteColor(1, 255, 255, 255);
@@ -4529,89 +4536,89 @@ void Game::getCutsceneMessages(int num) {
 void Game::playDeathCutscene(int objKey) {
 	GameObject *o = getObjectByKey(objKey);
 	if (o->specialData[1][21] == 0x40000) {
-		_cut.queue(48);
+		_cut->queue(48);
 		_level = kLevelGameOver;
 	} else if (_level == 6) {
-		_cut.queue(9);
+		_cut->queue(9);
 	} else if (_level == 12) {
-		_cut.queue(33);
+		_cut->queue(33);
 	} else if (o->specialData[1][21] == 0x1000000) {
-		_cut.queue(1, 4);
+		_cut->queue(1, 4);
 	} else if (o->specialData[1][21] == 8) {
 		switch (o->specialData[1][22]) {
 		case 0x1:
 			o = getObjectByKey(o->specialData[1][9]);
 			if (o->specialData[1][22] != 0x4000) {
-				_cut.queue(1, 4);
+				_cut->queue(1, 4);
 			} else {
-				_cut.queue(6, 4);
+				_cut->queue(6, 4);
 			}
 			break;
 		case 0x2:
 		case 0x4000:
-			_cut.queue(2, 4);
+			_cut->queue(2, 4);
 			break;
 		case 0x200:
-			_cut.queue(4);
+			_cut->queue(4);
 			break;
 		default:
-			_cut.queue(12);
+			_cut->queue(12);
 			break;
 		}
 	} else if (o->specialData[1][21] == 16) {
 		switch (o->specialData[1][22]) {
 		case 0x4:
-			_cut.queue(0);
+			_cut->queue(0);
 			break;
 		case 0x20:
-			_cut.queue(3);
+			_cut->queue(3);
 			break;
 		case 0x80000:
-			_cut.queue(2);
+			_cut->queue(2);
 			break;
 		case 0x100000:
-			_cut.queue(17);
+			_cut->queue(17);
 			break;
 		case 0x200000:
-			_cut.queue(7);
+			_cut->queue(7);
 			break;
 		case 0x1000000:
-			_cut.queue(40);
+			_cut->queue(40);
 			break;
 		case 0x4000000:
-			_cut.queue(11);
+			_cut->queue(11);
 			break;
 		case 0x800000:
-			_cut.queue(42);
+			_cut->queue(42);
 			break;
 		default:
-			_cut.queue(12);
+			_cut->queue(12);
 			break;
 		}
 	} else if (o->specialData[1][21] == 0x20000) {
-		_cut.queue(2, 4);
+		_cut->queue(2, 4);
 	} else if (o->specialData[1][21] == 0x200000) {
-		_cut.queue(41);
+		_cut->queue(41);
 	} else if (o->specialData[1][21] == 0x10000) {
-		_cut.queue(10);
+		_cut->queue(10);
 	} else if (o->specialData[1][21] == 0x100) {
-		_cut.queue(5);
+		_cut->queue(5);
 	} else if (o->specialData[1][21] == 0x800) {
-		_cut.queue(17);
+		_cut->queue(17);
 	} else if (o->specialData[1][21] == 0x800000) {
-		_cut.queue(49);
+		_cut->queue(49);
 	} else if (o->specialData[1][21] == 0x100000) {
-		_cut.queue(34);
+		_cut->queue(34);
 	} else if (o->specialData[1][21] == 0x8000) {
-		_cut.queue(8, 4);
+		_cut->queue(8, 4);
 	} else if (o->specialData[1][21] == 0x80000) {
-		_cut.queue(38, 4);
+		_cut->queue(38, 4);
 	} else if (o->specialData[1][21] == 0x2000000) {
-		_cut.queue(3);
+		_cut->queue(3);
 	} else {
-		_cut.queue(12);
+		_cut->queue(12);
 	}
-	debug(kDebug_GAME, "Game::playDeathCutscene() queue playback num %d counter %d", _cut._numToPlay, _cut._numToPlayCounter);
+	debug(kDebug_GAME, "Game::playDeathCutscene() queue playback num %d counter %d", _cut->_numToPlay, _cut->_numToPlayCounter);
 }
 
 void Game::displayTarget(int cx, int cy) {
@@ -4704,24 +4711,15 @@ void Game::drawSprite(int x, int y, int sprKey) {
 	}
 }
 
-bool Game::loadCutscene() {
-	const int cutsceneNum = _cut._numToPlay;
-	assert(cutsceneNum >= 0);
-	if (g_hasPsx) {
-		return _cutPsx.load(cutsceneNum);
-	}
-	return _cut.load(cutsceneNum);
-}
-
 bool Game::updateCutscene(uint32_t ticks) {
-	bool ret = g_hasPsx ? _cutPsx.play() : _cut.update(ticks);
+	bool ret = _cut->update(ticks);
 	if (ret) {
-		_cut._interrupted = inp.spaceKey || inp.enterKey || inp.ctrlKey;
+		_cut->_interrupted = inp.spaceKey || inp.enterKey || inp.ctrlKey;
 		const bool stop = inp.escapeKey || (!inp.pointers[0][0].down && inp.pointers[0][1].down);
-		ret = !_cut._interrupted && !stop;
+		ret = !_cut->_interrupted && !stop;
 	}
 	if (!ret) {
-		g_hasPsx ? _cutPsx.unload() : _cut.unload();
+		_cut->unload();
 	}
 	return ret;
 }

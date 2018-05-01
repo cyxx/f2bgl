@@ -464,8 +464,8 @@ static void persistOption(File *fp, Game &g) {
 	persist<M>(fp, g._ticks);
 	pad<M>(fp, sizeof(uint32_t));
 	persist<M>(fp, g._rnd._randSeed);
-	for (int i = 0; i < ARRAYSIZE(g._cut._playedTable); ++i) {
-		persist<M>(fp, g._cut._playedTable[i]);
+	for (int i = 0; i < ARRAYSIZE(g._cut->_playedTable); ++i) {
+		persist<M>(fp, g._cut->_playedTable[i]);
 	}
 }
 
