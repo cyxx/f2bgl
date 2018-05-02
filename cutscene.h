@@ -90,6 +90,7 @@ struct Cutscene {
 	bool isInterrupted() const;
 	void queue(int num, int counter = 0);
 	int dequeue();
+	int changeToNext();
 };
 
 #endif // CUTSCENE_H__

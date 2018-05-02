@@ -77,27 +77,6 @@ static FileLanguage parseVoice(const char *voice, FileLanguage lang) {
 	}
 }
 
-static int getNextCutsceneNum(int num) {
-	switch (num) {
-	case 47: // logo ea
-		return 39;
-	case 39: // logo dsi
-		return 13;
-	case 13: // 'intro'
-		return 37;
-	case 37: // opening credits - 'title'
-		return 53;
-	case 53: // 'gendeb'
-		return 29;
-	// game completed
-	case 48: // closing credits - 'mgm'
-		return 44;
-	case 44: // fade to black - 'fade1'
-		return 13;
-	}
-	return -1;
-}
-
 static char *_dataPath;
 static char *_savePath;
 static char *_psxDataPath;
@@ -472,18 +451,7 @@ struct GameStub_F2B : GameStub {
 		case kStateCutscene:
 			if (!_g->updateCutscene(ticks)) {
 				Cutscene *cut = _g->_cut;
-				const int cutsceneNum = cut->_numToPlay;
-				if (!cut->isInterrupted()) {
-					do {
-						int num = cut->dequeue();
-						if (num < 0) {
-							num = getNextCutsceneNum(cut->_numToPlay);
-						}
-						cut->_numToPlay = num;
-					} while (cut->_numToPlay >= 0 && !cut->load(cut->_numToPlay));
-				} else {
-					cut->_numToPlay = -1;
-				}
+				const int cutsceneNum = cut->changeToNext();
 				if (cut->_numToPlay < 0) {
 					_nextState = kStateGame;
 					if (_g->_level == kLevelGameOver || (g_isDemo && cutsceneNum == 43)) {

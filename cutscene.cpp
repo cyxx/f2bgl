@@ -525,3 +525,45 @@ int Cutscene::dequeue() {
 	}
 	return -1;
 }
+
+int Cutscene::changeToNext() {
+	const int cutsceneNum = _numToPlay;
+	if (!isInterrupted()) {
+		do {
+			int num = dequeue();
+			if (num < 0) {
+				switch (_numToPlay) {
+				case 47: // logo ea
+					num = 39;
+					break;
+				case 39: // logo dsi
+					num = 13;
+					break;
+				case 13: // 'intro'
+					num = 37;
+					break;
+				case 37: // opening credits - 'title'
+					num = 53;
+					break;
+				case 53: // 'gendeb'
+					num = 29;
+					break;
+				// game completed
+				case 48: // closing credits - 'mgm'
+					num = 44;
+					break;
+				case 44: // fade to black - 'fade1'
+					num = 13;
+					break;
+				default:
+					num = -1;
+					break;
+				}
+			}
+			_numToPlay = num;
+		} while (_numToPlay >= 0 && !load(_numToPlay));
+	} else {
+		_numToPlay = -1;
+	}
+	return cutsceneNum;
+}
