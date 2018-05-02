@@ -31,6 +31,13 @@ static int clipS16(int sample) {
 	return CLIP(sample, -32768, 32767);
 }
 
+static int16_t lerpS16(int16_t s1, int16_t s2, uint32_t frac) {
+	static const int kFracOne = (1 << kFracBits);
+	static const int kFracHalf = kFracOne >> 1;
+	static const int kFracBitsLow = kFracOne - 1;
+	return s1 + (((s2 - s1) * (frac & kFracBitsLow) + kFracHalf) >> kFracBits);
+}
+
 struct Delta16Decoder {
 	int _firstSample;
 	int _delta;
@@ -104,6 +111,8 @@ struct XaDecoder {
 			decodeGroup_stereo(_data, _samples);
 			_dataSize = 0;
 			_samplesSize = 224;
+		} else {
+			_samplesSize = 0;
 		}
 		assert(_dataSize < 128);
 		return size;
@@ -489,8 +498,15 @@ void Mixer::mixBuf(int16_t *buf, int len) {
 					}
 					_queue->offset = pos = 0;
 				}
-				mix(&buf[i + 0], _queue->xaDecoder._samples[pos + 0], _musicVolume);
-				mix(&buf[i + 1], _queue->xaDecoder._samples[pos + 1], _musicVolume);
+				assert(pos >= 0 && pos + 1 < _queue->xaDecoder._samplesSize);
+				const int j = pos + 2;
+				if (j == 0 || j >= _queue->xaDecoder._samplesSize) {
+					mix(&buf[i + 0], _queue->xaDecoder._samples[pos + 0], _musicVolume);
+					mix(&buf[i + 1], _queue->xaDecoder._samples[pos + 1], _musicVolume);
+				} else {
+					mix(&buf[i + 0], lerpS16(_queue->xaDecoder._samples[pos + 0], _queue->xaDecoder._samples[j + 0], _queue->offset), _musicVolume);
+					mix(&buf[i + 1], lerpS16(_queue->xaDecoder._samples[pos + 1], _queue->xaDecoder._samples[j + 1], _queue->offset), _musicVolume);
+				}
 				_queue->offset += _queue->step;
 			}
 			break;
