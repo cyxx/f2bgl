@@ -34,8 +34,11 @@ void ResourcePsx::loadLevelData(int level, int resType) {
 							for (int y = 0; y < kVrmLoadingScreenHeight; ++y) {
 								uint8_t *dst = _vrmLoadingBitmap + (kVrmLoadingScreenHeight - 1 - y) * dstPitch;
 								for (int x = 0; x < kVrmLoadingScreenWidth; ++x) {
-									const uint32_t color = bgr555_to_rgba(fileReadUint16LE(fp));
-									memcpy(dst + x * 4, &color, 4);
+									const uint16_t color = fileReadUint16LE(fp);
+									*dst++ = ( color        & 31) << 3; // r
+									*dst++ = ((color >>  5) & 31) << 3; // g
+									*dst++ = ((color >> 10) & 31) << 3; // b
+									*dst++ = 255;
 								}
 							}
 							h -= kVrmLoadingScreenHeight;

@@ -22,10 +22,3 @@ uint32_t yuv420_to_rgba(int Y, int U, int V) {
 	}
 	return 0xFF000000 | (((uint8_t)B) << 16) | (((uint8_t)G) << 8) | ((uint8_t)R);
 }
-
-uint32_t bgr555_to_rgba(uint16_t color) {
-	const uint8_t r = ( color        & 31) << 3;
-	const uint8_t g = ((color >>  5) & 31) << 3;
-	const uint8_t b = ((color >> 10) & 31) << 3;
-	return 0xFF000000 | (b << 16) | (g << 8) | r;
-}

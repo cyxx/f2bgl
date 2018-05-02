@@ -124,6 +124,11 @@ struct GameStub_F2B : GameStub {
 		switch (_state) {
 		case kStateCutscene:
 			_render->resizeOverlay(0, 0);
+			// redraw screen after cutscene played at the end of a level
+			if (_g->_changeLevel && _g->_displayPsxLevelLoadingScreen) {
+				_g->_displayPsxLevelLoadingScreen = 1;
+				_g->displayPsxLevelLoadingScreen();
+			}
 			break;
 		case kStateCabinet:
 			_g->finiCabinet();

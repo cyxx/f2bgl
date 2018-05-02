@@ -1188,14 +1188,6 @@ void Game::initLevel(bool keepInventoryObjects) {
 
 	clearLevelData();
 
-	_displayPsxLevelLoadingScreen = 0;
-	if (g_hasPsx) {
-		_resPsx.loadLevelData(_level, kResTypePsx_VRM);
-		if (_resPsx._vrmLoadingBitmap) {
-			_displayPsxLevelLoadingScreen = 1;
-		}
-	}
-
 	if (_params.playDemo) {
 		int dataSize;
 		char name[16];
@@ -2705,12 +2697,21 @@ void Game::doTick() {
 			--_cut->_numToPlayCounter;
 		}
 		if (_changeLevel) {
-			setPaletteColor(1, 255, 255, 255);
-			if (getMessage(_objectsPtrTable[kObjPtrFadeToBlack]->objKey, 1, &_tmpMsg)) { // "Loading..."
-				memset(&_drawCharBuf, 0, sizeof(_drawCharBuf));
-				int w, h;
-				getStringRect((const char *)_tmpMsg.data, kFontNameCineTypo, &w, &h);
-				drawString((kScreenWidth - w) / 2, kScreenHeight / 2, (const char *)_tmpMsg.data, kFontNameCineTypo, 0);
+			if (g_hasPsx) {
+				// display the inter-level loading screen
+				_resPsx.loadLevelData(_level, kResTypePsx_VRM);
+				if (_resPsx._vrmLoadingBitmap) {
+					_displayPsxLevelLoadingScreen = 1;
+					displayPsxLevelLoadingScreen();
+				}
+			} else {
+				setPaletteColor(1, 255, 255, 255);
+				if (getMessage(_objectsPtrTable[kObjPtrFadeToBlack]->objKey, 1, &_tmpMsg)) { // "Loading..."
+					memset(&_drawCharBuf, 0, sizeof(_drawCharBuf));
+					int w, h;
+					getStringRect((const char *)_tmpMsg.data, kFontNameCineTypo, &w, &h);
+					drawString((kScreenWidth - w) / 2, kScreenHeight / 2, (const char *)_tmpMsg.data, kFontNameCineTypo, 0);
+				}
 			}
 		} else if (!_endGame) {
 			updateScreen();
