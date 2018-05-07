@@ -463,6 +463,7 @@ struct Game {
 	Random _rnd, _rnd2;
 	int _cheats;
 	int _gameStateMsg;
+	bool _musicPaused;
 
 	DrawBuffer _drawCharBuf;
 	DrawNumber _drawNumber;

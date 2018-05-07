@@ -1258,7 +1258,7 @@ void Game::initLevel(bool keepInventoryObjects) {
 	clearKeyboardInput();
 	_objectsPtrTable[kObjPtrMusic] = 0;
 	_snd._musicMode = 1;
-	playMusic(-1);
+	_musicPaused = true;
 
 	_focalDistance = 0;
 	_currentObject = _objectsPtrTable[kObjPtrConrad];
@@ -2580,6 +2580,10 @@ void Game::doTick() {
 	updateSceneAnimations();
 	updateSceneTextures();
 	if (_mainLoopCurrentMode == 0) {
+		if (_musicPaused) {
+			_musicPaused = false;
+			playMusic(-1);
+		}
 		if (_viewportSize > 0) {
 			_viewportSize -= 2;
 	                initViewport();
