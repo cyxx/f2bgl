@@ -644,7 +644,7 @@ void Game::getSceneAnimationTexture(SceneAnimation *sa, uint16_t *len, uint16_t 
 	for (int i = 0; i < sa->frameNum; ++i) {
 		key = _res.getNext(kResType_ANI, key);
 		if (key == 0) {
-			warning("getSceneAnimationTexture() key is 0 for frame %d/%d frmKey %d", i, sa->frameNum, sa->frmKey);
+			// warning("getSceneAnimationTexture() key is 0 for frame %d/%d frmKey %d", i, sa->frameNum, sa->frmKey);
 			return;
 		}
 	}
@@ -3692,28 +3692,28 @@ void Game::updateScanner() {
 			warning("Game::updateScanner() stub draw scanner");
 			// drawScanner();
 		}
-		if (_scannerCounter > 0) {
-			--_scannerCounter;
-		} else {
-			_scannerCounter = 10;
-			_objectsPtrTable[kObjPtrConrad]->specialData[1][18] -= _objectsPtrTable[kObjPtrScan]->specialData[1][18];
-			if (_objectsPtrTable[kObjPtrConrad]->specialData[1][18] <= 0) {
-				_objectsPtrTable[kObjPtrConrad]->specialData[1][18] = 1;
-				while (_objectsPtrTable[kObjPtrScan]->specialData[1][21] != 2 && _objectsPtrTable[kObjPtrScan]->specialData[1][22] != 0xFFFF) {
-					GameObject *o = _objectsPtrTable[kObjPtrScan];
-					while (o->o_next) {
-						o = o->o_next;
-					}
-					o->o_next = _objectsPtrTable[kObjPtrScan];
-					_objectsPtrTable[kObjPtrInventaire]->o_child->o_next->o_next->o_next->o_next->o_child = _objectsPtrTable[kObjPtrScan]->o_next;
-					_objectsPtrTable[kObjPtrScan]->o_next = 0;
-					_objectsPtrTable[kObjPtrScan] = _objectsPtrTable[kObjPtrInventaire]->o_child->o_next->o_next->o_next->o_next->o_child;
+	}
+	if (_scannerCounter > 0) {
+		--_scannerCounter;
+	} else {
+		_scannerCounter = 10;
+		_objectsPtrTable[kObjPtrConrad]->specialData[1][18] -= _objectsPtrTable[kObjPtrScan]->specialData[1][18];
+		if (_objectsPtrTable[kObjPtrConrad]->specialData[1][18] <= 0) {
+			_objectsPtrTable[kObjPtrConrad]->specialData[1][18] = 1;
+			while (_objectsPtrTable[kObjPtrScan]->specialData[1][21] != 2 && _objectsPtrTable[kObjPtrScan]->specialData[1][22] != 0xFFFF) {
+				GameObject *o = _objectsPtrTable[kObjPtrScan];
+				while (o->o_next) {
+					o = o->o_next;
 				}
-				if (_objectsPtrTable[kObjPtrScan]) {
-					_varsTable[24] = _objectsPtrTable[kObjPtrScan]->objKey;
-					if (getMessage(_objectsPtrTable[kObjPtrScan]->objKey, 0, &_tmpMsg)) {
-						_objectsPtrTable[kObjPtrScan]->text = (const char *)_tmpMsg.data;
-					}
+				o->o_next = _objectsPtrTable[kObjPtrScan];
+				_objectsPtrTable[kObjPtrInventaire]->o_child->o_next->o_next->o_next->o_next->o_child = _objectsPtrTable[kObjPtrScan]->o_next;
+				_objectsPtrTable[kObjPtrScan]->o_next = 0;
+				_objectsPtrTable[kObjPtrScan] = _objectsPtrTable[kObjPtrInventaire]->o_child->o_next->o_next->o_next->o_next->o_child;
+			}
+			if (_objectsPtrTable[kObjPtrScan]) {
+				_varsTable[24] = _objectsPtrTable[kObjPtrScan]->objKey;
+				if (getMessage(_objectsPtrTable[kObjPtrScan]->objKey, 0, &_tmpMsg)) {
+					_objectsPtrTable[kObjPtrScan]->text = (const char *)_tmpMsg.data;
 				}
 			}
 		}
