@@ -492,6 +492,14 @@ static void persistGamePlayerMessage(File *fp, Game &g, GamePlayerMessage &m) {
 template <int M>
 static void persistMessage(File *fp, Game &g) {
 	persist<M>(fp, g._playerMessagesCount);
+	if (M == kModeLoad) {
+		if (g._playerMessagesCount < 0) {
+			warning("Invalid value for _playerMessagesCount %d", g._playerMessagesCount);
+			g._playerMessagesCount = 0;
+		}
+		// clear all messages from previous gameplay (for op_addObjectMessage)
+		memset(g._playerMessagesTable, 0, sizeof(g._playerMessagesTable));
+	}
 	for (int i = 0; i < g._playerMessagesCount; ++i) {
 		persistGamePlayerMessage<M>(fp, g, g._playerMessagesTable[i]);
 	}
