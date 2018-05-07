@@ -3026,6 +3026,9 @@ bool Game::isTranslucentSceneObject(const SceneObject *so) const {
 	if (so->verticesCount == 0) { // sprite
 		return false;
 	}
+	if (_level == 4 && strncmp(so->o->name, "bassin", 6) == 0) {
+		return false;
+	}
 	const uint8_t *polygonsData = so->polygonsData;
 	if (polygonsData[0] & 0x80) {
 		const int shadowPolySize = -(int8_t)polygonsData[0];
@@ -3151,6 +3154,9 @@ void Game::drawSceneObjectMesh(SceneObject *so, int flags) {
 				break;
 			case 3:
 				color = kFlatColorLight;
+				if (_level == 4 && strncmp(so->o->name, "bassin", 6) == 0) {
+					color = -1;
+				}
 				break;
 			case 4:
 				color = kFlatColorGreen;
