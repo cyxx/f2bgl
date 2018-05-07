@@ -453,10 +453,7 @@ struct XmiPlayer_FluidSynth : XmiPlayer {
 				_currentTick += _tickDuration;
 				_samplesLeft = _samplesPerTick;
 			}
-			int count = _samplesLeft;
-			if (count > len) {
-				count = len;
-			}
+			const int count = MIN(_samplesLeft, len);
 			fluid_synth_write_s16(_fluidSynth, count, buffer, 0, 2, buffer, 1, 2);
 			buffer += count * 2;
 			_samplesLeft -= count;

@@ -311,7 +311,7 @@ int Game::rayCastCameraCb2(GameObject * o, CellMap * cell, int ox, int oz) {
 		slot = cell->colSlot;
 		while (slot != 0) {
 			GameObject *obj = slot->o;
-			int flag = (obj != getObjectByKey(_cameraViewKey));
+			bool flag = (obj != getObjectByKey(_cameraViewKey));
 			flag = flag && (obj->flags[1] & 4) == 0;
 			flag = flag && (obj->specialData[1][23] != 57);
 			flag = flag && (obj->specialData[1][8] & _observerColMask);

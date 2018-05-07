@@ -2003,18 +2003,14 @@ int Game::op_updateFollowingObject(int argc, int32_t *argv) {
 	int32_t specx = argv[2];
 	int32_t specz = argv[3];
 
-	GameObject *o_follower;
-	if (followerObjKey == 0) {
-		o_follower = _currentObject;
-	} else if ((o_follower = getObjectByKey(followerObjKey)) == 0) {
-                return 0;
-        }
-	GameObject *o_followed;
-        if (followedObjKey == 0) {
-                o_followed = _currentObject;
-        } else if ((o_followed = getObjectByKey(followedObjKey)) == 0) {
-                return 0;
-        }
+	GameObject *o_follower = (followerObjKey == 0) ? _currentObject : getObjectByKey(followerObjKey);
+	if (!o_follower) {
+		return 0;
+	}
+	GameObject *o_followed = (followedObjKey == 0) ? _currentObject : getObjectByKey(followedObjKey);
+	if (!o_followed) {
+		return 0;
+	}
 
 	GameFollowingPoint *points = (_followingObjectsTable + o_follower->customData[11])->points;
 	int *count = &o_follower->customData[10];
@@ -2164,18 +2160,14 @@ int Game::op_setupFollowingObject(int argc, int32_t *argv) {
 	int16_t followedObjKey = argv[1];
 	int16_t key = argv[2];
 
-        GameObject *o_follower;
-        if (followerObjKey == 0) {
-                o_follower = _currentObject;
-        } else if ((o_follower = getObjectByKey(followerObjKey)) == 0) {
-                return 0;
-        }
-        GameObject *o_followed;
-        if (followedObjKey == 0) {
-                o_followed = _currentObject;
-        } else if ((o_followed = getObjectByKey(followedObjKey)) == 0) {
-                return 0;
-        }
+	GameObject *o_follower = (followerObjKey == 0) ? _currentObject : getObjectByKey(followerObjKey);
+	if (!o_follower) {
+		return 0;
+	}
+	GameObject *o_followed = (followedObjKey == 0) ? _currentObject : getObjectByKey(followedObjKey);
+	if (!o_followed) {
+		return 0;
+	}
 
         GameFollowingPoint *points = _followingObjectsTable[o_follower->customData[11]].points;
 	const int xTo = o_followed->xPosParent + o_followed->xPos;
