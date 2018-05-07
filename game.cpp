@@ -4160,7 +4160,7 @@ void Game::printGameMessages() {
 		GamePlayerMessage *msg = &_playerMessagesTable[i];
 		if (msg->desc.duration > 0) {
 			msg->visible = false;
-			if (1) {
+			if (1) { // soundOn
 				switch (msg->desc.font & 96) {
 				case 32:
 					msg->visible = (_ticks & 31) > 16;
@@ -4185,7 +4185,7 @@ void Game::printGameMessages() {
 				}
 			}
 			--msg->desc.duration;
-			if (_snd.isVoicePlaying(msg->objKey)) {
+			if ((msg->desc.font & 0x80) != 0 && _snd.isVoicePlaying(msg->objKey)) {
 				if (msg->desc.duration <= 0) {
 					msg->desc.duration = 1;
 				}
