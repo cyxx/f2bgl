@@ -251,6 +251,10 @@ struct SoundDataXa {
 		: _bufSize(0), _buf(0) {
 	}
 	bool load(File *fp, int dataSize, int mixerSampleRate) {
+		if (mixerSampleRate != 22050) { // SPU samples frequency
+			warning("Unhandled mixer sample rate %d for XA SPU samples", mixerSampleRate);
+			return false;
+		}
 		_bufSize = dataSize;
 		_buf = (uint8_t *)malloc(_bufSize);
 		if (!_buf) {
@@ -418,7 +422,10 @@ int Mixer::findIndexById(uint32_t id) const {
 
 void Mixer::playWav(File *fp, int dataSize, int volume, int pan, uint32_t id, bool isVoice, bool compressed) {
 	MixerSound *snd = new MixerSound();
-	snd->data.load(fp, dataSize, _rate);
+	if (!snd->data.load(fp, dataSize, _rate)) {
+		delete snd;
+		return;
+	}
 	snd->readOffset = 0;
 	snd->compressed = compressed;
 	assert(volume >= 0 && volume < 128);
@@ -547,11 +554,14 @@ void Mixer::stopXmi() {
 
 void Mixer::playXa(File *fp, int dataSize, uint32_t id) {
 	MixerSound *snd = new MixerSound();
-	snd->xa.load(fp, dataSize, _rate);
+	if (!snd->xa.load(fp, dataSize, _rate)) {
+		delete snd;
+		return;
+	}
 	snd->readOffset = 0;
 	snd->volumeL = _soundVolume;
 	snd->volumeR = _soundVolume;
-	snd->xaDecoder.reset(false); // mono
+	snd->xaDecoder.reset(false); // mono (SPU)
 	snd->xaPos = 0;
 	MixerLock ml(_lock);
 	for (int i = 0; i < kMaxSoundsCount; ++i) {
@@ -564,6 +574,7 @@ void Mixer::playXa(File *fp, int dataSize, uint32_t id) {
 }
 
 void Mixer::stopXa(uint32_t id) {
+	stopWav(id);
 }
 
 void Mixer::mixBuf(int16_t *buf, int len) {
