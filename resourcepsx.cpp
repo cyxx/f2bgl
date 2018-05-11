@@ -8,6 +8,7 @@ static const char *_levels[] = {
 
 ResourcePsx::ResourcePsx() {
 	_vrmLoadingBitmap = 0;
+	_vagOffsetsTableSize = 0;
 	memset(_sonOffsetsTable, 0, sizeof(_sonOffsetsTable));
 	_fileSon = 0;
 }
@@ -16,7 +17,7 @@ void ResourcePsx::loadLevelData(int level, int resType) {
 	switch (resType) {
 	case kResTypePsx_SON: {
 			char name[16];
-			snprintf(name, sizeof(name), "level%s.son", _levels[level]);
+			snprintf(name, sizeof(name), "level%d.son", level + 1);
 			_fileSon = fileOpenPsx(name, kFileType_PSX_LEVELDATA, level + 1);
 			if (_fileSon) {
 				readDataOffsetsTable(_fileSon, kResOffsetType_SON);
@@ -44,6 +45,7 @@ void ResourcePsx::unloadLevelData(int resType) {
 			fileClose(_fileSon);
 			_fileSon = 0;
 		}
+		_vagOffsetsTableSize = 0;
 		break;
 	case kResTypePsx_VRM:
 		free(_vrmLoadingBitmap);
