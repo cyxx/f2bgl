@@ -61,6 +61,9 @@ struct Mixer {
 	void playXmi(File *, int size);
 	void stopXmi();
 
+	void playXa(File *, int size, uint32_t id);
+	void stopXa(uint32_t);
+
 	void mixBuf(int16_t *buf, int len);
 	static void mixCb(void *param, uint8_t *buf, int len);
 };

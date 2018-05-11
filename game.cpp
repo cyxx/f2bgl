@@ -16,8 +16,11 @@ Game::Game(Render *render, const GameParams *params)
 
 	if (g_hasPsx) {
 		_cut = new CutscenePsx(_render, this, &_snd);
+		_resPsx = new ResourcePsx;
+		_snd._resPsx = _resPsx;
 	} else {
 		_cut = new Cutscene(_render, this, &_snd);
+		_resPsx = 0;
 	}
 
 	_cheats = kCheatAutoReloadGun | kCheatActivateButtonToShoot | kCheatStepWithUpDownInShooting;
@@ -59,6 +62,7 @@ Game::~Game() {
 	finiIcons();
 	freeLevelData();
 	delete _cut;
+	delete _resPsx;
 }
 
 void Game::clearGlobalData() {
@@ -149,6 +153,9 @@ void Game::clearLevelData() {
 	_render->flushCachedTextures();
 
 	freeLevelData();
+	if (g_hasPsx) {
+		_resPsx->unloadLevelData(kResTypePsx_SON);
+	}
 
 	memset(_sceneCellMap, 0, sizeof(_sceneCellMap));
 }
@@ -1161,7 +1168,7 @@ bool Game::displayPsxLevelLoadingScreen() {
 		_displayPsxLevelLoadingScreen = 2;
 		// fall-through
 	case 2:
-		_render->copyToOverlay(0, 0, kVrmLoadingScreenWidth, kVrmLoadingScreenHeight, _resPsx._vrmLoadingBitmap, true);
+		_render->copyToOverlay(0, 0, kVrmLoadingScreenWidth, kVrmLoadingScreenHeight, _resPsx->_vrmLoadingBitmap, true);
 		break;
 	}
 	const bool present = !inp.ctrlKey;
@@ -1169,7 +1176,7 @@ bool Game::displayPsxLevelLoadingScreen() {
 	if (!present) {
 		_render->resizeOverlay(0, 0);
 		_displayPsxLevelLoadingScreen = 0;
-		_resPsx.unloadLevelData(kResTypePsx_VRM);
+		_resPsx->unloadLevelData(kResTypePsx_VRM);
 	}
 	return present;
 }
@@ -1227,6 +1234,9 @@ void Game::initLevel(bool keepInventoryObjects) {
 	clearGlobalData();
 	_varsTable[kVarConradLife] = 2000;
 	_res.loadLevelData(_res._levelDescriptionsTable[_level].name, _level + 1);
+	if (g_hasPsx) {
+		_resPsx->loadLevelData(_level, kResTypePsx_SON);
+	}
 	_mapKey = _res.getKeyFromPath(_res._levelDescriptionsTable[_level].mapKey);
 	getAllPalKeys(_mapKey);
 	for (int i = 0; i < kSoundKeyPathsTableSize; ++i) {
@@ -2703,8 +2713,8 @@ void Game::doTick() {
 		if (_changeLevel) {
 			if (g_hasPsx) {
 				// display the inter-level loading screen
-				_resPsx.loadLevelData(_level, kResTypePsx_VRM);
-				if (_resPsx._vrmLoadingBitmap) {
+				_resPsx->loadLevelData(_level, kResTypePsx_VRM);
+				if (_resPsx->_vrmLoadingBitmap) {
 					_displayPsxLevelLoadingScreen = 1;
 					displayPsxLevelLoadingScreen();
 				}

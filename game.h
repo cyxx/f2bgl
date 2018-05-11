@@ -454,7 +454,7 @@ struct Game {
 	typedef int (Game::*RayCastCallbackType)(GameObject *o, CellMap *cell, int x, int z);
 
 	Resource _res;
-	ResourcePsx _resPsx;
+	ResourcePsx *_resPsx;
 	Cutscene *_cut;
 	Sound _snd;
 	Render *_render;

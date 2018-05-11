@@ -73,6 +73,9 @@ struct Delta16Decoder {
 	}
 };
 
+static const int16_t K0_1024[] = { 0, 960, 1840, 1568, 1952 };
+static const int16_t K1_1024[] = { 0,   0, -832, -880, -960 };
+
 static int8_t sext8(uint8_t x, int bits) {
 	const int shift = 8 - bits;
 	return ((int8_t)(x << shift)) >> shift;
@@ -87,50 +90,56 @@ struct XaDecoder {
 	int16_t _samples[224];
 	int _samplesSize;
 
+	bool _stereo;
+	int _inputDecodeSize;
+
 	XaDecoder() {
-		reset();
 		memset(_data, 0, sizeof(_data));
 		_dataSize = 0;
 		memset(_samples, 0, sizeof(_samples));
 		_samplesSize = 0;
 	}
 
-	void reset() {
+	void reset(bool stereo) {
 		_pcmL0 = _pcmL1 = 0;
 		_pcmR0 = _pcmR1 = 0;
+
+		_stereo = stereo;
+		_inputDecodeSize = stereo ? 128 : 16;
 	}
 
 	int decode(const uint8_t *src, int size) {
 		const int count = _dataSize + size;
-		if (count >= 128) {
-			size = 128 - _dataSize;
+		if (count >= _inputDecodeSize) {
+			size = _inputDecodeSize - _dataSize;
 		}
 		memcpy(_data + _dataSize, src, size);
 		_dataSize += size;
-		if (_dataSize == 128) {
-			decodeGroup_stereo(_data, _samples);
+		if (_dataSize == _inputDecodeSize) {
+			if (_stereo) {
+				_samplesSize = decodeGroup_stereo(_data, _samples);
+			} else {
+				_samplesSize = decodeGroup_mono(_data, _samples);
+			}
 			_dataSize = 0;
-			_samplesSize = 224;
 		} else {
 			_samplesSize = 0;
 		}
-		assert(_dataSize < 128);
+		assert(_dataSize < _inputDecodeSize);
 		return size;
 	}
 
 	// src points to a 128 bytes buffer, dst to a 224 bytes buffer
-	void decodeGroup_stereo(const uint8_t *src, int16_t *dst) {
-		static const int16_t K0_1024[] = { 0, 960, 1840, 1568 };
-		static const int16_t K1_1024[] = { 0,   0, -832, -880 };
+	int decodeGroup_stereo(const uint8_t *src, int16_t *dst) { // .XA
 		for (int i = 0; i < 4; ++i) {
 			const int shiftL = 12 - (src[4 + i * 2] & 15);
 			assert(shiftL >= 0);
 			const int filterL = src[4 + i * 2] >> 4;
-			assert(filterL < 4);
+			assert(filterL < 5);
 			const int shiftR = 12 - (src[5 + i * 2] & 15);
 			assert(shiftR >= 0);
 			const int filterR = src[5 + i * 2] >> 4;
-			assert(filterR < 4);
+			assert(filterR < 5);
 			for (int j = 0; j < 28; ++j) {
 				const uint8_t data = src[16 + i + j * 4];
 				const int tL = sext8(data & 15, 4);
@@ -143,9 +152,42 @@ struct XaDecoder {
 				_pcmR1 = _pcmR0;
 				_pcmR0 = sR;
 				*dst++ = clipS16(_pcmR0);
-                        }
-                }
+			}
+		}
+		return 224;
         }
+
+	// src points to a 16 bytes buffer, dst to a 28 bytes buffer
+	int decodeGroup_mono(const uint8_t *src, int16_t *dst) { // .SPU
+		const int shift = 12 - (*src & 15);
+		assert(shift >= 0);
+		const int filter = *src >> 4;
+		assert(filter < 5);
+		++src;
+		const int flag = *src++;
+		if (flag < 7) {
+			for (int i = 0; i < 14; ++i) {
+				const uint8_t b = *src++;
+				const int t1 = sext8(b & 15, 4);
+				const int s1 = (t1 << shift) + ((_pcmL0 * K0_1024[filter] + _pcmL1 * K1_1024[filter] + 512) >> 10);
+				_pcmL1 = _pcmL0;
+				_pcmL0 = s1;
+				*dst++ = clipS16(_pcmL0);
+				const int t2 = sext8(b >> 4, 4);
+				const int s2 = (t2 << shift) + ((_pcmL0 * K0_1024[filter] + _pcmL1 * K1_1024[filter] + 512) >> 10);
+				_pcmL1 = _pcmL0;
+				_pcmL0 = s2;
+				*dst++ = clipS16(_pcmL0);
+			}
+		} else {
+			for (int i = 0; i < 14; ++i) {
+				*dst++ = 0;
+				*dst++ = 0;
+			}
+			_pcmL1 = _pcmL0 = 0;
+		}
+		return 28;
+	}
 };
 
 struct SoundDataWav {
@@ -192,10 +234,31 @@ struct SoundDataWav {
 		_bufSize = dataSize - headerSize;
 		debug(kDebug_SOUND, "chunk size %d header size %d buf size %d", chunkSize, headerSize, _bufSize);
 		_buf = (uint8_t *)malloc(_bufSize);
-		if (_buf) {
-			fileRead(fp, _buf, _bufSize);
+		if (!_buf) {
+			warning("Unable to allocate %d bytes", _bufSize);
+			return false;
 		}
-                return true;
+		fileRead(fp, _buf, _bufSize);
+		return true;
+	}
+};
+
+struct SoundDataXa {
+	int _bufSize;
+	uint8_t *_buf;
+
+	SoundDataXa()
+		: _bufSize(0), _buf(0) {
+	}
+	bool load(File *fp, int dataSize, int mixerSampleRate) {
+		_bufSize = dataSize;
+		_buf = (uint8_t *)malloc(_bufSize);
+		if (!_buf) {
+			warning("Unable to allocate %d bytes", _bufSize);
+			return false;
+		}
+		fileRead(fp, _buf, _bufSize);
+		return true;
 	}
 };
 
@@ -206,22 +269,29 @@ static void mix(int16_t *dst, int pcm, int volume) {
 
 struct MixerSound {
 	SoundDataWav data;
+	SoundDataXa xa;
 	int readOffset;
 	bool compressed;
-	Delta16Decoder decoder;
+	Delta16Decoder d16Decoder;
+	XaDecoder xaDecoder;
 	int volumeL;
 	int volumeR;
 	int loopsCount;
+	int xaPos;
 
 	bool read(int16_t *dst, int len) {
+		return (xa._bufSize != 0) ? readXa(dst, len) : readWav(dst, len);
+	}
+
+	bool readWav(int16_t *dst, int len) {
 		int sample;
 		assert((len & 1) == 0);
 		for (int i = 0; i < len; i += 2) {
 			if (compressed) {
-				sample = decoder.decode(data._buf[readOffset]);
+				sample = d16Decoder.decode(data._buf[readOffset]);
 				++readOffset;
 				if (readOffset == 1) {
-					sample = decoder.decode(data._buf[readOffset]);
+					sample = d16Decoder.decode(data._buf[readOffset]);
 					++readOffset;
 				}
 			} else {
@@ -238,9 +308,27 @@ struct MixerSound {
 				}
 				readOffset = 0;
 				if (compressed) {
-					decoder.reset();
+					d16Decoder.reset();
 				}
 			}
+		}
+		return true;
+	}
+
+	bool readXa(int16_t *dst, int len) {
+		for (int i = 0; i < len; i += 2) {
+			if (xaPos >= xaDecoder._samplesSize) {
+				const int count = xaDecoder.decode(xa._buf + readOffset, xa._bufSize - readOffset);
+				readOffset += count;
+				if (readOffset >= xa._bufSize) {
+					return false;
+				}
+				xaPos = 0;
+			}
+			// mono to stereo
+			const int16_t sample = xaDecoder._samples[xaPos++];
+			mix(&dst[i + 0], sample, volumeL);
+			mix(&dst[i + 1], sample, volumeR);
 		}
 		return true;
 	}
@@ -397,6 +485,7 @@ void Mixer::playQueue(int preloadSize, int type) {
 	if (type == kMixerQueueType_XA) {
 		_queue->offset = 0;
 		_queue->step = 2 * (37800 << kFracBits) / _rate; // stereo
+		_queue->xaDecoder.reset(true); // stereo
 	}
 }
 
@@ -454,6 +543,27 @@ void Mixer::playXmi(File *f, int size) {
 void Mixer::stopXmi() {
 	MixerLock ml(_lock);
 	_xmiPlayer->unload();
+}
+
+void Mixer::playXa(File *fp, int dataSize, uint32_t id) {
+	MixerSound *snd = new MixerSound();
+	snd->xa.load(fp, dataSize, _rate);
+	snd->readOffset = 0;
+	snd->volumeL = _soundVolume;
+	snd->volumeR = _soundVolume;
+	snd->xaDecoder.reset(false); // mono
+	snd->xaPos = 0;
+	MixerLock ml(_lock);
+	for (int i = 0; i < kMaxSoundsCount; ++i) {
+		if (!_soundsTable[i]) {
+			_soundsTable[i] = snd;
+			_idsMap[i] = id;
+			break;
+		}
+	}
+}
+
+void Mixer::stopXa(uint32_t id) {
 }
 
 void Mixer::mixBuf(int16_t *buf, int len) {
