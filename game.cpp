@@ -154,6 +154,7 @@ void Game::clearLevelData() {
 
 	freeLevelData();
 	if (g_hasPsx) {
+		_resPsx->unloadLevelData(kResTypePsx_LEV);
 		_resPsx->unloadLevelData(kResTypePsx_SON);
 	}
 
@@ -1235,6 +1236,7 @@ void Game::initLevel(bool keepInventoryObjects) {
 	_varsTable[kVarConradLife] = 2000;
 	_res.loadLevelData(_res._levelDescriptionsTable[_level].name, _level + 1);
 	if (g_hasPsx) {
+		_resPsx->loadLevelData(_level, kResTypePsx_LEV);
 		_resPsx->loadLevelData(_level, kResTypePsx_SON);
 	}
 	_mapKey = _res.getKeyFromPath(_res._levelDescriptionsTable[_level].mapKey);

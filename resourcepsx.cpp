@@ -9,18 +9,29 @@ static const char *_levels[] = {
 ResourcePsx::ResourcePsx() {
 	_vrmLoadingBitmap = 0;
 	_vagOffsetsTableSize = 0;
+	memset(_levOffsetsTable, 0, sizeof(_levOffsetsTable));
+	_fileLev = 0;
 	memset(_sonOffsetsTable, 0, sizeof(_sonOffsetsTable));
 	_fileSon = 0;
 }
 
 void ResourcePsx::loadLevelData(int level, int resType) {
 	switch (resType) {
+	case kResTypePsx_LEV: {
+			char name[16];
+			snprintf(name, sizeof(name), "level%d.lev", level + 1);
+			_fileLev = fileOpenPsx(name, kFileType_PSX_LEVELDATA, level + 1);
+			if (_fileLev) {
+				readDataOffsetsTable(_fileLev, kResOffsetType_LEV, _levOffsetsTable);
+			}
+		}
+		break;
 	case kResTypePsx_SON: {
 			char name[16];
 			snprintf(name, sizeof(name), "level%d.son", level + 1);
 			_fileSon = fileOpenPsx(name, kFileType_PSX_LEVELDATA, level + 1);
 			if (_fileSon) {
-				readDataOffsetsTable(_fileSon, kResOffsetType_SON);
+				readDataOffsetsTable(_fileSon, kResOffsetType_SON, _sonOffsetsTable);
 				loadVAB(_fileSon);
 			}
 		}
@@ -40,7 +51,15 @@ void ResourcePsx::loadLevelData(int level, int resType) {
 
 void ResourcePsx::unloadLevelData(int resType) {
 	switch (resType) {
+	case kResTypePsx_LEV:
+		memset(_levOffsetsTable, 0, sizeof(_levOffsetsTable));
+		if (_fileLev) {
+			fileClose(_fileLev);
+			_fileLev = 0;
+		}
+		break;
 	case kResTypePsx_SON:
+		memset(_sonOffsetsTable, 0, sizeof(_sonOffsetsTable));
 		if (_fileSon) {
 			fileClose(_fileSon);
 			_fileSon = 0;
@@ -48,18 +67,18 @@ void ResourcePsx::unloadLevelData(int resType) {
 		_vagOffsetsTableSize = 0;
 		break;
 	case kResTypePsx_VRM:
-		free(_vrmLoadingBitmap);
-		_vrmLoadingBitmap = 0;
+		if (_vrmLoadingBitmap) {
+			free(_vrmLoadingBitmap);
+			_vrmLoadingBitmap = 0;
+		}
 		break;
 	}
 }
 
-void ResourcePsx::readDataOffsetsTable(File *fp, int offsetType) {
+void ResourcePsx::readDataOffsetsTable(File *fp, int offsetType, ResPsxOffset *offsetsTable) {
 	const int dataSize = fileSize(fp);
 	const int count = fileReadUint32LE(fp);
 	const uint32_t baseOffset = sizeof(uint32_t) + count * (sizeof(uint32_t) + 4);
-	// if (offsetType == kResOffsetType_SON) {
-	ResPsxOffset *offsetsTable = _sonOffsetsTable;
 	for (int i = 0; i < count; ++i) {
 		offsetsTable[i].offset = fileReadUint32LE(fp) + baseOffset;
 	}
@@ -71,7 +90,7 @@ void ResourcePsx::readDataOffsetsTable(File *fp, int offsetType) {
 }
 
 uint32_t ResourcePsx::seekData(const char *ext, File *fp, int offsetType, uint32_t offset) {
-	// if (offsetType == kResOffsetType_SON)
+	assert(offsetType == kResOffsetType_SON);
 	for (int i = 0; i < kResPsxSonOffsetsTableSize; ++i) {
 		if (strcmp(_sonOffsetsTable[i].ext, ext) == 0) {
 			fileSetPos(fp, _sonOffsetsTable[i].offset + offset, kFilePosition_SET);
@@ -87,13 +106,13 @@ void ResourcePsx::loadVAB(File *fp) {
 
 	const uint32_t vhSize = seekData("VH", fp, kResOffsetType_SON);
 	if (vhSize == 0) {
-		warning("Resource::loadVAB() Fail to read .VH resource");
+		warning("'VH' data resource not found");
 		return;
 	}
 	uint8_t header[32];
 	fileRead(fp, header, sizeof(header));
 	if (memcmp(header, "pBAV", 4) != 0 || READ_LE_UINT32(header + 4) != 7) {
-		warning("Resource::loadVAB() Unexpected header '%08x'", READ_LE_UINT32(header));
+		warning("Unexpected VAB data header '%08x'", READ_LE_UINT32(header));
 		return;
 	}
 	const int programsCount = READ_LE_UINT16(header + 18);
@@ -155,6 +174,7 @@ uint32_t ResourcePsx::seekVag(int num) {
 		if (vbSize != 0) {
 			return _vagOffsetsTable[num].size;
 		}
+		warning("'VB' data resource not found");
 	}
 	return 0;
 }
