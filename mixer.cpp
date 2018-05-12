@@ -195,7 +195,9 @@ struct SoundDataWav {
 	SoundDataWav()
 		: _bufSize(0), _buf(0) {
 	}
-
+	~SoundDataWav() {
+		free(_buf);
+	}
 	bool load(File *fp, int dataSize, int mixerSampleRate) {
 		const int pos = fileGetPos(fp);
 		char buf[8];
@@ -246,6 +248,9 @@ struct SoundDataXa {
 
 	SoundDataXa()
 		: _bufSize(0), _buf(0) {
+	}
+	~SoundDataXa() {
+		free(_buf);
 	}
 	bool load(File *fp, int dataSize, int mixerSampleRate) {
 		if (mixerSampleRate != 22050) { // SPU samples frequency
