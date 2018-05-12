@@ -180,10 +180,7 @@ struct XaDecoder {
 				*dst++ = clipS16(_pcmL0);
 			}
 		} else {
-			for (int i = 0; i < 14; ++i) {
-				*dst++ = 0;
-				*dst++ = 0;
-			}
+			memset(dst, 0, 2 * 14 * sizeof(int16_t));
 			_pcmL1 = _pcmL0 = 0;
 		}
 		return 28;
