@@ -765,8 +765,6 @@ void Game::loadSceneMap(int16_t key) {
 	assert(_sceneAnimationsCount2 <= _sceneAnimationsCount - 2);
 	int palettesCount = READ_LE_UINT32(p + 28);
 	debug(kDebug_GAME, "Game::loadSceneMap() key %d cameras %d palettes %d animations %d", key, _sceneCamerasCount, palettesCount, _sceneAnimationsCount);
-//	memset(_sceneGridX, 0, sizeof(_sceneGridX));
-//	memset(_sceneGridZ, 0, sizeof(_sceneGridZ));
 	uint32_t dataOffset = READ_LE_UINT32(p);
 	uint8_t *q = _res.getData(kResType_MAP, key, "MAPDATA");
 	assert(q == p + dataOffset);
@@ -790,12 +788,6 @@ void Game::loadSceneMap(int16_t key) {
 				cell->type = 0;
 			}
 			if (cell->type > 0) {
-//				_sceneGridZ[x][z] = (int16_t)READ_LE_UINT16(q + 6); // w
-//				_sceneGridX[x][z] = (int16_t)READ_LE_UINT16(q + 12); // s
-//				assert(z + 1 < 64);
-//				_sceneGridX[x][z + 1] = (int16_t)READ_LE_UINT16(q + 8); // n
-//				assert(x + 1 < 64);
-//				_sceneGridZ[x + 1][z] = (int16_t)READ_LE_UINT16(q + 10); // e
 				cell->west = READ_LE_UINT16(q + 6);
 				cell->north = READ_LE_UINT16(q + 8);
 				cell->east = READ_LE_UINT16(q + 10);
@@ -849,18 +841,6 @@ void Game::loadSceneMap(int16_t key) {
 			sa->next = i;
 		}
 		if (sa->aniKey != 0) {
-#if 0
-			p = _res.getData(kResType_ANI, sa->aniKey, 0);
-			if (p == 0) {
-				if ((sa->type & 1) == 1) {
-					_sceneAnimationsTextureTable[i].data = _sceneDefaultGroundTexture;
-				} else {
-					_sceneAnimationsTextureTable[i].data = _sceneDefaultWallTexture;
-				}
-				sa->type &= ~2;
-				sa->aniKey = 0;
-			} else
-#endif
 			sa->framesCount = 0;
 			int16_t aniKey = _res.getChild(kResType_ANI, sa->aniKey);
 			while (aniKey != 0) {
@@ -2003,9 +1983,6 @@ void Game::runObject(GameObject *o) {
 		}
 		o->updateColliding = false;
 		assert(o != o->o_next);
-//		if (o == o->o_next) {
-//			o->o_next = 0;
-//		}
 	} while ((o = o->o_next) != 0 && (o->flags[1] & 0x100) == 0);
 }
 
