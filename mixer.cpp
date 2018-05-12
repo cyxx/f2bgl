@@ -367,8 +367,8 @@ struct MixerQueue {
 	int size;
 	int preloadSize;
 	MixerQueueList *head;
-	uint32_t offset;
-	uint32_t step;
+	uint32_t xaOffset;
+	uint32_t xaStep;
 };
 
 static void nullMixerLock(int lock) {
@@ -503,8 +503,8 @@ void Mixer::playQueue(int preloadSize, int type) {
 	_queue->size = 0;
 	_queue->head = 0;
 	if (type == kMixerQueueType_XA) {
-		_queue->offset = 0;
-		_queue->step = 2 * (37800 << kFracBits) / _rate; // stereo
+		_queue->xaOffset = 0;
+		_queue->xaStep = 2 * (37800 << kFracBits) / _rate; // stereo
 		_queue->xaDecoder.reset(true); // stereo
 	}
 }
@@ -617,7 +617,7 @@ void Mixer::mixBuf(int16_t *buf, int len) {
 			break;
 		case kMixerQueueType_XA:
 			for (int i = 0; mql && i < len; i += 2) {
-				int pos = _queue->offset >> kFracBits;
+				int pos = _queue->xaOffset >> kFracBits;
 				if (pos >= _queue->xaDecoder._samplesSize) {
 					const int count = _queue->xaDecoder.decode(mql->buffer + mql->read, mql->size - mql->read);
 					mql->read += count;
@@ -628,7 +628,7 @@ void Mixer::mixBuf(int16_t *buf, int len) {
 						mql = next;
 						_queue->head = mql;
 					}
-					_queue->offset = pos = 0;
+					_queue->xaOffset = pos = 0;
 				}
 				assert(pos >= 0 && pos + 1 < _queue->xaDecoder._samplesSize);
 				const int j = pos + 2;
@@ -636,10 +636,10 @@ void Mixer::mixBuf(int16_t *buf, int len) {
 					mix(&buf[i + 0], _queue->xaDecoder._samples[pos + 0], _musicVolume);
 					mix(&buf[i + 1], _queue->xaDecoder._samples[pos + 1], _musicVolume);
 				} else {
-					mix(&buf[i + 0], lerpS16(_queue->xaDecoder._samples[pos + 0], _queue->xaDecoder._samples[j + 0], _queue->offset), _musicVolume);
-					mix(&buf[i + 1], lerpS16(_queue->xaDecoder._samples[pos + 1], _queue->xaDecoder._samples[j + 1], _queue->offset), _musicVolume);
+					mix(&buf[i + 0], lerpS16(_queue->xaDecoder._samples[pos + 0], _queue->xaDecoder._samples[j + 0], _queue->xaOffset), _musicVolume);
+					mix(&buf[i + 1], lerpS16(_queue->xaDecoder._samples[pos + 1], _queue->xaDecoder._samples[j + 1], _queue->xaOffset), _musicVolume);
 				}
-				_queue->offset += _queue->step;
+				_queue->xaOffset += _queue->xaStep;
 			}
 			break;
 		}
