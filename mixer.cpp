@@ -271,23 +271,23 @@ static void mix(int16_t *dst, int pcm, int volume) {
 	*dst = clipS16(pcm);
 }
 
-struct MixerSound {
+struct MixerSoundWav : MixerSound {
 	SoundDataWav data;
-	SoundDataXa xa;
 	int readOffset;
 	bool compressed;
 	Delta16Decoder d16Decoder;
-	XaDecoder xaDecoder;
-	int volumeL;
-	int volumeR;
-	int loopsCount;
-	int xaPos;
 
-	bool read(int16_t *dst, int len) {
-		return (xa._bufSize != 0) ? readXa(dst, len) : readWav(dst, len);
+	MixerSoundWav(bool c)
+		: compressed(c) {
 	}
 
-	bool readWav(int16_t *dst, int len) {
+	bool load(File *f, int dataSize, int mixerSampleRate) {
+		d16Decoder.reset();
+		readOffset = 0;
+		return data.load(f, dataSize, mixerSampleRate);
+	}
+
+	bool readSamples(int16_t *dst, int len) {
 		int sample;
 		assert((len & 1) == 0);
 		for (int i = 0; i < len; i += 2) {
@@ -318,21 +318,34 @@ struct MixerSound {
 		}
 		return true;
 	}
+};
 
-	bool readXa(int16_t *dst, int len) {
+struct MixerSoundSpu: MixerSound {
+	SoundDataXa data;
+	int readOffset;
+	XaDecoder xaDecoder;
+	int samplesOffset;
+
+	bool load(File *f, int dataSize, int mixerSampleRate) {
+		xaDecoder.reset(false); // mono
+		readOffset = samplesOffset = 0;
+		return data.load(f, dataSize, mixerSampleRate);
+	}
+
+	bool readSamples(int16_t *dst, int len) {
 		for (int i = 0; i < len; i += 2) {
-			if (xaPos >= xaDecoder._samplesSize) {
-				const int count = xaDecoder.decode(xa._buf + readOffset, xa._bufSize - readOffset);
+			if (samplesOffset >= xaDecoder._samplesSize) {
+				const int count = xaDecoder.decode(data._buf + readOffset, data._bufSize - readOffset);
 				readOffset += count;
-				if (readOffset >= xa._bufSize) {
+				if (readOffset >= data._bufSize) {
 					return false;
 				}
-				xaPos = 0;
+				samplesOffset = 0;
 			}
 			// mono to stereo
-			const int16_t sample = xaDecoder._samples[xaPos++];
-			mix(&dst[i + 0], sample, volumeL);
-			mix(&dst[i + 1], sample, volumeR);
+			const int16_t sample = xaDecoder._samples[samplesOffset++];
+			mix(&dst[i + 0], sample, kDefaultVolume);
+			mix(&dst[i + 1], sample, kDefaultVolume);
 		}
 		return true;
 	}
@@ -421,13 +434,11 @@ int Mixer::findIndexById(uint32_t id) const {
 }
 
 void Mixer::playWav(File *fp, int dataSize, int volume, int pan, uint32_t id, bool isVoice, bool compressed) {
-	MixerSound *snd = new MixerSound();
-	if (!snd->data.load(fp, dataSize, _rate)) {
+	MixerSound *snd = new MixerSoundWav(compressed);
+	if (!snd->load(fp, dataSize, _rate)) {
 		delete snd;
 		return;
 	}
-	snd->readOffset = 0;
-	snd->compressed = compressed;
 	assert(volume >= 0 && volume < 128);
 	if (isVoice) {
 		volume = volume * _voiceVolume / kDefaultVolume;
@@ -553,16 +564,14 @@ void Mixer::stopXmi() {
 }
 
 void Mixer::playXa(File *fp, int dataSize, uint32_t id) {
-	MixerSound *snd = new MixerSound();
-	if (!snd->xa.load(fp, dataSize, _rate)) {
+	MixerSound *snd = new MixerSoundSpu();
+	if (!snd->load(fp, dataSize, _rate)) {
 		delete snd;
 		return;
 	}
-	snd->readOffset = 0;
 	snd->volumeL = _soundVolume;
 	snd->volumeR = _soundVolume;
-	snd->xaDecoder.reset(false); // mono (SPU)
-	snd->xaPos = 0;
+	snd->loopsCount = 0;
 	MixerLock ml(_lock);
 	for (int i = 0; i < kMaxSoundsCount; ++i) {
 		if (!_soundsTable[i]) {
@@ -635,7 +644,7 @@ void Mixer::mixBuf(int16_t *buf, int len) {
 	}
 	for (int i = 0; i < kMaxSoundsCount; ++i) {
 		if (_soundsTable[i]) {
-			if (!_soundsTable[i]->read(buf, len)) {
+			if (!_soundsTable[i]->readSamples(buf, len)) {
 				delete _soundsTable[i];
 				_soundsTable[i] = 0;
 				_idsMap[i] = 0;

@@ -24,7 +24,15 @@ enum {
 	kMixerQueueType_XA, // stereo 37800Hz
 };
 
-struct MixerSound;
+struct MixerSound {
+	int volumeL;
+	int volumeR;
+	int loopsCount;
+	virtual ~MixerSound() {}
+	virtual bool load(File *f, int dataSize, int mixerSampleRate) = 0;
+	virtual bool readSamples(int16_t *, int len) = 0;
+};
+
 struct MixerQueue;
 struct XmiPlayer;
 
