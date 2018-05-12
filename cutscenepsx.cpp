@@ -2,7 +2,6 @@
 #include "cutscenepsx.h"
 #include "render.h"
 #include "sound.h"
-#include "textureconvert.h"
 
 //
 // FFmpeg
@@ -65,6 +64,13 @@ void Mdec::init(int w, int h) {
 		avcodec_open2(_context, codec, 0);
 		_frame = av_frame_alloc();
 	}
+}
+
+static uint32_t yuv420_to_rgba(int y, int u, int v) {
+	const int r = CLIP((int)(y + 1.402 * (v - 128)),                     0, 255);
+	const int g = CLIP((int)(y - 0.344 * (u - 128) - 0.714 * (v - 128)), 0, 255);
+	const int b = CLIP((int)(y + 1.772 * (u - 128)),                     0, 255);
+	return 0xFF000000 | (b << 16) | (g << 8) | r;
 }
 
 void Mdec::decode(const uint8_t *data, int size) {
