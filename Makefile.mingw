@@ -1,11 +1,30 @@
 
+
+
+CXX      := g++
+STRIP    := strip
+WINDRES  := windres
+CV2PDB   := cv2pdb
+UPX      := upx
+
+
+
 SDL_CFLAGS := `sdl2-config --cflags`
 SDL_LIBS   := `sdl2-config --libs`
+CXXFLAGS += -Wall -Wno-sign-compare -MMD -g $(SDL_CFLAGS)
 
-CXX      := i686-w64-mingw32-g++
-STRIP    := i686-w64-mingw32-strip
-WINDRES  := i686-w64-mingw32-windres
-CXXFLAGS += -Wall -Wno-sign-compare -MMD $(SDL_CFLAGS)
+
+BIN = release/
+NAME = $(BIN)f2bgl.exe
+
+
+release: setup f2bgl.exe strip package
+
+
+debug: CXXFLAGS += -DDEBUG -g
+debug: BIN = debug/
+debug: setup f2bgl.exe package pdb 
+
 
 LIBS = $(SDL_LIBS) -lopengl32 -lWildMidi.dll -lfluidsynth.dll
 
@@ -21,15 +40,28 @@ DEPS = $(SRCS:.cpp=.d)
 ICON = dists/win32/resource.rc
 
 f2bgl.exe: $(OBJS) $(ICON).o
-	$(CXX) $(LDFLAGS) -o $@ $^ -static-libgcc -static-libstdc++ $(LIBS) -Wl,-Bstatic,--subsystem=console -lz
-	$(STRIP) $@
-	upx -9 $@
+	$(CXX) $(LDFLAGS) -o $(NAME) $^ -static-libgcc -static-libstdc++ $(LIBS) -Wl,-Bstatic,--subsystem=console -lz
+
+setup:
+	mkdir -p $(BIN)
+	
+pdb:
+	./$(CV2PDB) $(NAME)
+	
+strip:
+	$(STRIP) $(NAME)
+	$(UPX) -9 $(NAME)
+	
+	
+package:
+	./cpld.bash $(NAME) $(BIN)
+	cp README.txt $(BIN)
 
 $(ICON).o: $(ICON)
 	$(WINDRES) -i $^ -o $@
 
 clean:
-	rm -f *.o *.d $(ICON).o
+	rm -f *.o *.d $(ICON).o	
 
 -include $(DEPS)
 
