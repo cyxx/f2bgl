@@ -1,0 +1,21 @@
+you will need msys2
+
+use pacman to install: 
+	pacman -S --needed base-devel mingw-w64-i686-toolchain mingw-w64-x86_64-toolchain mingw-w64-i686-cmake mingw-w64-x86_64-cmake
+	pacman -S mingw-w64-x86_64-pkg-config mingw-w64-x86_64-SDL2
+	pacman -S mingw-w64-cross-binutils
+	
+download fluidsynth and wildmidi and compile (this is a good chunk of work)
+
+make with
+
+make -f makefile.mingw
+
+
+debug can be made with
+
+make debug -f makefile.mingw
+
+debug will generate pdb's so can be debugged with visual studio
+	
+ 
