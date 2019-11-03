@@ -2,20 +2,9 @@
 #include "cutscenepsx.h"
 #include "render.h"
 #include "sound.h"
-
-//
-// FFmpeg
-//
-
-extern "C" {
-#include <libavcodec/avcodec.h>
-// extern AVCodec ff_mdec_decoder;
-}
+#include "mdec.h"
 
 struct Mdec {
-	AVCodecContext *_context;
-	AVFrame *_frame;
-
 	uint8_t *_rgba;
 	int _w, _h;
 
@@ -27,13 +16,8 @@ struct Mdec {
 };
 
 Mdec::Mdec() {
-	_context = 0;
-	_frame = 0;
-
 	_rgba = 0;
 	_w = _h = 0;
-	avcodec_register_all();
-	// avcodec_register(&ff_mdec_decoder);
 }
 
 void Mdec::fini() {
@@ -41,29 +25,12 @@ void Mdec::fini() {
 		free(_rgba);
 		_rgba = 0;
 	}
-	if (_context) {
-		avcodec_free_context(&_context);
-		_context = 0;
-	}
-	if (_frame) {
-		av_frame_free(&_frame);
-		_frame = 0;
-	}
 }
 
 void Mdec::init(int w, int h) {
 	_w = w;
 	_h = h;
 	_rgba = (uint8_t *)malloc(w * 4 * h);
-
-	const AVCodec *codec = avcodec_find_decoder(AV_CODEC_ID_MDEC);
-	_context = avcodec_alloc_context3(codec);
-	if (_context) {
-		_context->width  = w;
-		_context->height = h;
-		avcodec_open2(_context, codec, 0);
-		_frame = av_frame_alloc();
-	}
 }
 
 static uint32_t yuv420_to_rgba(int y, int u, int v) {
@@ -73,31 +40,23 @@ static uint32_t yuv420_to_rgba(int y, int u, int v) {
 	return 0xFF000000 | (b << 16) | (g << 8) | r;
 }
 
-void Mdec::decode(const uint8_t *data, int size) {
-	AVPacket pkt;
-	av_new_packet(&pkt, size);
-	memcpy(pkt.data, data, size);
-#if LIBAVCODEC_VERSION_MAJOR <= 57
-	int hasFrame = 0;
-	int ret = avcodec_decode_video2(_context, _frame, &hasFrame, &pkt);
-#else
-	int ret = avcodec_send_packet(_context, &pkt);
-	if (!(ret < 0)) {
-		ret = avcodec_receive_frame(_context, _frame);
-	}
-#endif
-	if (!(ret < 0)) {
-		for (int y = 0; y < _frame->height; ++y) {
-			const uint8_t *Y = _frame->data[0] + y * _frame->linesize[0];
-			const uint8_t *U = _frame->data[1] + y / 2 * _frame->linesize[1];
-			const uint8_t *V = _frame->data[2] + y / 2 * _frame->linesize[2];
-			for (int x = 0; x < _frame->width; ++x) {
-				const uint32_t color = yuv420_to_rgba(Y[x], U[x / 2], V[x / 2]);
-				memcpy(_rgba + ((_h - 1 - y) * _w + x) * 4, &color, 4);
-			}
+static void outputMdecCb(const MdecOutput *output, void *userdata) {
+	Mdec *mdec = (Mdec *)userdata;
+	uint8_t *dst = mdec->_rgba + (mdec->_h - 1) * mdec->_w * 4;
+	for (int y = 0; y < output->h; ++y) {
+		const uint8_t *Y = output->planes[0].ptr + y * output->planes[0].pitch;
+		const uint8_t *U = output->planes[1].ptr + y / 2 * output->planes[1].pitch;
+		const uint8_t *V = output->planes[2].ptr + y / 2 * output->planes[2].pitch;
+		for (int x = 0; x < output->w; ++x) {
+			const uint32_t color = yuv420_to_rgba(Y[x], U[x / 2], V[x / 2]);
+			memcpy(&dst[x * 4], &color, 4);
 		}
+		dst -= mdec->_w * 4;
 	}
-	av_packet_unref(&pkt);
+}
+
+void Mdec::decode(const uint8_t *data, int size) {
+	decodeMDEC(data, size, _w, _h, this, outputMdecCb);
 }
 
 CutscenePsx::CutscenePsx(Render *render, Game *g, Sound *sound)
