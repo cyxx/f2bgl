@@ -1,27 +1,31 @@
 
+#include <math.h>
 #include "cutscenepsx.h"
 #include "render.h"
 #include "sound.h"
 #include "mdec.h"
 
 static uint32_t yuv420_to_rgba(int y, int u, int v) {
-	const int r = CLIP((int)(y + 1.402 * (v - 128)),                     0, 255);
-	const int g = CLIP((int)(y - 0.344 * (u - 128) - 0.714 * (v - 128)), 0, 255);
-	const int b = CLIP((int)(y + 1.772 * (u - 128)),                     0, 255);
+	const int r = CLIP((int)round(y + 1.402 * v),             0, 255);
+	const int g = CLIP((int)round(y - 0.344 * u - 0.714 * v), 0, 255);
+	const int b = CLIP((int)round(y + 1.772 * u),             0, 255);
 	return 0xFF000000 | (b << 16) | (g << 8) | r;
 }
 
 static void outputMdecCb(const MdecOutput *output, void *userdata) {
 	CutscenePsx *cut = (CutscenePsx *)userdata;
 	uint32_t *dst = (uint32_t *)cut->_rgbaBuffer + (cut->_header.h - 1) * cut->_header.w;
+	const uint8_t *luma = output->planes[0].ptr;
+	const uint8_t *cb = output->planes[1].ptr;
+	const uint8_t *cr = output->planes[2].ptr;
 	for (int y = 0; y < output->h; ++y) {
-		const uint8_t *Y = output->planes[0].ptr + y * output->planes[0].pitch;
-		const uint8_t *U = output->planes[1].ptr + y / 2 * output->planes[1].pitch;
-		const uint8_t *V = output->planes[2].ptr + y / 2 * output->planes[2].pitch;
 		for (int x = 0; x < output->w; ++x) {
-			dst[x] = yuv420_to_rgba(Y[x], U[x / 2], V[x / 2]);
+			dst[x] = yuv420_to_rgba(luma[x], cb[x / 2] - 128, cr[x / 2] - 128);
 		}
 		dst -= cut->_header.w;
+		luma += output->planes[0].pitch;
+		cb += output->planes[1].pitch * (y & 1);
+		cr += output->planes[2].pitch * (y & 1);
 	}
 }
 
