@@ -2,7 +2,7 @@
 #ifndef MDEC_H__
 #define MDEC_H__
 
-#include <stdint.h>
+#include "util.h"
 
 struct MdecOutput {
 	int w, h;

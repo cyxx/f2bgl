@@ -14,8 +14,6 @@ enum {
 	kCutscenePsxVideoHeight = 240,
 };
 
-struct Mdec;
-
 struct DpsHeader {
 	uint16_t w, h;
 	uint16_t framesCount;
@@ -25,11 +23,11 @@ struct DpsHeader {
 };
 
 struct CutscenePsx: Cutscene {
-	Mdec *_mdec;
 	uint8_t _sector[kSectorSize];
 	DpsHeader _header;
 	int _frameCounter;
 	int _sectorCounter;
+	uint8_t *_rgbaBuffer;
 
 	CutscenePsx(Render *render, Game *g, Sound *sound);
 	virtual ~CutscenePsx();

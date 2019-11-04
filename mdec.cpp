@@ -1,10 +1,5 @@
 
-#include <assert.h>
-#include <stdint.h>
-#include <stdlib.h>
-#include <string.h>
 #include <math.h>
-#include "intern.h"
 #include "mdec.h"
 #include "mdec_coeffs.h"
 
@@ -18,7 +13,7 @@ struct BitStream { // most significant 16 bits
 		: _src(src), _len(0), _end(src + size) {
 	}
 
-	bool endOfStream() {
+	bool endOfStream() const {
 		return _src >= _end && _len == 0;
 	}
 

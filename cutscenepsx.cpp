@@ -4,35 +4,6 @@
 #include "sound.h"
 #include "mdec.h"
 
-struct Mdec {
-	uint8_t *_rgba;
-	int _w, _h;
-
-	Mdec();
-
-	void fini();
-	void init(int w, int h);
-	void decode(const uint8_t *data, int size);
-};
-
-Mdec::Mdec() {
-	_rgba = 0;
-	_w = _h = 0;
-}
-
-void Mdec::fini() {
-	if (_rgba) {
-		free(_rgba);
-		_rgba = 0;
-	}
-}
-
-void Mdec::init(int w, int h) {
-	_w = w;
-	_h = h;
-	_rgba = (uint8_t *)malloc(w * 4 * h);
-}
-
 static uint32_t yuv420_to_rgba(int y, int u, int v) {
 	const int r = CLIP((int)(y + 1.402 * (v - 128)),                     0, 255);
 	const int g = CLIP((int)(y - 0.344 * (u - 128) - 0.714 * (v - 128)), 0, 255);
@@ -41,32 +12,25 @@ static uint32_t yuv420_to_rgba(int y, int u, int v) {
 }
 
 static void outputMdecCb(const MdecOutput *output, void *userdata) {
-	Mdec *mdec = (Mdec *)userdata;
-	uint8_t *dst = mdec->_rgba + (mdec->_h - 1) * mdec->_w * 4;
+	CutscenePsx *cut = (CutscenePsx *)userdata;
+	uint32_t *dst = (uint32_t *)cut->_rgbaBuffer + (cut->_header.h - 1) * cut->_header.w;
 	for (int y = 0; y < output->h; ++y) {
 		const uint8_t *Y = output->planes[0].ptr + y * output->planes[0].pitch;
 		const uint8_t *U = output->planes[1].ptr + y / 2 * output->planes[1].pitch;
 		const uint8_t *V = output->planes[2].ptr + y / 2 * output->planes[2].pitch;
 		for (int x = 0; x < output->w; ++x) {
-			const uint32_t color = yuv420_to_rgba(Y[x], U[x / 2], V[x / 2]);
-			memcpy(&dst[x * 4], &color, 4);
+			dst[x] = yuv420_to_rgba(Y[x], U[x / 2], V[x / 2]);
 		}
-		dst -= mdec->_w * 4;
+		dst -= cut->_header.w;
 	}
 }
 
-void Mdec::decode(const uint8_t *data, int size) {
-	decodeMDEC(data, size, _w, _h, this, outputMdecCb);
-}
-
 CutscenePsx::CutscenePsx(Render *render, Game *g, Sound *sound)
-	: Cutscene(render, g, sound) {
-	_mdec = new Mdec();
+	: Cutscene(render, g, sound), _rgbaBuffer(0) {
 }
 
 CutscenePsx::~CutscenePsx() {
-	delete _mdec;
-	_mdec = 0;
+	free(_rgbaBuffer);
 }
 
 static const char *_namesTable[] = {
@@ -185,9 +149,9 @@ bool CutscenePsx::play() {
 				}
 				memcpy(videoData + currentSector * kVideoDataSize, _sector + kVideoHeaderSize, kVideoDataSize);
 				if (currentSector == videoSectorsCount - 1) {
-					_mdec->decode(videoData, videoSectorsCount * kVideoDataSize);
+					decodeMDEC(videoData, videoSectorsCount * kVideoDataSize, _header.w, _header.h, this, outputMdecCb);
 					const int y = (kCutscenePsxVideoHeight - _header.h) / 2;
-					_render->copyToOverlay(0, y, _header.w, _header.h, _mdec->_rgba, true);
+					_render->copyToOverlay(0, y, _header.w, _header.h, _rgbaBuffer, true);
 					++_frameCounter;
 					free(videoData);
 					videoData = 0;
@@ -254,7 +218,7 @@ bool CutscenePsx::load(int num) {
 			fileClose(_fp);
 			_fp = 0;
 		} else {
-			_mdec->init(_header.w, _header.h);
+			_rgbaBuffer = (uint8_t *)malloc(_header.w * _header.h * sizeof(uint32_t));
 			_render->clearScreen();
 			_render->resizeOverlay(_header.w, _header.h, true, kCutscenePsxVideoWidth, kCutscenePsxVideoHeight);
 		}
@@ -263,8 +227,9 @@ bool CutscenePsx::load(int num) {
 }
 
 void CutscenePsx::unload() {
-	if (_mdec) {
-		_mdec->fini();
+	if (_rgbaBuffer) {
+		free(_rgbaBuffer);
+		_rgbaBuffer = 0;
 	}
 	if (_fp) {
 		fileClose(_fp);
