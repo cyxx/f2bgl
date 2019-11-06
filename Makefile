@@ -10,7 +10,7 @@ LDFLAGS  += $(LTO)
 
 SRCS = cabinet.cpp camera.cpp collision.cpp cutscene.cpp cutscenepsx.cpp decoder.cpp file.cpp \
 	font.cpp game.cpp icons.cpp input.cpp installer.cpp inventory.cpp main.cpp mdec.cpp menu.cpp \
-	mixer.cpp opcodes.cpp raycast.cpp render.cpp resource.cpp resourcepsx.cpp saveload.cpp scaler.cpp \
+	mixer.cpp opcodes.cpp raycast.cpp render.cpp resource.cpp saveload.cpp scaler.cpp \
 	screenshot.cpp sound.cpp spritecache.cpp stub.cpp texturecache.cpp \
 	trigo.cpp util.cpp xmiplayer.cpp
 

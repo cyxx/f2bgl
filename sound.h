@@ -11,7 +11,6 @@
 #include "mixer.h"
 
 struct Resource;
-struct ResourcePsx;
 
 struct DigiSnd {
 	char name[16];
@@ -65,7 +64,6 @@ struct Sound {
 	int _sfxVolume;
 	int _sfxPan;
 	Resource *_res;
-	ResourcePsx *_resPsx;
 	Mixer _mix;
 	bool _digiCompressed;
 	int _digiCount;

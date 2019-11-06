@@ -5,11 +5,10 @@
 
 #include "file.h"
 #include "resource.h"
-#include "resourcepsx.h"
 #include "sound.h"
 
 Sound::Sound(Resource *res)
-	: _res(res), _resPsx(0), _mix() {
+	: _res(res), _mix() {
 	_sfxVolume = kDefaultVolume;
 	_sfxPan = kDefaultPan;
 	_digiCount = 0;
@@ -233,14 +232,14 @@ void Sound::playMidi(const char *name) {
 }
 
 void Sound::playVag(int num) {
-	if (_resPsx) {
-		const uint32_t size = _resPsx->seekVag(num);
-		_mix.playXa(_resPsx->_fileSon, size, num);
+	if (g_hasPsx) {
+		const uint32_t size = _res->seekVag(num);
+		_mix.playXa(_res->_fileSon, size, num);
 	}
 }
 
 void Sound::stopVag(int num) {
-	if (_resPsx) {
+	if (g_hasPsx) {
 		_mix.stopXa(num);
 	}
 }
