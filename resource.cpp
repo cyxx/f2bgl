@@ -1160,24 +1160,35 @@ uint32_t Resource::seekVag(int num) {
 }
 
 void Resource::loadTreePsx(File *fp, int dataSize, int type) {
+
+	const bool hasKeys = (type == kResType_ANI || type == kResType_STM);
+
 	uint8_t header[0x20];
 	fileRead(fp, header, sizeof(header));
 
 	const int count = READ_LE_UINT32(header + 4);
 	const int sizeOfOffset = READ_LE_UINT32(header + 8);
-	const uint32_t baseOffset = sizeof(header) + count * sizeOfOffset;
+
+	uint32_t offset = sizeof(header) + count * sizeOfOffset;
+	if (hasKeys) {
+		offset += 2 * sizeof(uint16_t) * count;
+	}
 
 	_treesTable[type] = ALLOC<ResTreeNode>(count);
 	_treesTableCount[type] = count;
-	uint32_t offset = baseOffset;
 	for (uint32_t j = 0; j < count; ++j) {
 		ResTreeNode *node = &_treesTable[type][j];
 		memset(node, 0, sizeof(ResTreeNode));
-		// node->childKey =
-		// node->nextKey =
 		node->dataOffset = offset;
 		const uint32_t size = (sizeOfOffset == sizeof(uint32_t)) ? fileReadUint32LE(fp) : fileReadUint16LE(fp);
 		node->dataSize = size;
 		offset += size;
+	}
+	if (hasKeys) {
+		for (uint32_t j = 0; j < count; ++j) {
+			ResTreeNode *node = &_treesTable[type][j];
+			node->childKey = fileReadUint16LE(fp);
+			node->nextKey = fileReadUint16LE(fp);
+		}
 	}
 }
