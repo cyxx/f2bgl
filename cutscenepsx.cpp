@@ -41,13 +41,13 @@ static const char *_namesTable[] = {
 	// 0
 	"moar",
 	"moba",
-	"moex", // grex
+	"moex",
 	"moel",
 	// 4
-	"molz", // grlz
+	"molz",
 	"modp",
 	"mopl",
-	"momc", // grmc
+	"momc",
 	// 8
 	"mogr",
 	"mobu",
@@ -81,7 +81,7 @@ static const char *_namesTable[] = {
 	// 32
 	"fin1",
 	"boum",
-	"mosm", // grsm
+	"mosm",
 	"hcle",
 	// 36
 	"scle",
@@ -106,6 +106,16 @@ static const char *_namesTable[] = {
 	// 52
 	"fui2",
 	"gend"
+};
+
+static const struct {
+	const char *name;
+	int num;
+} _namesTable_gr[] = {
+	{ "grex", 2 },
+	{ "grlz", 4 },
+	{ "grmc", 7 },
+	{ "grsm", 34 }
 };
 
 static const uint8_t _cdSync[12] = { 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0x00 };
@@ -207,9 +217,17 @@ bool CutscenePsx::load(int num) {
 	memset(&_header, 0, sizeof(_header));
 	_frameCounter = 0;
 	_sectorCounter = -1;
-
+	const char *name = _namesTable[num];
+	if (fileLanguage() == kFileLanguage_GR) {
+		for (int i = 0; i < ARRAYSIZE(_namesTable_gr); ++i) {
+			if (_namesTable_gr[i].num == num) {
+				name = _namesTable_gr[i].name;
+				break;
+			}
+		}
+	}
 	char filename[16];
-	snprintf(filename, sizeof(filename), "%s.dps", _namesTable[num]);
+	snprintf(filename, sizeof(filename), "%s.dps", name);
 	_fp = fileOpenPsx(filename, kFileType_PSX_VIDEO);
 	if (_fp) {
 		const int size = fileSize(_fp);
