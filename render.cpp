@@ -654,7 +654,7 @@ void Render::drawOverlay() {
 
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
-	glOrtho(-1. / _aspectRatio, 1. / _aspectRatio, 0, _h, 0, 1);
+	glOrtho(-1. / _aspectRatio, 1. / _aspectRatio, 0, _overlay.displayHeight, 0, 1);
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
 
@@ -666,14 +666,12 @@ void Render::drawOverlay() {
 		const GLfloat tV = _overlay.tex->v;
 		assert(tU != 0. && tV != 0.);
 		GLfloat uv[] = { 0., 0., tU, 0., tU, tV, 0., tV };
-		const int y = _overlay.y * _h / _overlay.displayHeight;
-		const int h = _overlay.h * _h / _overlay.displayHeight;
-		emitQuadTex2i(-1, y, 2, h, uv);
+		emitQuadTex2i(-1, _overlay.y, 2, _overlay.h, uv);
 		glDisable(GL_TEXTURE_2D);
 	}
 	if (hasOverlayColor) {
 		glColor4ub(_overlay.r, _overlay.g, _overlay.b, 191);
-		emitQuad2i(-1, 0, 2, _h);
+		emitQuad2i(-1, 0, 2, _overlay.displayHeight);
 		_overlay.r = _overlay.g = _overlay.b = 255;
 	}
 
