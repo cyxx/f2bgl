@@ -944,6 +944,25 @@ void Resource::loadCustomGUS() {
 	free(gusData);
 }
 
+static const struct {
+	const char *ext;
+	void (Resource::*LoadData)(File *fp, int dataSize);
+} _resLoadDataTablePsx[] = {
+	{ "CMD", &Resource::loadCMD },
+	{ "ENV", &Resource::loadENV },
+	{ "MSG", &Resource::loadMSG }
+};
+
+static const struct {
+	const char *ext;
+	int type;
+} _resTreeTablePsx[] = {
+	{ "PAL", kResType_PAL },
+	{ "SPR", kResType_SPR },
+	{ "F3D", kResType_F3D },
+	{ "P3D", kResType_P3D }
+};
+
 void Resource::loadLevelDataPsx(int level, int resType) {
 	switch (resType) {
 	case kResTypePsx_DTT: {
@@ -964,12 +983,14 @@ void Resource::loadLevelDataPsx(int level, int resType) {
 			if (_fileLev) {
 				readDataOffsetsTable(_fileLev, kResOffsetType_LEV, _levOffsetsTable);
 				if (kLoadPsxData) {
-					const uint32_t cmdSize = seekDataPsx("CMD", _fileLev, kResOffsetType_LEV);
-					loadCMD(_fileLev, cmdSize);
-					const uint32_t msgSize = seekDataPsx("MSG", _fileLev, kResOffsetType_LEV);
-					loadMSG(_fileLev, msgSize);
-					const uint32_t envSize = seekDataPsx("ENV", _fileLev, kResOffsetType_LEV);
-					loadENV(_fileLev, envSize);
+					for (uint32_t i = 0; i < ARRAYSIZE(_resLoadDataTablePsx); ++i) {
+						const uint32_t dataSize = seekDataPsx(_resLoadDataTablePsx[i].ext, _fileLev, kResOffsetType_LEV);
+						(this->*_resLoadDataTablePsx[i].LoadData)(_fileLev, dataSize);
+					}
+					for (uint32_t i = 0; i < ARRAYSIZE(_resTreeTablePsx); ++i) {
+						const uint32_t dataSize = seekDataPsx(_resTreeTablePsx[i].ext, _fileLev, kResOffsetType_LEV);
+						loadTreePsx(_fileLev, dataSize, _resTreeTablePsx[i].type);
+					}
 				}
 			}
 		}
@@ -1136,4 +1157,27 @@ uint32_t Resource::seekVag(int num) {
 		warning("'VB' data resource not found");
 	}
 	return 0;
+}
+
+void Resource::loadTreePsx(File *fp, int dataSize, int type) {
+	uint8_t header[0x20];
+	fileRead(fp, header, sizeof(header));
+
+	const int count = READ_LE_UINT32(header + 4);
+	const int sizeOfOffset = READ_LE_UINT32(header + 8);
+	const uint32_t baseOffset = sizeof(header) + count * sizeOfOffset;
+
+	_treesTable[type] = ALLOC<ResTreeNode>(count);
+	_treesTableCount[type] = count;
+	uint32_t offset = baseOffset;
+	for (uint32_t j = 0; j < count; ++j) {
+		ResTreeNode *node = &_treesTable[type][j];
+		memset(node, 0, sizeof(ResTreeNode));
+		// node->childKey =
+		// node->nextKey =
+		node->dataOffset = offset;
+		const uint32_t size = (sizeOfOffset == sizeof(uint32_t)) ? fileReadUint32LE(fp) : fileReadUint16LE(fp);
+		node->dataSize = size;
+		offset += size;
+	}
 }

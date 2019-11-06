@@ -215,6 +215,7 @@ struct Resource {
 	void loadVAB(File *fp);
 	void loadVRM(File *fp);
 	uint32_t seekVag(int num);
+	void loadTreePsx(File *fp, int dataSize, int type);
 };
 
 #endif // RESOURCE_H__
