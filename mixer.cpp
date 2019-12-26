@@ -117,9 +117,9 @@ struct XaDecoder {
 		_dataSize += size;
 		if (_dataSize == _inputDecodeSize) {
 			if (_stereo) {
-				_samplesSize = decodeGroup_stereo(_data, _samples);
+				_samplesSize = decodeGroupXa(_data, _samples);
 			} else {
-				_samplesSize = decodeGroup_mono(_data, _samples);
+				_samplesSize = decodeGroupSpu(_data, _samples);
 			}
 			_dataSize = 0;
 		} else {
@@ -130,7 +130,7 @@ struct XaDecoder {
 	}
 
 	// src points to a 128 bytes buffer, dst to a 224 bytes buffer
-	int decodeGroup_stereo(const uint8_t *src, int16_t *dst) { // .XA
+	int decodeGroupXa(const uint8_t *src, int16_t *dst) {
 		for (int i = 0; i < 4; ++i) {
 			const int shiftL = 12 - (src[4 + i * 2] & 15);
 			assert(shiftL >= 0);
@@ -157,8 +157,8 @@ struct XaDecoder {
 		return 224;
         }
 
-	// src points to a 16 bytes buffer, dst to a 28 bytes buffer
-	int decodeGroup_mono(const uint8_t *src, int16_t *dst) { // .SPU
+	// src points to a 16 bytes buffer, dst to a 56 bytes buffer
+	int decodeGroupSpu(const uint8_t *src, int16_t *dst) {
 		const int shift = 12 - (*src & 15);
 		assert(shift >= 0);
 		const int filter = *src >> 4;
@@ -183,7 +183,7 @@ struct XaDecoder {
 			memset(dst, 0, 2 * 14 * sizeof(int16_t));
 			_pcmL1 = _pcmL0 = 0;
 		}
-		return 28;
+		return 56;
 	}
 };
 
