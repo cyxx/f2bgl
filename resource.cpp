@@ -329,7 +329,7 @@ void Resource::loadINM(int levelNum) {
 	File *fp = 0;
 	int dataSize = 0;
 	if (kLoadPsxData && g_hasPsx) {
-		snprintf(filename, sizeof(filename), "level%d%c.lev", levelNum + 1, _languagesPsx[fileLanguage()]);
+		snprintf(filename, sizeof(filename), "level%d%c.inm", levelNum + 1, _languagesPsx[fileLanguage()]);
 		fp = fileOpenPsx(filename, kFileType_PSX_LEVELDATA, levelNum + 1);
 		if (!fp) {
 			error("Resource::loadINM() Unable to open '%s'", filename);
@@ -968,7 +968,7 @@ void Resource::loadLevelDataPsx(int level, int resType) {
 	switch (resType) {
 	case kResTypePsx_DTT: {
 			char name[16];
-			snprintf(name, sizeof(name), "level%d%c.lev", level + 1, _languagesPsx[fileLanguage()]);
+			snprintf(name, sizeof(name), "level%d%c.dtt", level + 1, _languagesPsx[fileLanguage()]);
 			File *fp = fileOpenPsx(name, kFileType_PSX_LEVELDATA, level + 1);
 			if (fp) {
 				const uint32_t dataSize = fileSize(fp);
