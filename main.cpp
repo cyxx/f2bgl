@@ -289,7 +289,7 @@ int main(int argc, char *argv[]) {
 	SDL_ShowCursor(stub->hasCursor() ? SDL_ENABLE : SDL_DISABLE);
 	bool widescreen = false;
 	SDL_DisplayMode dm;
-	if (SDL_GetDesktopDisplayMode(0, &dm) == 0) {
+	if (SDL_GetDesktopDisplayMode(0, &dm) == 0 && 0) {
 		widescreen = ((dm.w / (float)dm.h) >= (16 / 9.));
 	}
 	const int displayMode = stub->getDisplayMode();
