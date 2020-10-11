@@ -290,7 +290,7 @@ void Game::updateGameInput() {
 		updateMouseInput();
 	}
 	bool ctrlKey = inp.ctrlKey;
-	if ((_cheats & kCheatActivateButtonToShoot) != 0) {
+	if ((_params.cheats & kCheatActivateButtonToShoot) != 0) {
 		if (isConradInShootingPos()) {
 			if (inp.spaceKey) {
 				inp.ctrlKey = true;
@@ -298,7 +298,7 @@ void Game::updateGameInput() {
 			}
 		}
 	}
-	if ((_cheats & kCheatShootButtonToStep) != 0) {
+	if ((_params.cheats & kCheatShootButtonToStep) != 0) {
 		if (!isConradInShootingPos()) {
 			if (inp.ctrlKey && (inp.dirMask & (kInputDirLeft | kInputDirRight)) == 0) {
 				inp.footStepKey = (inp.dirMask & kInputDirUp) != 0;
@@ -310,7 +310,7 @@ void Game::updateGameInput() {
 		}
 	}
 	bool enterKey = inp.enterKey;
-	if ((_cheats & kCheatAutoReloadGun) != 0) {
+	if ((_params.cheats & kCheatAutoReloadGun) != 0) {
 		if (_objectsPtrTable[kObjPtrGun]->customData[0] == 0) {
 			if (inp.ctrlKey) {
 				inp.enterKey = true;
@@ -319,7 +319,7 @@ void Game::updateGameInput() {
 		}
 	}
 	bool shiftKey = inp.shiftKey;
-	if ((_cheats & kCheatStepWithUpDownInShooting) != 0) {
+	if ((_params.cheats & kCheatStepWithUpDownInShooting) != 0) {
 		if (isConradInShootingPos()) {
 			if (inp.shiftKey && (inp.dirMask & (kInputDirLeft | kInputDirRight)) == 0) {
 				inp.footStepKey = (inp.dirMask & kInputDirUp) != 0;

@@ -14,7 +14,6 @@
 Game::Game(Render *render, const GameParams *params)
 	: _snd(&_res), _cut(render, this, &_snd), _render(render), _params(*params) {
 
-	_cheats = kCheatAutoReloadGun | kCheatActivateButtonToShoot | kCheatStepWithUpDownInShooting;
 	_gameStateMsg = 0;
 
 	memset(&_drawCharBuf, 0, sizeof(_drawCharBuf));
@@ -2622,7 +2621,7 @@ void Game::doTick() {
 	addObjectsToScene();
 	updateObjects();
 	++_ticks;
-	if ((_cheats & kCheatLifeCounter) != 0) {
+	if ((_params.cheats & kCheatLifeCounter) != 0) {
 		_objectsPtrTable[kObjPtrConrad]->specialData[1][18] = _varsTable[kVarConradLife];
 	}
 	runObject(_objectsPtrTable[kObjPtrWorld]->o_child);
@@ -4399,7 +4398,7 @@ bool Game::sendMessage(int msg, int16_t destObjKey) {
 							_conradHit = 2;
 						}
 					}
-					if ((_cheats & kCheatLifeCounter) == 0) {
+					if ((_params.cheats & kCheatLifeCounter) == 0) {
 						if (o == _objectsPtrTable[kObjPtrConrad] && msg == 58 && o->specialData[1][18] <= 0) {
 							playDeathCutscene(_currentObject->objKey);
 							_endGame = true;

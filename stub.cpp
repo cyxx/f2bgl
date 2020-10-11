@@ -112,6 +112,7 @@ struct GameStub_F2B : GameStub {
 		: _render(0), _g(0),
 		_fileLanguage(kFileLanguage_EN), _fileVoice(kFileLanguage_EN), _displayMode(kDisplayModeWindow) {
 		memset(&_params, 0, sizeof(_params));
+		_params.cheats = kCheatAutoReloadGun | kCheatActivateButtonToShoot | kCheatStepWithUpDownInShooting;
 		_soundFont = 0;
 		memset(&_renderParams, 0, sizeof(_renderParams));
 		_renderParams.fog = true;
@@ -194,6 +195,7 @@ struct GameStub_F2B : GameStub {
 				{ "no-fog",        no_argument,       0, 17 },
 				{ "no-gouraud",    no_argument,       0, 18 },
 				{ "psxpath",       required_argument, 0, 19 },
+				{ "cheats",        required_argument, 0, 20 },
 				// debug
 				{ "init-state",    required_argument, 0, 101 },
 				{ 0, 0, 0, 0 }
@@ -277,6 +279,9 @@ struct GameStub_F2B : GameStub {
 				break;
 			case 19:
 				_psxDataPath = strdup(optarg);
+				break;
+			case 20:
+				_params.cheats = atoi(optarg);
 				break;
 			case 101: {
 					static struct {
@@ -436,7 +441,7 @@ struct GameStub_F2B : GameStub {
 			_g->inp.farNear = pressed;
 			break;
 		case kKeyCodeCheatLifeCounter:
-			_g->_cheats ^= kCheatLifeCounter;
+			_g->_params.cheats ^= kCheatLifeCounter;
 			break;
 		case kKeyCodeToggleFog:
 			if (_renderParams.fog) { // only toggle if it has not been disabled

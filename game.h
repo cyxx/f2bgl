@@ -435,13 +435,14 @@ struct DrawNumber {
 struct Render;
 
 struct GameParams {
-	GameParams() : playDemo(false), levelNum(0), subtitles(false), sf2(0), mouseMode(false), touchMode(false) {}
+	GameParams() : playDemo(false), levelNum(0), subtitles(false), sf2(0), mouseMode(false), touchMode(false), cheats(0) {}
 	bool playDemo;
 	int levelNum;
 	bool subtitles;
 	const char *sf2;
 	bool mouseMode;
 	bool touchMode;
+	uint32_t cheats;
 };
 
 struct Game {
@@ -458,7 +459,6 @@ struct Game {
 	GameParams _params;
 	SpriteCache _spriteCache;
 	Random _rnd, _rnd2;
-	int _cheats;
 	int _gameStateMsg;
 	bool _musicPaused;
 
