@@ -175,6 +175,7 @@ struct Resource {
 	File *_fileSon;
 	ResPsxOffset _levOffsetsTable[kResPsxLevOffsetsTableSize];
 	File *_fileLev;
+	bool _psxCmdData;
 
 	Resource();
 	~Resource();

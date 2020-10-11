@@ -1712,16 +1712,43 @@ static const Game::OpcodeProc _opcodeTable[kOpcodesCount] = {
 	&Game::op_stopSound
 };
 
-int Game::executeObjectScriptOpcode(GameObject *o, uint32_t op, const uint8_t *data) {
+int Game::executeObjectScriptOpcode(GameObject *o, uint32_t op, const uint8_t *&data) {
 	int32_t val, argv[8];
 
-	debug(kDebug_GAME, "Game::executeObjectScriptOpcode() o %p op %d", o, op);
+	debug(kDebug_GAME, "Game::executeObjectScriptOpcode() o %p op 0x%x", o, op);
+	uint32_t mask;
+	if (_res._psxCmdData) {
+		mask = op >> 8;
+		op &= 0xFF;
+	} else {
+		mask = READ_LE_UINT32(data); data += 4;
+	}
 	assert(op < kOpcodesCount);
 	const int argc = g_isDemo ? _opcodeSize_demo[op] : _opcodeSize[op];
 	assert(argc <= 8);
-	uint32_t mask = READ_LE_UINT32(data); data += 4;
+	uint32_t type = 0;
+	if (_res._psxCmdData && argc >= 2) {
+		type = READ_LE_UINT16(data); data += 2;
+	}
 	for (int i = 0; i < argc; ++i) {
-		val = READ_LE_UINT32(data); data += 4;
+		if (_res._psxCmdData && argc >= 2) {
+			switch ((type >> (2 * i)) & 3) {
+			case 1:
+				val = (int16_t)READ_LE_UINT16(data); data += 2;
+				break;
+			case 2:
+				val = READ_LE_UINT16(data) << 16; data += 2;
+				break;
+			case 3:
+				val = READ_LE_UINT32(data); data += 4;
+				break;
+			default:
+				val = 0;
+				break;
+			}
+		} else {
+			val = READ_LE_UINT32(data); data += 4;
+		}
 		if (mask & (1 << i)) {
 			val = getObjectScriptParam(o, val);
 		}
@@ -1854,8 +1881,13 @@ int Game::executeObjectScript(GameObject *o) {
 			const uint8_t *scriptData = _res.getCmdData(scriptCmdNum);
 			int scriptRet = 1;
 			while (scriptRet) {
-				uint32_t op = READ_LE_UINT32(scriptData); scriptData += 4;
-				if (op == 0xFFFFFFFF) {
+				int32_t op;
+				if (_res._psxCmdData) {
+					op = (int16_t)READ_LE_UINT16(scriptData); scriptData += 2;
+				} else {
+					op = READ_LE_UINT32(scriptData); scriptData += 4;
+				}
+				if (op == -1) {
 					// end of conditions sequence
 					break;
 				}
@@ -1868,20 +1900,21 @@ int Game::executeObjectScript(GameObject *o) {
 				if (negateScriptRet) {
 					scriptRet = ~scriptRet;
 				}
-				const int count = g_isDemo ? _opcodeSize_demo[op] : _opcodeSize[op];
-				scriptData += count * 4 + 4;
 			}
 			if (scriptRet) {
 				stopScript = 1;
 				while (1) {
-					uint32_t op = READ_LE_UINT32(scriptData); scriptData += 4;
-					if (op == 0xFFFFFFFE) {
+					int32_t op;
+					if (_res._psxCmdData) {
+						op = (int16_t)READ_LE_UINT16(scriptData); scriptData += 2;
+					} else {
+						op = READ_LE_UINT32(scriptData); scriptData += 4;
+					}
+					if (op == -2) {
 						// end of statements sequence
 						break;
 					}
 					executeObjectScriptOpcode(_currentObject, op, scriptData);
-					const int count = g_isDemo ? _opcodeSize_demo[op] : _opcodeSize[op];
-					scriptData += count * 4 + 4;
 				}
 			}
 			if (!stopScript) {

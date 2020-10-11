@@ -54,6 +54,7 @@ Resource::Resource() {
 	_fileLev = 0;
 	memset(_sonOffsetsTable, 0, sizeof(_sonOffsetsTable));
 	_fileSon = 0;
+	_psxCmdData = false;
 }
 
 Resource::~Resource() {
@@ -991,6 +992,7 @@ void Resource::loadLevelDataPsx(int level, int resType) {
 						const uint32_t dataSize = seekDataPsx(_resTreeTablePsx[i].ext, _fileLev, kResOffsetType_LEV);
 						loadTreePsx(_fileLev, dataSize, _resTreeTablePsx[i].type);
 					}
+					_psxCmdData = true;
 				}
 			}
 		}

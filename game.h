@@ -679,7 +679,7 @@ struct Game {
 	void setObjectData(GameObject *o, int field, int32_t value);
 	int32_t getObjectData(GameObject *o, int field);
 	int32_t getObjectScriptParam(GameObject *o, int field);
-	int executeObjectScriptOpcode(GameObject *o, uint32_t op, const uint8_t *data);
+	int executeObjectScriptOpcode(GameObject *o, uint32_t op, const uint8_t *&data);
 	uint8_t *getStartScriptAnim();
 	uint8_t *getNextScriptAnim();
 	int executeObjectScript(GameObject *o);
