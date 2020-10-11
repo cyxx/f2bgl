@@ -1,39 +1,53 @@
 
 #include <math.h>
-#include "cutscenepsx.h"
+#include "cutscene.h"
 #include "render.h"
 #include "sound.h"
 #include "mdec.h"
 
-static uint32_t yuv420_to_rgba(int y, int u, int v) {
-	const int r = CLIP((int)round(y + 1.402 * v),             0, 255);
-	const int g = CLIP((int)round(y - 0.344 * u - 0.714 * v), 0, 255);
-	const int b = CLIP((int)round(y + 1.772 * u),             0, 255);
-	return 0xFF000000 | (b << 16) | (g << 8) | r;
+enum {
+	kSectorSize = 2352,
+	kAudioDataSize = 2304,
+	kAudioHeaderSize = 24,
+	kVideoDataSize = 2016,
+	kVideoHeaderSize = 56,
+	kCutscenePsxVideoWidth = 320,
+	kCutscenePsxVideoHeight = 240,
+};
+
+struct DpsHeader {
+	uint16_t w, h;
+	uint16_t framesCount;
+	uint8_t xaStereo;
+	uint16_t xaSampleRate;
+	uint8_t xaBits;
+};
+
+struct CutscenePlayer_Dps: CutscenePlayer {
+
+	File *_fp;
+	uint8_t _sector[kSectorSize];
+	DpsHeader _header;
+	int _frameCounter;
+	int _sectorCounter;
+	uint8_t *_rgbaBuffer;
+
+	CutscenePlayer_Dps();
+	virtual ~CutscenePlayer_Dps();
+
+	bool readSector();
+	bool play();
+	bool readHeader(DpsHeader *header);
+	virtual bool load(int num);
+	virtual void unload();
+	virtual bool update(uint32_t ticks);
+};
+
+CutscenePlayer_Dps::CutscenePlayer_Dps()
+	: _fp(0), _rgbaBuffer(0) {
 }
 
-static void outputMdecCb(const MdecOutput *output, void *userdata) {
-	CutscenePsx *cut = (CutscenePsx *)userdata;
-	uint32_t *dst = (uint32_t *)cut->_rgbaBuffer + (cut->_header.h - 1) * cut->_header.w;
-	const uint8_t *luma = output->planes[0].ptr;
-	const uint8_t *cb = output->planes[1].ptr;
-	const uint8_t *cr = output->planes[2].ptr;
-	for (int y = 0; y < output->h; ++y) {
-		for (int x = 0; x < output->w; ++x) {
-			dst[x] = yuv420_to_rgba(luma[x], cb[x / 2] - 128, cr[x / 2] - 128);
-		}
-		dst -= cut->_header.w;
-		luma += output->planes[0].pitch;
-		cb += output->planes[1].pitch * (y & 1);
-		cr += output->planes[2].pitch * (y & 1);
-	}
-}
-
-CutscenePsx::CutscenePsx(Render *render, Game *g, Sound *sound)
-	: Cutscene(render, g, sound), _rgbaBuffer(0) {
-}
-
-CutscenePsx::~CutscenePsx() {
+CutscenePlayer_Dps::~CutscenePlayer_Dps() {
 	free(_rgbaBuffer);
 }
 
@@ -120,17 +134,38 @@ static const struct {
 
 static const uint8_t _cdSync[12] = { 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0x00 };
 
-bool CutscenePsx::readSector() {
+bool CutscenePlayer_Dps::readSector() {
 	// mode2 form2 : cdSync (12 bytes) header (4 bytes) subheader (8 bytes) data (2324 bytes) edc (4 bytes)
 	++_sectorCounter;
 	const int count = fileRead(_fp, _sector, sizeof(_sector));
 	return count == kSectorSize && memcmp(_sector, _cdSync, sizeof(_cdSync)) == 0;
 }
 
-bool CutscenePsx::play() {
-	if (!_fp) {
-		return false;
+static uint32_t yuv420_to_rgba(int y, int u, int v) {
+	const int r = CLIP((int)round(y + 1.402 * v),             0, 255);
+	const int g = CLIP((int)round(y - 0.344 * u - 0.714 * v), 0, 255);
+	const int b = CLIP((int)round(y + 1.772 * u),             0, 255);
+	return 0xFF000000 | (b << 16) | (g << 8) | r;
+}
+
+static void outputMdecCb(const MdecOutput *output, void *userdata) {
+	CutscenePlayer_Dps *cut = (CutscenePlayer_Dps *)userdata;
+	uint32_t *dst = (uint32_t *)cut->_rgbaBuffer + (cut->_header.h - 1) * cut->_header.w;
+	const uint8_t *luma = output->planes[0].ptr;
+	const uint8_t *cb = output->planes[1].ptr;
+	const uint8_t *cr = output->planes[2].ptr;
+	for (int y = 0; y < output->h; ++y) {
+		for (int x = 0; x < output->w; ++x) {
+			dst[x] = yuv420_to_rgba(luma[x], cb[x / 2] - 128, cr[x / 2] - 128);
+		}
+		dst -= cut->_header.w;
+		luma += output->planes[0].pitch;
+		cb += output->planes[1].pitch * (y & 1);
+		cr += output->planes[2].pitch * (y & 1);
 	}
+}
+
+bool CutscenePlayer_Dps::play() {
 	bool err = false;
 	// demux audio and video frames
 	uint8_t *videoData = 0;
@@ -138,7 +173,7 @@ bool CutscenePsx::play() {
 	int videoSectorsCount = 0;
 	do {
 		if (!readSector()) {
-			warning("CutscenePsx::play() Invalid sector %d", _sectorCounter);
+			warning("CutscenePlayer_Dps::play() Invalid sector %d", _sectorCounter);
 			err = true;
 			break;
 		}
@@ -177,7 +212,7 @@ bool CutscenePsx::play() {
 				_header.xaSampleRate = (_sector[0x13] & 4) != 0 ? 18900 : 37800;
 				_header.xaBits = (_sector[0x13] & 0x10) != 0 ? 4 : 8;
 				if (!_header.xaStereo || _header.xaSampleRate != 37800 || _header.xaBits != 8) {
-					warning("CutscenePsx::play() Unsupported audio format, stereo %d bits %d freq %d", _header.xaStereo, _header.xaBits, _header.xaSampleRate);
+					warning("CutscenePlayer_Dps::play() Unsupported audio format, stereo %d bits %d freq %d", _header.xaStereo, _header.xaBits, _header.xaSampleRate);
 					err = true;
 					break;
 				}
@@ -189,13 +224,13 @@ bool CutscenePsx::play() {
 	return !err;
 }
 
-bool CutscenePsx::readHeader(DpsHeader *hdr) {
+bool CutscenePlayer_Dps::readHeader(DpsHeader *hdr) {
 	if (!readSector()) {
-		warning("CutscenePsx::readHeader() Invalid first sector");
+		warning("CutscenePlayer_Dps::readHeader() Invalid first sector");
 	} else {
 		const uint8_t *header = _sector + 0x18;
 		if (memcmp(header, "DPS", 3) != 0) {
-			warning("CutscenePsx::readHeader() Invalid header signature");
+			warning("CutscenePlayer_Dps::readHeader() Invalid header signature");
 		} else {
 			hdr->w = READ_LE_UINT16(header + 0x10);
 			hdr->h = READ_LE_UINT16(header + 0x12);
@@ -203,7 +238,7 @@ bool CutscenePsx::readHeader(DpsHeader *hdr) {
 			int sector = 1;
 			for (; sector < 5; ++sector) {
 				if (!readSector()) {
-					warning("CutscenePsx::readHeader() Invalid sector %d", sector);
+					warning("CutscenePlayer_Dps::readHeader() Invalid sector %d", sector);
 					break;
 				}
 			}
@@ -213,7 +248,7 @@ bool CutscenePsx::readHeader(DpsHeader *hdr) {
 	return false;
 }
 
-bool CutscenePsx::load(int num) {
+bool CutscenePlayer_Dps::load(int num) {
 	memset(&_header, 0, sizeof(_header));
 	_frameCounter = 0;
 	_sectorCounter = -1;
@@ -248,7 +283,7 @@ bool CutscenePsx::load(int num) {
 	return _fp != 0;
 }
 
-void CutscenePsx::unload() {
+void CutscenePlayer_Dps::unload() {
 	if (_rgbaBuffer) {
 		free(_rgbaBuffer);
 		_rgbaBuffer = 0;
@@ -260,6 +295,13 @@ void CutscenePsx::unload() {
 	_snd->_mix.stopQueue();
 }
 
-bool CutscenePsx::update(uint32_t ticks) {
+bool CutscenePlayer_Dps::update(uint32_t ticks) {
+	if (!_fp) {
+		return false;
+	}
 	return play();
+}
+
+CutscenePlayer *CutscenePlayer_Dps_create() {
+	return new CutscenePlayer_Dps();
 }

@@ -145,7 +145,7 @@ struct GameStub_F2B : GameStub {
 		// init
 		switch (state) {
 		case kStateCutscene:
-			_g->_cut->load(_g->_cut->_numToPlay);
+			_g->_cut.load(_g->_cut._numToPlay);
 			break;
 		case kStateGame:
 			_g->updatePalette();
@@ -335,7 +335,7 @@ struct GameStub_F2B : GameStub {
 		_render = new Render(&_renderParams);
 		_g = new Game(_render, &_params);
 		_g->init();
-		_g->_cut->_numToPlay = 47;
+		_g->_cut._numToPlay = 47;
 		_state = -1;
 		setState(_nextState);
 		_nextState = _state;
@@ -466,9 +466,8 @@ struct GameStub_F2B : GameStub {
 		switch (_state) {
 		case kStateCutscene:
 			if (!_g->updateCutscene(ticks)) {
-				Cutscene *cut = _g->_cut;
-				const int cutsceneNum = cut->changeToNext();
-				if (cut->_numToPlay < 0) {
+				const int cutsceneNum = _g->_cut.changeToNext();
+				if (_g->_cut._numToPlay < 0) {
 					_nextState = kStateGame;
 					if (_g->_level == kLevelGameOver || (g_isDemo && cutsceneNum == 43)) {
 						// restart
@@ -500,7 +499,7 @@ struct GameStub_F2B : GameStub {
 			} else if (_g->inp.escapeKey) {
 				_g->inp.escapeKey = false;
 				_nextState = kStateMenu;
-			} else if (_g->_cut->_numToPlay >= 0 && _g->_cut->_numToPlayCounter == 0) {
+			} else if (_g->_cut._numToPlay >= 0 && _g->_cut._numToPlayCounter == 0) {
 				_nextState = kStateCutscene;
 			} else if (_g->_cabinetItemCount != 0) {
 				_nextState = kStateCabinet;

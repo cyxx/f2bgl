@@ -8,7 +8,7 @@ LIBS = $(SDL_LIBS) -lGL -lz -lWildMidi -lfluidsynth -lm
 CXXFLAGS += -Wall -Wno-sign-compare -Wpedantic -MMD $(FFMPEG_CFLAGS) $(SDL_CFLAGS) $(LTO)
 LDFLAGS  += $(LTO)
 
-SRCS = cabinet.cpp camera.cpp collision.cpp cutscene.cpp cutscenepsx.cpp decoder.cpp file.cpp \
+SRCS = cabinet.cpp camera.cpp collision.cpp cutscene.cpp cutscenecin.cpp cutscenedps.cpp decoder.cpp file.cpp \
 	font.cpp game.cpp icons.cpp input.cpp installer.cpp inventory.cpp main.cpp mdec.cpp menu.cpp \
 	mixer.cpp opcodes.cpp raycast.cpp render.cpp resource.cpp saveload.cpp scaler.cpp \
 	screenshot.cpp sound.cpp spritecache.cpp stub.cpp texturecache.cpp \

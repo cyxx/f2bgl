@@ -8,7 +8,6 @@
 
 #include "util.h"
 #include "cutscene.h"
-#include "cutscenepsx.h"
 #include "resource.h"
 #include "sound.h"
 #include "spritecache.h"
@@ -453,8 +452,8 @@ struct Game {
 	typedef int (Game::*RayCastCallbackType)(GameObject *o, CellMap *cell, int x, int z);
 
 	Resource _res;
-	Cutscene *_cut;
 	Sound _snd;
+	Cutscene _cut;
 	Render *_render;
 	GameParams _params;
 	SpriteCache _spriteCache;
