@@ -21,8 +21,8 @@ static const char *USAGE =
 	"  --voice=EN|FR|GR            Voice files (default 'EN')\n"
 	"  --subtitles                 Display cutscene subtitles\n"
 	"  --savepath=PATH             Path to save files (default '.')\n"
-	"  --fullscreen                Fullscreen display (stretched)\n"
-	"  --fullscreen-ar             Fullscreen display (4:3 aspect ratio)\n"
+	"  --fullscreen                Fullscreen display\n"
+	"  --widescreen=X:Y            Widescreen ratio (4:3 or 16:9)\n"
 	"  --soundfont=FILE            SoundFont (.sf2) file for music\n"
 	"  --texturefilter=FILTER      Texture filter (default 'linear')\n"
 	"  --texturescaler=NAME        Texture scaler (default 'scale2x')\n"
@@ -97,6 +97,7 @@ struct GameStub_F2B : GameStub {
 	GameParams _params;
 	FileLanguage  _fileLanguage, _fileVoice;
 	int _displayMode;
+	float _aspectRatio;
 	int _state, _nextState;
 	int _slotState;
 	bool _loadState, _saveState;
@@ -109,7 +110,7 @@ struct GameStub_F2B : GameStub {
 
 	GameStub_F2B()
 		: _render(0), _g(0),
-		_fileLanguage(kFileLanguage_EN), _fileVoice(kFileLanguage_EN), _displayMode(kDisplayModeWindowed) {
+		_fileLanguage(kFileLanguage_EN), _fileVoice(kFileLanguage_EN), _displayMode(kDisplayModeWindow) {
 		memset(&_params, 0, sizeof(_params));
 		_soundFont = 0;
 		memset(&_renderParams, 0, sizeof(_renderParams));
@@ -117,6 +118,7 @@ struct GameStub_F2B : GameStub {
 		_renderParams.gouraud = true;
 		_textureFilter = 0;
 		_textureScaler = 0;
+		_aspectRatio = 0;
 	}
 
 	void setState(int state) {
@@ -182,7 +184,7 @@ struct GameStub_F2B : GameStub {
 				{ "savepath",      required_argument, 0, 7 },
 				{ "debug",         required_argument, 0, 8 },
 				{ "fullscreen",    no_argument,       0, 9 },
-				{ "fullscreen-ar", no_argument,       0, 10 },
+				{ "widescreen",    required_argument, 0, 10 },
 				{ "alt-level",     required_argument, 0, 11 },
 				{ "soundfont",     required_argument, 0, 12 },
 				{ "texturefilter", required_argument, 0, 13 },
@@ -227,10 +229,15 @@ struct GameStub_F2B : GameStub {
 				g_utilDebugMask |= atoi(optarg);
 				break;
 			case 9:
-				_displayMode = kDisplayModeFullscreenStretch;
+				_displayMode = kDisplayModeFullscreen;
 				break;
 			case 10:
-				_displayMode = kDisplayModeFullscreenAr;
+				{
+					int x, y;
+					if (sscanf(optarg, "%d:%d", &x, &y) == 2) {
+						_aspectRatio = x / (float)y;
+					}
+				}
 				break;
 			case 11: {
 					static const char *levels[] = {
@@ -304,6 +311,12 @@ struct GameStub_F2B : GameStub {
 	}
 	virtual int getDisplayMode() {
 		return _displayMode;
+	}
+	virtual float getAspectRatio(bool widescreen) {
+		if (_aspectRatio <= 0) {
+			_aspectRatio = widescreen ? (16 / 9.) : (4 / 3.);
+		}
+		return _aspectRatio;
 	}
 	virtual bool hasCursor() {
 		return _params.mouseMode || _params.touchMode;
@@ -528,7 +541,7 @@ struct GameStub_F2B : GameStub {
 		}
 	}
 	virtual void initGL(int w, int h, float *ar) {
-		_render->resizeScreen(w, h, ar);
+		_render->resizeScreen(w, h, ar, _aspectRatio);
 	}
 	virtual void drawGL() {
 		_render->drawOverlay();

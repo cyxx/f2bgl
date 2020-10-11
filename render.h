@@ -38,6 +38,7 @@ struct Render {
 	uint8_t _clut[256 * 3];
 	int _w, _h;
 	float _aspectRatio;
+	float _correction;
 	uint8_t *_screenshotBuf;
 	struct {
 		bool rgbTex;
@@ -94,7 +95,7 @@ struct Render {
 	void clearScreen();
 	void setupProjection(int mode);
 	void drawOverlay();
-	void resizeScreen(int w, int h, float *p);
+	void resizeScreen(int w, int h, float *p, float correction);
 
 	const uint8_t *captureScreen(int *w, int *h);
 };

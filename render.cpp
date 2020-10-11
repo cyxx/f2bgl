@@ -153,6 +153,7 @@ struct timeval _frameTimeStamp;
 Render::Render(const RenderParams *params) {
 	memset(_clut, 0, sizeof(_clut));
 	_aspectRatio = 1.;
+	_correction = 1.;
 	_screenshotBuf = 0;
 	memset(&_overlay, 0, sizeof(_overlay));
 	_overlay.r = _overlay.g = _overlay.b = 255;
@@ -201,10 +202,11 @@ void Render::flushCachedTextures() {
 	_overlay.tex = 0;
 }
 
-void Render::resizeScreen(int w, int h, float *p) {
+void Render::resizeScreen(int w, int h, float *p, float correction) {
 	_w = w;
 	_h = h;
 	_aspectRatio = p[2] / p[3];
+	_correction = correction / (4 / 3.);
 	_viewport.x = 0;
 	_viewport.y = 0;
 	_viewport.w = w;
@@ -557,7 +559,7 @@ void Render::clearScreen() {
 }
 
 void Render::setupProjection(int mode) {
-	const GLfloat aspect = 1.5 * _aspectRatio;
+	const GLfloat aspect = 1.5 * _aspectRatio / _correction;
 
 	switch (mode) {
 	case kProj2D:
@@ -579,7 +581,7 @@ void Render::setupProjection(int mode) {
 		glMatrixMode(GL_PROJECTION);
 		glLoadIdentity();
 		glFrustum(-.5, .5, -aspect / 2, 0., 1., 512.);
-		glTranslatef(0., 0., -20.);
+		glTranslatef(0., 0., -20. * _correction);
 
 		glMatrixMode(GL_MODELVIEW);
 		glLoadIdentity();
@@ -600,7 +602,7 @@ void Render::setupProjection(int mode) {
 		glMatrixMode(GL_PROJECTION);
 		glLoadIdentity();
 		glFrustum(-.5, .5, -aspect / 2, 0., 1., 4096.);
-		glTranslatef(0., 0., -64.);
+		glTranslatef(0., 0., -64. * _correction);
 
 		glMatrixMode(GL_MODELVIEW);
 		glLoadIdentity();
@@ -621,7 +623,7 @@ void Render::setupProjection(int mode) {
 		glMatrixMode(GL_PROJECTION);
 		glLoadIdentity();
 		glFrustum(-.5, .5, -aspect / 2, 0., 1., 1024);
-		glTranslatef(0., 0., -16.);
+		glTranslatef(0., 0., -16. * _correction);
 
 		glMatrixMode(GL_MODELVIEW);
 		glLoadIdentity();

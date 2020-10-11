@@ -270,7 +270,7 @@ void Resource::loadINI(File *fp, int dataSize) {
 	}
 	assert(levelsCount == kLevelDescriptionsCount);
 	for (int l = 0; l < levelsCount; ++l) {
-		int level = -1;
+		int level = l;
 		if ((iniDataToken = stringNextToken(&iniDataBuf)) && *iniDataToken) {
 			level = strtol(iniDataToken, 0, 10);
 		}

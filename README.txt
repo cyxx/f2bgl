@@ -39,7 +39,7 @@ Defaults can be changed using command line switches :
     --subtitles                 Display cutscene subtitles
     --savepath=PATH             Path to save files (default '.')
     --fullscreen                Fullscreen display (stretched)
-    --fullscreen-ar             Fullscreen display (4:3 aspect ratio)
+    --widescreen=X:Y            Widescreen ratio (4:3 or 16:9)
     --soundfont=FILE            SoundFont (.sf2) file for music
     --texturefilter=FILTER      Texture filter (default 'linear')
     --texturescaler=NAME        Texture scaler (default 'scale2x')
