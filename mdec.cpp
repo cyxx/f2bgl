@@ -5,53 +5,43 @@
 
 struct BitStream { // most significant 16 bits
 	const uint8_t *_src;
-	uint16_t _bits;
+	uint32_t _bits;
 	int _len;
 	const uint8_t *_end;
 
 	BitStream(const uint8_t *src, int size)
-		: _src(src), _len(0), _end(src + size) {
+		: _src(src), _bits(0), _len(0), _end(src + size) {
 	}
 
 	bool endOfStream() const {
 		return _src >= _end && _len == 0;
 	}
 
-	void refill() {
-		assert(_len == 0);
-		assert(_src < _end);
-		_bits = READ_LE_UINT16(_src); _src += 2;
-		_len = 16;
-	}
-
-	int getBits(int len) {
-		int value = 0;
-		while (len != 0) {
-			if (_len == 0) {
-				refill();
-			}
-			const int count = (len < _len) ? len : _len;
-			value <<= count;
-			value |= _bits >> (16 - count);
-			_bits <<= count;
-			_len -= count;
-			len -= count;
+	int getBits(int count) { // 6 to 16 bits
+		if (_len < count) {
+			_bits <<= 16;
+			assert(_src < _end);
+			_bits |= READ_LE_UINT16(_src); _src += 2;
+			_len += 16;
 		}
+		assert(_len >= count);
+		const int value = (_bits >> (_len - count)) & ((1 << count) - 1);
+		_len -= count;
 		return value;
 	}
 	int getSignedBits(int len) {
 		const int shift = 32 - len;
-		int32_t value = getBits(len);
+		const int32_t value = getBits(len);
 		return (value << shift) >> shift;
 	}
 	bool getBit() {
 		if (_len == 0) {
-			refill();
+			assert(_src < _end);
+			_bits = READ_LE_UINT16(_src); _src += 2;
+			_len = 16;
 		}
-		const bool bit = (_bits & 0x8000) != 0;
-		_bits <<= 1;
 		--_len;
-		return bit;
+		return (_bits & (1 << _len)) != 0;
 	}
 };
 
@@ -179,7 +169,7 @@ static void idct(float *dequantData, float *result) {
 			for (int i = 0; i < 8; ++i) {
 				p += u[i] * _idct8x8[y][i];
 			}
-                        result[y * 8 + x] = p;
+			result[y * 8 + x] = p;
 		}
 	}
 }

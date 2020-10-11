@@ -146,7 +146,7 @@ enum {
 	kCheatActivateButtonToShoot = 1 << 2,
 	// control tweak #3 - pressing 'up' or 'down' when shooting allows to do back and foot steps, this avoids using the 'pageup' and 'pagedown' keys
 	kCheatStepWithUpDownInShooting = 1 << 3,
-	// control tweak #4 - front and back steps when pressing 'ctrl' with 'up' and 'down' keys, this avois using the 'pageup' and 'pagedown' keys
+	// control tweak #4 - front and back steps when pressing 'ctrl' with 'up' and 'down' keys, this avoids using the 'pageup' and 'pagedown' keys
 	kCheatShootButtonToStep = 1 << 4,
 };
 
