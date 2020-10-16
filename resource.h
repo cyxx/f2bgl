@@ -35,6 +35,7 @@ enum {
 };
 
 enum {
+	kResTypePsx_DIN,
 	kResTypePsx_DTT,
 	kResTypePsx_LEV,
 	kResTypePsx_SON,
@@ -42,6 +43,7 @@ enum {
 };
 
 enum {
+	kResOffsetType_DIN,
 	kResOffsetType_LEV,
 	kResOffsetType_SON,
 };
@@ -49,6 +51,7 @@ enum {
 enum {
 	kVrmLoadingScreenWidth = 320,
 	kVrmLoadingScreenHeight = 240,
+	kResPsxDinOffsetsTableSize = 2, // .NEW, .MAP
 	kResPsxLevOffsetsTableSize = 11, // .STM, .ANI, .F3D, .P3D, .SPR, .PAL, .MSG, .CMD, .ENV, .KEY, .SNK
 	kResPsxSonOffsetsTableSize = 3, // .SPU, .VH, .VB
 	kVagOffsetsTableSize = 256,
@@ -175,6 +178,8 @@ struct Resource {
 	File *_fileSon;
 	ResPsxOffset _levOffsetsTable[kResPsxLevOffsetsTableSize];
 	File *_fileLev;
+	ResPsxOffset _dinOffsetsTable[kResPsxDinOffsetsTableSize];
+	File *_fileDin;
 	bool _psxCmdData;
 
 	Resource();
@@ -211,7 +216,7 @@ struct Resource {
 
 	void loadLevelDataPsx(int level, int resType);
 	void unloadLevelDataPsx(int resType);
-	void readDataOffsetsTable(File *fp, int offsetType, ResPsxOffset *offsetsTable);
+	void readDataOffsetsTable(File *fp, int offsetType, ResPsxOffset *offsetsTable, int offsetsSize);
 	uint32_t seekDataPsx(const char *ext, File *fp, int offsetType, uint32_t offset = 0);
 	void loadVAB(File *fp);
 	void loadVRM(File *fp);
