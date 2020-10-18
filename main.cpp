@@ -230,7 +230,7 @@ static void lockAudio(int lock) {
 }
 
 static void setupAudio(GameStub *stub) {
-	SDL_AudioSpec desired, obtained;
+	SDL_AudioSpec desired;
 	memset(&desired, 0, sizeof(desired));
 	desired.freq = 22050;
 	desired.format = AUDIO_S16SYS;
@@ -240,7 +240,7 @@ static void setupAudio(GameStub *stub) {
 	if (mix.proc) {
 		desired.callback = mix.proc;
 		desired.userdata = mix.data;
-		if (SDL_OpenAudio(&desired, &obtained) == 0) {
+		if (SDL_OpenAudio(&desired, 0) == 0) {
 			SDL_PauseAudio(0);
 		}
 	}
