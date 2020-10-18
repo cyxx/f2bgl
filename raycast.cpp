@@ -965,7 +965,8 @@ void Game::rayCastWall(int x, int z) {
 			cellMap->rayCastCounter = _rayCastCounter;
 		}
 	}
-	for (int x = 0; x < kScreenWidth; ++x) {
+	const int margin = kScreenWidth / 2;
+	for (int x = -margin; x < kScreenWidth + margin; ++x) {
 		rayCast(0, x, 0, kRayCastWall);
 	}
 }

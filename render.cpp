@@ -153,7 +153,7 @@ struct timeval _frameTimeStamp;
 Render::Render(const RenderParams *params) {
 	memset(_clut, 0, sizeof(_clut));
 	_aspectRatio = 1.;
-	_correction = 1.;
+	_fov = 0;
 	_screenshotBuf = 0;
 	memset(&_overlay, 0, sizeof(_overlay));
 	_overlay.r = _overlay.g = _overlay.b = 255;
@@ -202,11 +202,11 @@ void Render::flushCachedTextures() {
 	_overlay.tex = 0;
 }
 
-void Render::resizeScreen(int w, int h, float *p, float correction) {
+void Render::resizeScreen(int w, int h, float *p, int fov) {
 	_w = w;
 	_h = h;
 	_aspectRatio = p[2] / p[3];
-	_correction = correction / (4 / 3.);
+	_fov = fov / 360.;
 	_viewport.x = 0;
 	_viewport.y = 0;
 	_viewport.w = w;
@@ -559,7 +559,7 @@ void Render::clearScreen() {
 }
 
 void Render::setupProjection(int mode) {
-	const GLfloat aspect = 1.5 * _aspectRatio / _correction;
+	const GLfloat aspect = 1.5 * _aspectRatio;
 
 	switch (mode) {
 	case kProj2D:
@@ -581,7 +581,7 @@ void Render::setupProjection(int mode) {
 		glMatrixMode(GL_PROJECTION);
 		glLoadIdentity();
 		glFrustum(-.5, .5, -aspect / 2, 0., 1., 512.);
-		glTranslatef(0., 0., -20. * _correction);
+		glTranslatef(0., 0., -20.);
 
 		glMatrixMode(GL_MODELVIEW);
 		glLoadIdentity();
@@ -602,7 +602,7 @@ void Render::setupProjection(int mode) {
 		glMatrixMode(GL_PROJECTION);
 		glLoadIdentity();
 		glFrustum(-.5, .5, -aspect / 2, 0., 1., 4096.);
-		glTranslatef(0., 0., -64. * _correction);
+		glTranslatef(0., 0., -64.);
 
 		glMatrixMode(GL_MODELVIEW);
 		glLoadIdentity();
@@ -622,8 +622,14 @@ void Render::setupProjection(int mode) {
 	case kProjGame:
 		glMatrixMode(GL_PROJECTION);
 		glLoadIdentity();
-		glFrustum(-.5, .5, -aspect / 2, 0., 1., 1024);
-		glTranslatef(0., 0., -16. * _correction);
+		if (_fov != 0.) {
+			const float h = -tan(_fov * .5) * 7.5;
+			const float w = aspect * h / 2;
+			glFrustum(w, -w, h, 0, 1., 1024);
+		} else {
+			glFrustum(-.5, .5, -aspect / 2, 0., 1., 1024);
+		}
+		glTranslatef(0., 0., -16.);
 
 		glMatrixMode(GL_MODELVIEW);
 		glLoadIdentity();
