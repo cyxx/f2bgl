@@ -1212,9 +1212,10 @@ void Resource::loadTreePsx(File *fp, int dataSize, int type) {
 	}
 	if (hasKeys) {
 		for (uint32_t j = 0; j < count; ++j) {
-			ResTreeNode *node = &_treesTable[type][j];
-			node->childKey = fileReadUint16LE(fp);
-			node->nextKey = fileReadUint16LE(fp);
+			_treesTable[type][j].nextKey = fileReadUint16LE(fp);
+		}
+		for (uint32_t j = 0; j < count; ++j) {
+			_treesTable[type][j].childKey = fileReadUint16LE(fp);
 		}
 	}
 }
