@@ -4475,7 +4475,7 @@ void Game::drawInfoPanel() {
 	const int yPos = _res._userConfig.iconLrInvY;
 	_render->drawSprite(xPos, yPos, _infoPanelSpr.data, _infoPanelSpr.w, _infoPanelSpr.h, 0, _infoPanelSpr.key);
 	const uint8_t color = _indirectPalette[kIndirectColorYellow][1];
-	const int life = 48 * _objectsPtrTable[kObjPtrConrad]->specialData[1][18] / _varsTable[kVarConradLife];
+	const int life = CLIP(48 * _objectsPtrTable[kObjPtrConrad]->specialData[1][18] / _varsTable[kVarConradLife], 0, 48);
 	_render->drawRectangle(xPos + 1, yPos + 1 + 48 - life, 2, life, color);
 
 	if (_objectsPtrTable[kObjPtrGun] && _objectsPtrTable[kObjPtrGun]->specialData[1][22] == 4096) {
