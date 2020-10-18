@@ -13,8 +13,8 @@ struct BitStream { // most significant 16 bits
 		: _src(src), _bits(0), _len(0), _end(src + size) {
 	}
 
-	bool endOfStream() const {
-		return _src >= _end && _len == 0;
+	int bitsAvailable() const {
+		return (_end - _src) * 8 + _len;
 	}
 
 	int getBits(int count) { // 6 to 16 bits
@@ -25,8 +25,8 @@ struct BitStream { // most significant 16 bits
 			_len += 16;
 		}
 		assert(_len >= count);
-		const int value = (_bits >> (_len - count)) & ((1 << count) - 1);
 		_len -= count;
+		const int value = (_bits >> _len) & ((1 << count) - 1);
 		return value;
 	}
 	int getSignedBits(int len) {
@@ -51,7 +51,7 @@ static int readDC(BitStream *bs, int version, const DcHuff *dcHuffTree, int *pre
 	}
 	assert(version == 3);
 	int node = 0;
-	while (dcHuffTree[node].value < 0 && !bs->endOfStream()) {
+	while (dcHuffTree[node].value < 0 && bs->bitsAvailable() > 0) {
 		if (bs->getBit()) {
 			node = dcHuffTree[node].right;
 		} else {
@@ -74,7 +74,7 @@ static int readDC(BitStream *bs, int version, const DcHuff *dcHuffTree, int *pre
 static void readAC(BitStream *bs, int *coefficients) {
 	int count = 0;
 	int node = 0;
-	while (!bs->endOfStream()) {
+	while (bs->bitsAvailable() > 0) {
 		const uint16_t value = _acHuffTree[node].value;
 		switch (value) {
 		case kAcHuff_EscapeCode: {
@@ -137,15 +137,15 @@ static void dequantizeBlock(int *coefficients, float *block, int scale) {
 	}
 }
 
-static const double _idct8x8[8][8] = {
-	{ 0.353553390593274,  0.490392640201615,  0.461939766255643,  0.415734806151273,  0.353553390593274,  0.277785116509801,  0.191341716182545,  0.097545161008064 },
-	{ 0.353553390593274,  0.415734806151273,  0.191341716182545, -0.097545161008064, -0.353553390593274, -0.490392640201615, -0.461939766255643, -0.277785116509801 },
-	{ 0.353553390593274,  0.277785116509801, -0.191341716182545, -0.490392640201615, -0.353553390593274,  0.097545161008064,  0.461939766255643,  0.415734806151273 },
-	{ 0.353553390593274,  0.097545161008064, -0.461939766255643, -0.277785116509801,  0.353553390593274,  0.415734806151273, -0.191341716182545, -0.490392640201615 },
-	{ 0.353553390593274, -0.097545161008064, -0.461939766255643,  0.277785116509801,  0.353553390593274, -0.415734806151273, -0.191341716182545,  0.490392640201615 },
-	{ 0.353553390593274, -0.277785116509801, -0.191341716182545,  0.490392640201615, -0.353553390593273, -0.097545161008064,  0.461939766255643, -0.415734806151273 },
-	{ 0.353553390593274, -0.415734806151273,  0.191341716182545,  0.097545161008064, -0.353553390593274,  0.490392640201615, -0.461939766255643,  0.277785116509801 },
-	{ 0.353553390593274, -0.490392640201615,  0.461939766255643, -0.415734806151273,  0.353553390593273, -0.277785116509801,  0.191341716182545, -0.097545161008064 }
+static const int16_t _idct8x8[8][8] = {
+	{ 23170,  32138,  30273,  27245,  23170,  18204,  12539,   6392 },
+	{ 23170,  27245,  12539,  -6393, -23171, -32139, -30274, -18205 },
+	{ 23170,  18204, -12540, -32139, -23171,   6392,  30273,  27245 },
+	{ 23170,   6392, -30274, -18205,  23170,  27245, -12540, -32139 },
+	{ 23170,  -6393, -30274,  18204,  23170, -27246, -12540,  32138 },
+	{ 23170, -18205, -12540,  32138, -23171,  -6393,  30273, -27246 },
+	{ 23170, -27246,  12539,   6392, -23171,  32138, -30274,  18204 },
+	{ 23170, -32139,  30273, -27246,  23170, -18205,  12539,  -6393 }
 };
 
 static void idct(float *dequantData, float *result) {
@@ -155,7 +155,7 @@ static void idct(float *dequantData, float *result) {
 		for (int x = 0; x < 8; x++) {
 			float p = 0;
 			for (int i = 0; i < 8; ++i) {
-				p += dequantData[i] * _idct8x8[x][i];
+				p += dequantData[i] * _idct8x8[x][i] / 0x10000;
 			}
 			tmp[y + x * 8] = p;
 		}
@@ -167,7 +167,7 @@ static void idct(float *dequantData, float *result) {
 		for (int y = 0; y < 8; y++) {
 			float p = 0;
 			for (int i = 0; i < 8; ++i) {
-				p += u[i] * _idct8x8[y][i];
+				p += u[i] * _idct8x8[y][i] / 0x10000;
 			}
 			result[y * 8 + x] = p;
 		}
